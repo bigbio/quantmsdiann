@@ -1,0 +1,20 @@
+email_template.html
+adaptivecard.json
+slackreport.json
+.nextflow*
+work/
+data/
+results/
+.DS_Store
+testing/
+testing*
+*.pyc
+bin/
+.nf-test/
+ro-crate-metadata.json
+modules/nf-core/
+subworkflows/nf-core/
+
+# Ignore potentially non-human-readable markdown files
+.github/**/SKILL.md
+AGENT.md

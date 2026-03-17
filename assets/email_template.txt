@@ -1,0 +1,31 @@
+Run Name: $runName
+
+<% if (success){
+    out << "## bigbio/quantms execution completed successfully! ##"
+} else {
+    out << """####################################################
+## bigbio/quantms execution completed unsuccessfully! ##
+####################################################
+The exit status of the task that caused the workflow execution to fail was: $exitStatus.
+The full error message was:
+
+${errorReport}
+"""
+} %>
+
+
+The workflow was completed at $dateComplete (duration: $duration)
+
+The command used to launch the workflow was as follows:
+
+  $commandLine
+
+
+
+Pipeline Configuration:
+-----------------------
+<% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
+
+--
+bigbio/quantms
+https://github.com/bigbio/quantms
