@@ -98,7 +98,6 @@ workflow QUANTMSDIANN {
         CREATE_INPUT_CHANNEL.out.ch_expdesign,
     )
     ch_pipeline_results = ch_pipeline_results.mix(DIA.out.diann_report)
-    ch_pipeline_results = ch_pipeline_results.mix(DIA.out.diann_report_parquet)
     ch_msstats_in = ch_msstats_in.mix(DIA.out.msstats_in)
     ch_versions = ch_versions.mix(DIA.out.versions)
     

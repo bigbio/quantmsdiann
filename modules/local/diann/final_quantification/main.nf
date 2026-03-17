@@ -21,8 +21,7 @@ process FINAL_QUANTIFICATION {
 
     output:
     // DIA-NN 2.0 don't return report in tsv format
-    path "diann_report.tsv", emit: main_report, optional: true
-    path "diann_report.parquet", emit: report_parquet, optional: true
+    path "diann_report.{tsv,parquet}", emit: main_report, optional: true
     path "diann_report.manifest.txt", emit: report_manifest, optional: true
     path "diann_report.protein_description.tsv", emit: protein_description, optional: true
     path "diann_report.stats.tsv", emit: report_stats

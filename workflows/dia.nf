@@ -43,7 +43,7 @@ workflow DIA {
         ms_file:result[1]
     }.set { ch_result }
 
-    meta = ch_result.meta.unique { m -> m[0] }
+    meta = ch_result.meta.unique { m -> m.experiment_id }
 
     GENERATE_CFG(meta)
     ch_software_versions = ch_software_versions
@@ -147,10 +147,11 @@ workflow DIA {
     //
     // MODULE: DIANNCONVERT
     //
-    diann_main_report = FINAL_QUANTIFICATION.out.main_report.mix(FINAL_QUANTIFICATION.out.report_parquet).last()
+    diann_main_report = FINAL_QUANTIFICATION.out.main_report
 
     DIANN_MSSTATS(
-        diann_main_report, ch_expdesign,
+        diann_main_report,
+        ch_expdesign,
         FINAL_QUANTIFICATION.out.pg_matrix,
         FINAL_QUANTIFICATION.out.pr_matrix,
         meta,
@@ -172,8 +173,7 @@ workflow DIA {
 
     emit:
     versions                = ch_software_versions
-    diann_report            = FINAL_QUANTIFICATION.out.main_report
-    diann_report_parquet    = FINAL_QUANTIFICATION.out.report_parquet
+    diann_report            = diann_main_report
     msstats_in              = DIANN_MSSTATS.out.out_msstats
     final_result            = channel.empty()
     msstats_out             = ch_msstats_out
