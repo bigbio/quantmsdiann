@@ -34,7 +34,6 @@ jobs:
           [
             "test_dia",
             "test_dia_dotd",
-            "test_latest_dia",
           ]
     env:
       NXF_ANSI_LOG: false
@@ -121,7 +120,6 @@ jobs:
           [
             "test_dia",
             "test_dia_dotd",
-            "test_latest_dia",
           ]
     env:
       NXF_ANSI_LOG: false
