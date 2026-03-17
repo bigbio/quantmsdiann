@@ -9,7 +9,6 @@
 //
 include { GENERATE_CFG                } from '../modules/local/diann/generate_cfg/main'
 include { DIANN_MSSTATS              } from '../modules/local/diann/diann_msstats/main'
-include { MSSTATS_LFQ                 } from '../modules/local/msstats/msstats_lfq/main'
 include { PRELIMINARY_ANALYSIS        } from '../modules/local/diann/preliminary_analysis/main'
 include { ASSEMBLE_EMPIRICAL_LIBRARY  } from '../modules/local/diann/assemble_empirical_library/main'
 include { INSILICO_LIBRARY_GENERATION } from '../modules/local/diann/insilico_library_generation/main'
@@ -144,11 +143,11 @@ workflow DIA {
         FINAL_QUANTIFICATION.out.versions
     )
 
-    //
-    // MODULE: DIANNCONVERT
-    //
     diann_main_report = FINAL_QUANTIFICATION.out.main_report
 
+    //
+    // MODULE: DIANN_MSSTATS — Convert DIA-NN report to MSstats-compatible format
+    //
     DIANN_MSSTATS(
         diann_main_report,
         ch_expdesign,
@@ -160,23 +159,10 @@ workflow DIA {
     ch_software_versions = ch_software_versions
         .mix(DIANN_MSSTATS.out.versions)
 
-    //
-    // MODULE: MSSTATS
-    ch_msstats_out = channel.empty()
-    if (!params.skip_post_msstats) {
-        MSSTATS_LFQ(DIANN_MSSTATS.out.out_msstats)
-        ch_msstats_out = MSSTATS_LFQ.out.msstats_csv
-        ch_software_versions = ch_software_versions.mix(
-            MSSTATS_LFQ.out.versions
-        )
-    }
-
     emit:
     versions                = ch_software_versions
     diann_report            = diann_main_report
     msstats_in              = DIANN_MSSTATS.out.out_msstats
-    final_result            = channel.empty()
-    msstats_out             = ch_msstats_out
 }
 
 // remove meta.id to make sure cache identical HashCode

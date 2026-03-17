@@ -28,7 +28,7 @@ jobs:
       EXEC_PROFILE: ${{ matrix.exec_profile }}
 
     name: Run pipeline with test data
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantms') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -37,14 +37,8 @@ jobs:
           - "25.04.0"
         test_profile:
           [
-            "test_lfq",
             "test_dia",
             "test_dia_dotd",
-            "test_localize",
-            "test_tmt",
-            "test_dda_id_alphapeptdeep",
-            "test_dda_id_ms2pip",
-            "test_dda_id_fine_tuning",
           ]
         exec_profile: ["docker"] # extended ci tests singularity.
 

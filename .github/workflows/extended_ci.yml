@@ -22,7 +22,7 @@ concurrency:
 jobs:
   test-docker:
     name: Docker Tests
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantms') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -32,15 +32,9 @@ jobs:
           - "latest-everything"
         test_profile:
           [
-            "test_lfq",
             "test_dia",
             "test_dia_dotd",
-            "test_localize",
-            "test_tmt",
-            "test_dda_id_alphapeptdeep",
-            "test_dda_id_fine_tuning",
-            "test_dda_id_ms2pip",
-            "test_tmt_corr",
+            "test_latest_dia",
           ]
     env:
       NXF_ANSI_LOG: false
@@ -115,7 +109,7 @@ jobs:
   test-singularity:
     name: Singularity Tests
     needs: test-docker
-    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantms') }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -125,15 +119,9 @@ jobs:
           - "latest-everything"
         test_profile:
           [
-            "test_lfq",
             "test_dia",
             "test_dia_dotd",
-            "test_localize",
-            "test_tmt",
-            "test_dda_id_ms2pip",
-            "test_dda_id_alphapeptdeep",
-            "test_tmt_corr",
-            "test_dda_id_fine_tuning",
+            "test_latest_dia",
           ]
     env:
       NXF_ANSI_LOG: false

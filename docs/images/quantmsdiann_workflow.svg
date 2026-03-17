@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 1060" width="520" height="1060">
+  <defs>
+    <style>
+      .box { fill: #ffffff; stroke: #333333; stroke-width: 1.5; rx: 8; ry: 8; }
+      .box-diann { fill: #e8f5e9; stroke: #2e7d32; stroke-width: 1.5; rx: 8; ry: 8; }
+      .box-input { fill: #e3f2fd; stroke: #1565c0; stroke-width: 1.5; rx: 8; ry: 8; }
+      .box-output { fill: #fff3e0; stroke: #e65100; stroke-width: 1.5; rx: 8; ry: 8; }
+      .box-qc { fill: #f3e5f5; stroke: #6a1b9a; stroke-width: 1.5; rx: 8; ry: 8; }
+      .box-optional { fill: #ffffff; stroke: #999999; stroke-width: 1.5; stroke-dasharray: 5,3; rx: 8; ry: 8; }
+      .title { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: bold; fill: #1a1a1a; text-anchor: middle; }
+      .subtitle { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; fill: #666666; text-anchor: middle; }
+      .label { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: bold; fill: #1a1a1a; text-anchor: middle; }
+      .sublabel { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; fill: #555555; text-anchor: middle; }
+      .arrow { stroke: #555555; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+      .arrow-optional { stroke: #999999; stroke-width: 1.2; fill: none; stroke-dasharray: 4,3; marker-end: url(#arrowhead-light); }
+      .section-label { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: bold; fill: #2e7d32; text-anchor: start; letter-spacing: 1px; }
+      .badge { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #ffffff; text-anchor: middle; }
+      .note { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #888888; text-anchor: middle; font-style: italic; }
+    </style>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#555555"/>
+    </marker>
+    <marker id="arrowhead-light" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#999999"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="260" y="35" class="title">quantmsdiann</text>
+  <text x="260" y="55" class="subtitle">DIA-NN Quantitative Mass Spectrometry Pipeline</text>
+
+  <!-- ===== INPUT SECTION ===== -->
+  <!-- Input files -->
+  <rect x="60" y="80" width="160" height="50" class="box-input"/>
+  <text x="140" y="102" class="label">SDRF + Raw Files</text>
+  <text x="140" y="117" class="sublabel">.raw / .mzML / .d / .dia</text>
+
+  <!-- FASTA database -->
+  <rect x="300" y="80" width="160" height="50" class="box-input"/>
+  <text x="380" y="102" class="label">FASTA Database</text>
+  <text x="380" y="117" class="sublabel">Protein sequences</text>
+
+  <!-- Arrows from inputs -->
+  <line x1="140" y1="130" x2="140" y2="155" class="arrow"/>
+  <line x1="380" y1="130" x2="380" y2="225" class="arrow"/>
+
+  <!-- ===== PREPROCESSING SECTION ===== -->
+  <!-- SDRF Validation -->
+  <rect x="60" y="155" width="160" height="44" class="box"/>
+  <text x="140" y="175" class="label">Input Validation</text>
+  <text x="140" y="189" class="sublabel">SDRF check + parsing</text>
+
+  <line x1="140" y1="199" x2="140" y2="225" class="arrow"/>
+
+  <!-- File Preparation -->
+  <rect x="60" y="225" width="160" height="44" class="box"/>
+  <text x="140" y="245" class="label">File Preparation</text>
+  <text x="140" y="259" class="sublabel">RAW->mzML, indexing, .d/.dia</text>
+
+  <line x1="140" y1="269" x2="260" y2="310" class="arrow"/>
+  <line x1="380" y1="269" x2="260" y2="310" class="arrow"/>
+
+  <!-- ===== DIA-NN WORKFLOW SECTION ===== -->
+  <!-- DIA-NN section background -->
+  <rect x="30" y="295" width="460" height="530" rx="12" ry="12" fill="none" stroke="#2e7d32" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="50" y="315" class="section-label">DIA-NN WORKFLOW</text>
+
+  <!-- Step 1: Generate Config -->
+  <rect x="150" y="325" width="220" height="40" class="box-diann"/>
+  <text x="260" y="341" class="label">1. Generate Config</text>
+  <text x="260" y="355" class="sublabel">enzyme + mods -> diann.cfg</text>
+
+  <line x1="260" y1="365" x2="260" y2="385" class="arrow"/>
+
+  <!-- Step 2: Spectral Library -->
+  <rect x="150" y="385" width="220" height="40" class="box-diann"/>
+  <text x="260" y="401" class="label">2. Spectral Library</text>
+  <text x="260" y="415" class="sublabel">in-silico or user-provided</text>
+
+  <!-- Note for user-provided -->
+  <text x="420" y="405" class="note">skip if --diann_speclib</text>
+
+  <line x1="260" y1="425" x2="260" y2="445" class="arrow"/>
+
+  <!-- Step 3: Preliminary Analysis -->
+  <rect x="150" y="445" width="220" height="40" class="box-diann"/>
+  <text x="260" y="461" class="label">3. Preliminary Analysis</text>
+  <text x="260" y="475" class="sublabel">per-file calibration + mass accuracy</text>
+
+  <line x1="260" y1="485" x2="260" y2="505" class="arrow"/>
+
+  <!-- Step 4: Assemble Empirical Library -->
+  <rect x="150" y="505" width="220" height="40" class="box-diann"/>
+  <text x="260" y="521" class="label">4. Empirical Library</text>
+  <text x="260" y="535" class="sublabel">assemble consensus from .quant files</text>
+
+  <line x1="260" y1="545" x2="260" y2="565" class="arrow"/>
+
+  <!-- Step 5: Individual Analysis -->
+  <rect x="150" y="565" width="220" height="40" class="box-diann"/>
+  <text x="260" y="581" class="label">5. Individual Analysis</text>
+  <text x="260" y="595" class="sublabel">per-file search with empirical library</text>
+
+  <line x1="260" y1="605" x2="260" y2="625" class="arrow"/>
+
+  <!-- Step 6: Final Quantification -->
+  <rect x="150" y="625" width="220" height="40" class="box-diann"/>
+  <text x="260" y="641" class="label">6. Final Quantification</text>
+  <text x="260" y="655" class="sublabel">summary report + matrices</text>
+
+  <line x1="260" y1="665" x2="260" y2="685" class="arrow"/>
+
+  <!-- Step 7: MSstats Conversion -->
+  <rect x="150" y="685" width="220" height="40" class="box-diann"/>
+  <text x="260" y="701" class="label">7. MSstats Conversion</text>
+  <text x="260" y="715" class="sublabel">DIA-NN report -> MSstats CSV</text>
+
+  <!-- Skip preliminary note -->
+  <rect x="45" y="450" width="90" height="30" rx="4" ry="4" fill="#fff8e1" stroke="#f9a825" stroke-width="1"/>
+  <text x="90" y="464" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9px; fill: #f57f17; text-anchor: middle; font-weight: bold;">skip if library</text>
+  <text x="90" y="474" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9px; fill: #f57f17; text-anchor: middle; font-weight: bold;">provided</text>
+  <line x1="135" y1="465" x2="150" y2="465" class="arrow-optional"/>
+
+  <!-- ===== POST-PROCESSING ===== -->
+  <line x1="260" y1="725" x2="260" y2="760" class="arrow"/>
+
+  <!-- pMultiQC -->
+  <rect x="150" y="845" width="220" height="44" class="box-qc"/>
+  <text x="260" y="865" class="label">pMultiQC</text>
+  <text x="260" y="879" class="sublabel">Quality control report</text>
+
+  <line x1="260" y1="825" x2="260" y2="845" class="arrow"/>
+
+  <!-- ===== OUTPUTS ===== -->
+  <line x1="260" y1="889" x2="260" y2="920" class="arrow"/>
+
+  <!-- Output boxes -->
+  <rect x="40" y="920" width="130" height="55" class="box-output"/>
+  <text x="105" y="942" class="label">Quant Tables</text>
+  <text x="105" y="955" class="sublabel">pg/pr/gg matrices</text>
+  <text x="105" y="967" class="sublabel">diann_report.tsv</text>
+
+  <rect x="195" y="920" width="130" height="55" class="box-output"/>
+  <text x="260" y="942" class="label">MSstats CSV</text>
+  <text x="260" y="955" class="sublabel">msstats_in.csv</text>
+  <text x="260" y="967" class="sublabel">ready for DE analysis</text>
+
+  <rect x="350" y="920" width="130" height="55" class="box-output"/>
+  <text x="415" y="942" class="label">QC Report</text>
+  <text x="415" y="955" class="sublabel">HTML interactive</text>
+  <text x="415" y="967" class="sublabel">plots + metrics</text>
+
+  <!-- Arrows to outputs -->
+  <line x1="200" y1="910" x2="105" y2="920" class="arrow"/>
+  <line x1="260" y1="910" x2="260" y2="920" class="arrow"/>
+  <line x1="320" y1="910" x2="415" y2="920" class="arrow"/>
+
+  <!-- Versions badge -->
+  <rect x="60" y="760" width="400" height="65" rx="10" ry="10" fill="none" stroke="#bbbbbb" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="260" y="780" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; fill: #888888; text-anchor: middle; font-weight: bold;">Supported DIA-NN Versions</text>
+  <rect x="140" y="790" width="80" height="24" rx="12" ry="12" fill="#2e7d32"/>
+  <text x="180" y="806" class="badge">v1.8.1</text>
+  <rect x="240" y="790" width="80" height="24" rx="12" ry="12" fill="#1565c0"/>
+  <text x="280" y="806" class="badge">v2.1.0</text>
+  <rect x="340" y="790" width="80" height="24" rx="12" ry="12" fill="#e65100"/>
+  <text x="380" y="806" class="badge">GPU ready</text>
+
+  <!-- Footer -->
+  <text x="260" y="1005" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; fill: #aaaaaa; text-anchor: middle;">bigbio/quantmsdiann | nf-core compliant | Nextflow DSL2</text>
+
+  <!-- Legend -->
+  <rect x="60" y="1020" width="12" height="12" fill="#e3f2fd" stroke="#1565c0" stroke-width="1" rx="2" ry="2"/>
+  <text x="78" y="1031" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #666666;">Input</text>
+  <rect x="120" y="1020" width="12" height="12" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1" rx="2" ry="2"/>
+  <text x="138" y="1031" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #666666;">DIA-NN</text>
+  <rect x="190" y="1020" width="12" height="12" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1" rx="2" ry="2"/>
+  <text x="208" y="1031" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #666666;">QC</text>
+  <rect x="240" y="1020" width="12" height="12" fill="#fff3e0" stroke="#e65100" stroke-width="1" rx="2" ry="2"/>
+  <text x="258" y="1031" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #666666;">Output</text>
+  <rect x="310" y="1020" width="12" height="12" fill="#ffffff" stroke="#999999" stroke-width="1" stroke-dasharray="3,2" rx="2" ry="2"/>
+  <text x="328" y="1031" style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #666666;">Optional</text>
+</svg>

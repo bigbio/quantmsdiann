@@ -76,22 +76,11 @@ workflow QUANTMSDIANN {
     ch_consensus_pmultiqc = channel.empty()
 
     //
-    // MODULE: Generate decoy database
+    // Validate protein database
     //
-    if (params.database) {
-        ch_db_for_decoy_creation = channel.from(file(params.database, checkIfExists: true))
-    }
-    else {
+    if (!params.database) {
         exit(1, 'No protein database provided')
     }
-
-
-    CREATE_INPUT_CHANNEL.out.ch_meta_config_iso.mix(
-        CREATE_INPUT_CHANNEL.out.ch_meta_config_lfq
-    ).first()
-        | combine(ch_db_for_decoy_creation)
-        | map { item -> item[-1] }
-        | set { ch_db_for_decoy_creation_or_null }
 
     DIA(
         ch_fileprep_result.dia,
