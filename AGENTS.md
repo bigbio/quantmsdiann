@@ -98,12 +98,12 @@ The pipeline executes the following steps:
 
 ### Test Profiles (DIA only)
 
-| Change Area      | Test Profile      | Command                                                          |
-| ---------------- | ----------------- | ---------------------------------------------------------------- |
-| DIA workflow      | `test_dia`        | `nextflow run . -profile test_dia,docker --outdir results`       |
-| DIA with Bruker  | `test_dia_dotd`   | `nextflow run . -profile test_dia_dotd,docker --outdir results`  |
-| Latest DIA-NN    | `test_latest_dia` | `nextflow run . -profile test_latest_dia,docker --outdir results`|
-| Full DIA dataset | `test_full_dia`   | `nextflow run . -profile test_full_dia,docker --outdir results`  |
+| Change Area      | Test Profile      | Command                                                           |
+| ---------------- | ----------------- | ----------------------------------------------------------------- |
+| DIA workflow     | `test_dia`        | `nextflow run . -profile test_dia,docker --outdir results`        |
+| DIA with Bruker  | `test_dia_dotd`   | `nextflow run . -profile test_dia_dotd,docker --outdir results`   |
+| Latest DIA-NN    | `test_latest_dia` | `nextflow run . -profile test_latest_dia,docker --outdir results` |
+| Full DIA dataset | `test_full_dia`   | `nextflow run . -profile test_full_dia,docker --outdir results`   |
 
 ### CI Test Matrix
 

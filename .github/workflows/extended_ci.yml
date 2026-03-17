@@ -30,12 +30,7 @@ jobs:
         NXF_VER:
           - "25.04.0"
           - "latest-everything"
-        test_profile:
-          [
-            "test_dia",
-            "test_dia_dotd",
-            "test_latest_dia",
-          ]
+        test_profile: ["test_dia", "test_dia_dotd", "test_latest_dia"]
     env:
       NXF_ANSI_LOG: false
       CAPSULE_LOG: none
@@ -124,12 +119,7 @@ jobs:
         NXF_VER:
           - "25.04.0"
           - "latest-everything"
-        test_profile:
-          [
-            "test_dia",
-            "test_dia_dotd",
-            "test_latest_dia",
-          ]
+        test_profile: ["test_dia", "test_dia_dotd", "test_latest_dia"]
     env:
       NXF_ANSI_LOG: false
       CAPSULE_LOG: none

@@ -14,12 +14,12 @@ The pipeline takes SDRF metadata and mass spectrometry data files as input, perf
 
 ### Supported Input Formats
 
-| Format   | Description                         | Handling                              |
-| -------- | ----------------------------------- | ------------------------------------- |
-| `.raw`   | Thermo RAW files                    | Converted to mzML (ThermoRawFileParser) |
-| `.mzML`  | Open standard mzML                  | Optionally re-indexed                 |
-| `.d`     | Bruker timsTOF directories          | Native or converted to mzML           |
-| `.dia`   | DIA-NN native binary format         | Passed through without conversion     |
+| Format  | Description                 | Handling                                |
+| ------- | --------------------------- | --------------------------------------- |
+| `.raw`  | Thermo RAW files            | Converted to mzML (ThermoRawFileParser) |
+| `.mzML` | Open standard mzML          | Optionally re-indexed                   |
+| `.d`    | Bruker timsTOF directories  | Native or converted to mzML             |
+| `.dia`  | DIA-NN native binary format | Passed through without conversion       |
 
 Compressed formats (`.gz`, `.tar`, `.tar.gz`, `.zip`) are supported for `.raw`, `.mzML`, and `.d`.
 
@@ -35,14 +35,14 @@ nextflow run bigbio/quantmsdiann \
 
 ## Key Output Files
 
-| File | Description |
-| ---- | ----------- |
-| `quant_tables/diann_report.tsv` | Main DIA-NN peptide/protein report |
+| File                                      | Description                         |
+| ----------------------------------------- | ----------------------------------- |
+| `quant_tables/diann_report.tsv`           | Main DIA-NN peptide/protein report  |
 | `quant_tables/diann_report.pg_matrix.tsv` | Protein group quantification matrix |
-| `quant_tables/diann_report.pr_matrix.tsv` | Precursor quantification matrix |
-| `quant_tables/diann_report.gg_matrix.tsv` | Gene group quantification matrix |
-| `quant_tables/out_msstats_in.csv` | MSstats-compatible quantification |
-| `pmultiqc/` | Interactive QC HTML report |
+| `quant_tables/diann_report.pr_matrix.tsv` | Precursor quantification matrix     |
+| `quant_tables/diann_report.gg_matrix.tsv` | Gene group quantification matrix    |
+| `quant_tables/out_msstats_in.csv`         | MSstats-compatible quantification   |
+| `pmultiqc/`                               | Interactive QC HTML report          |
 
 ## Test Profiles
 

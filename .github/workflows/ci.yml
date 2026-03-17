@@ -35,11 +35,7 @@ jobs:
       matrix:
         NXF_VER:
           - "25.04.0"
-        test_profile:
-          [
-            "test_dia",
-            "test_dia_dotd",
-          ]
+        test_profile: ["test_dia", "test_dia_dotd"]
         exec_profile: ["docker"] # extended ci tests singularity.
 
     steps:

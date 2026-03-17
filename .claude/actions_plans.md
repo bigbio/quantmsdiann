@@ -111,19 +111,19 @@
 
 ## Priority Summary
 
-| Priority | Phase | Items | Timeline |
-|----------|-------|-------|----------|
-| **Done** | Phase 1 | 1.1-1.5 (cleanup) | Completed 2026-03-17 |
-| **Short-term** | Phase 2 | 2.1-2.4 (DIA-NN 2.x) | 1-2 weeks |
-| **Medium-term** | Phase 3 | 3.1-3.4 (performance) | 2-4 weeks |
+| Priority        | Phase   | Items                 | Timeline             |
+| --------------- | ------- | --------------------- | -------------------- |
+| **Done**        | Phase 1 | 1.1-1.5 (cleanup)     | Completed 2026-03-17 |
+| **Short-term**  | Phase 2 | 2.1-2.4 (DIA-NN 2.x)  | 1-2 weeks            |
+| **Medium-term** | Phase 3 | 3.1-3.4 (performance) | 2-4 weeks            |
 
 ---
 
 ## Decision Log
 
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2026-03-17 | Created roadmap from quantms dev comparison | Align refactoring priorities |
-| 2026-03-17 | Completed Phase 1 cleanup | Remove all non-DIA artifacts |
-| 2026-03-17 | Keep DIANN_MSSTATS, remove MSSTATS_LFQ | Generate MSstats-compatible CSV but don't run MSstats analysis in-pipeline |
+| Date       | Decision                                         | Rationale                                                                    |
+| ---------- | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| 2026-03-17 | Created roadmap from quantms dev comparison      | Align refactoring priorities                                                 |
+| 2026-03-17 | Completed Phase 1 cleanup                        | Remove all non-DIA artifacts                                                 |
+| 2026-03-17 | Keep DIANN_MSSTATS, remove MSSTATS_LFQ           | Generate MSstats-compatible CSV but don't run MSstats analysis in-pipeline   |
 | 2026-03-17 | Removed Phases 4-6 (quantification, QC, interop) | pMultiQC already covers QC; downstream analysis/interop out of scope for now |
