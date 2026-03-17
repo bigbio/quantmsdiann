@@ -34,6 +34,7 @@ jobs:
           [
             "test_dia",
             "test_dia_dotd",
+            "test_latest_dia",
           ]
     env:
       NXF_ANSI_LOG: false
@@ -54,6 +55,13 @@ jobs:
         uses: nf-core/setup-nextflow@v2
         with:
           version: "${{ matrix.NXF_VER }}"
+
+      - name: Log in to GitHub Container Registry
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        if: env.GHCR_TOKEN != ''
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
 
       - name: Disk space cleanup
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -120,6 +128,7 @@ jobs:
           [
             "test_dia",
             "test_dia_dotd",
+            "test_latest_dia",
           ]
     env:
       NXF_ANSI_LOG: false
@@ -149,6 +158,13 @@ jobs:
 
       - name: Install Singularity with defaults
         uses: singularityhub/install-singularity@main
+
+      - name: Log in to GitHub Container Registry (for Singularity ORAS pulls)
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        if: env.GHCR_TOKEN != ''
+        run: |
+          singularity remote login --username ${{ secrets.GHCR_USERNAME }} --password "${{ secrets.GHCR_TOKEN }}" oras://ghcr.io
 
       - name: Disk space cleanup
         uses: jlumbroso/free-disk-space@v1.3.1
