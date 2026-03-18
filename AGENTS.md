@@ -110,13 +110,13 @@ The pipeline executes the following steps:
 
 ### DIA-NN Version-Specific Features
 
-| Feature | Min Version | Parameter |
-| --- | --- | --- |
-| Core workflow, library-free, .quant caching | 1.8.1 | (default) |
-| QuantUMS quantification | 1.9.2 | `--quantums true` |
-| Parquet output format | 2.0 | (automatic in 2.0+) |
-| Decoy reporting | 2.0 | `--diann_report_decoys true` |
-| Native .raw on Linux | 2.1.0 | (automatic) |
+| Feature                                     | Min Version | Parameter                    |
+| ------------------------------------------- | ----------- | ---------------------------- |
+| Core workflow, library-free, .quant caching | 1.8.1       | (default)                    |
+| QuantUMS quantification                     | 1.9.2       | `--quantums true`            |
+| Parquet output format                       | 2.0         | (automatic in 2.0+)          |
+| Decoy reporting                             | 2.0         | `--diann_report_decoys true` |
+| Native .raw on Linux                        | 2.1.0       | (automatic)                  |
 
 ---
 
@@ -176,35 +176,35 @@ nf-core pipelines schema build
 
 ### Test Profiles (DIA only)
 
-| Profile | Feature Tested | Default Container | Min DIA-NN |
-| --- | --- | --- | --- |
-| `test_dia` | Core workflow | biocontainers 1.8.1 (public) | 1.8.1 |
-| `test_dia_dotd` | Bruker .d format | biocontainers 1.8.1 (public) | 1.8.1 |
-| `test_dia_quantums` | QuantUMS quantification | ghcr.io/bigbio/diann:2.2.0 | 1.9.2 |
-| `test_dia_parquet` | Parquet output + decoys | ghcr.io/bigbio/diann:2.2.0 | 2.0 |
-| `test_latest_dia` | Core on latest DIA-NN | ghcr.io/bigbio/diann:2.2.0 | latest |
-| `test_dia_2_2_0` | DIA-NN 2.2.0 compat | ghcr.io/bigbio/diann:2.2.0 | 2.2.0 |
-| `test_full_dia` | Full-size dataset | biocontainers 1.8.1 (public) | 1.8.1 |
+| Profile             | Feature Tested          | Default Container            | Min DIA-NN |
+| ------------------- | ----------------------- | ---------------------------- | ---------- |
+| `test_dia`          | Core workflow           | biocontainers 1.8.1 (public) | 1.8.1      |
+| `test_dia_dotd`     | Bruker .d format        | biocontainers 1.8.1 (public) | 1.8.1      |
+| `test_dia_quantums` | QuantUMS quantification | ghcr.io/bigbio/diann:2.2.0   | 1.9.2      |
+| `test_dia_parquet`  | Parquet output + decoys | ghcr.io/bigbio/diann:2.2.0   | 2.0        |
+| `test_latest_dia`   | Core on latest DIA-NN   | ghcr.io/bigbio/diann:2.2.0   | latest     |
+| `test_dia_2_2_0`    | DIA-NN 2.2.0 compat     | ghcr.io/bigbio/diann:2.2.0   | 2.2.0      |
+| `test_full_dia`     | Full-size dataset       | biocontainers 1.8.1 (public) | 1.8.1      |
 
 ### Version Override Profiles (for merge matrix)
 
 These apply on top of test profiles to override the DIA-NN container version:
 
-| Profile | Container | Auth |
-| --- | --- | --- |
+| Profile        | Container                        | Auth |
+| -------------- | -------------------------------- | ---- |
 | `diann_v1_8_1` | `biocontainers/diann:v1.8.1_cv1` | none |
-| `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0` | GHCR |
-| `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0` | GHCR |
+| `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0`     | GHCR |
+| `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0`     | GHCR |
 
 ### CI Workflows
 
-| Workflow | Trigger | What it runs |
-| --- | --- | --- |
-| **ci.yml** | Every PR (fast gate) | `test_dia`, `test_dia_dotd` (1.8.1, Docker) |
-| **extended_ci.yml** | Every PR / push to dev | 1.8.1 defaults + all features on 2.2.0 + Singularity |
-| **merge_ci.yml** | PR to master / releases | Full version × feature matrix (10 combinations) |
-| **linting.yml** | All PRs, releases | Pre-commit hooks + `nf-core pipelines lint` |
-| **branch.yml** | PRs to master | Only allows PRs from `dev` branch |
+| Workflow            | Trigger                 | What it runs                                         |
+| ------------------- | ----------------------- | ---------------------------------------------------- |
+| **ci.yml**          | Every PR (fast gate)    | `test_dia`, `test_dia_dotd` (1.8.1, Docker)          |
+| **extended_ci.yml** | Every PR / push to dev  | 1.8.1 defaults + all features on 2.2.0 + Singularity |
+| **merge_ci.yml**    | PR to master / releases | Full version × feature matrix (10 combinations)      |
+| **linting.yml**     | All PRs, releases       | Pre-commit hooks + `nf-core pipelines lint`          |
+| **branch.yml**      | PRs to master           | Only allows PRs from `dev` branch                    |
 
 ### When to Run Tests Locally
 
@@ -216,13 +216,13 @@ These apply on top of test profiles to override the DIA-NN container version:
 
 **Targeted testing required:**
 
-| Change Area | Test Profile | Command |
-| --- | --- | --- |
-| Core DIA-NN modules | `test_dia` | `nextflow run . -profile test_dia,docker --outdir results` |
-| Bruker .d support | `test_dia_dotd` | `nextflow run . -profile test_dia_dotd,docker --outdir results` |
-| QuantUMS / final_quantification | `test_dia_quantums` | `nextflow run . -profile test_dia_quantums,docker --outdir results` |
-| Parquet output / diann_msstats | `test_dia_parquet` | `nextflow run . -profile test_dia_parquet,docker --outdir results` |
-| Cross-version compat | Use version override | `nextflow run . -profile test_dia,diann_v2_2_0,docker --outdir results` |
+| Change Area                     | Test Profile         | Command                                                                 |
+| ------------------------------- | -------------------- | ----------------------------------------------------------------------- |
+| Core DIA-NN modules             | `test_dia`           | `nextflow run . -profile test_dia,docker --outdir results`              |
+| Bruker .d support               | `test_dia_dotd`      | `nextflow run . -profile test_dia_dotd,docker --outdir results`         |
+| QuantUMS / final_quantification | `test_dia_quantums`  | `nextflow run . -profile test_dia_quantums,docker --outdir results`     |
+| Parquet output / diann_msstats  | `test_dia_parquet`   | `nextflow run . -profile test_dia_parquet,docker --outdir results`      |
+| Cross-version compat            | Use version override | `nextflow run . -profile test_dia,diann_v2_2_0,docker --outdir results` |
 
 **Comprehensive testing (before PR):**
 
@@ -268,14 +268,14 @@ ch_<previous_process>_for_<next_process>  // Intermediate channels
 
 Defined in `conf/base.config`:
 
-| Label | CPU | Memory | Time | Use Case |
-| --- | --- | --- | --- | --- |
-| `process_single` | 1 | 6 GB | 4h | Single-threaded tools |
-| `process_tiny` | 1 | 1 GB | 1h | Minimal processing |
-| `process_very_low` | 2 | 12 GB | 4h | Light parallelism |
-| `process_low` | 4 | 36 GB | 8h | Moderate workload |
-| `process_medium` | 8 | 72 GB | 16h | Standard processing |
-| `process_high` | 12 | 108 GB | 20h | Heavy computation |
+| Label              | CPU | Memory | Time | Use Case              |
+| ------------------ | --- | ------ | ---- | --------------------- |
+| `process_single`   | 1   | 6 GB   | 4h   | Single-threaded tools |
+| `process_tiny`     | 1   | 1 GB   | 1h   | Minimal processing    |
+| `process_very_low` | 2   | 12 GB  | 4h   | Light parallelism     |
+| `process_low`      | 4   | 36 GB  | 8h   | Moderate workload     |
+| `process_medium`   | 8   | 72 GB  | 16h  | Standard processing   |
+| `process_high`     | 12  | 108 GB | 20h  | Heavy computation     |
 
 ### DIA-NN Module Labels
 
