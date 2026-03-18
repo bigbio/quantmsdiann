@@ -1,26 +1,14 @@
-# Nextflow runtime files and directories
 .nextflow*
 work/
-.work/
-null/
-
-# Pipeline output and test data
 data/
 results/
+.DS_Store
 testing/
 testing*
-
-# Python bytecode
 *.pyc
-
-# OS-generated files
-.DS_Store
-
-# IDE and editor settings
+null/
 .idea/
 .vscode/
-
-# Linting reports
 /lint_log.txt
 /lint_results.md
 
