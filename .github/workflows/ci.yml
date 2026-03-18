@@ -27,7 +27,7 @@ jobs:
       TEST_PROFILE: ${{ matrix.test_profile }}
       EXEC_PROFILE: ${{ matrix.exec_profile }}
 
-    name: Run pipeline with test data
+    name: "CI [${{ matrix.test_profile }}] DIA-NN=1.8.1 NXF=${{ matrix.NXF_VER }}"
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
     strategy:

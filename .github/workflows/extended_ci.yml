@@ -28,7 +28,7 @@ jobs:
   #           Must pass before any other job runs.
   # ──────────────────────────────────────────────────────────────────────────
   test-default:
-    name: "Default [${{ matrix.test_profile }}] NXF=${{ matrix.NXF_VER }}"
+    name: "Default [${{ matrix.test_profile }}] DIA-NN=1.8.1 NXF=${{ matrix.NXF_VER }}"
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
     strategy:
@@ -108,7 +108,7 @@ jobs:
   #           Only runs after test-default passes.
   # ──────────────────────────────────────────────────────────────────────────
   test-latest:
-    name: "Latest [${{ matrix.test_profile }}]"
+    name: "Latest [${{ matrix.test_profile }}] DIA-NN=2.2.0"
     needs: test-default
     runs-on: ubuntu-latest
     strategy:
@@ -194,7 +194,7 @@ jobs:
   #           Only runs after test-default passes.
   # ──────────────────────────────────────────────────────────────────────────
   test-singularity:
-    name: "Singularity [${{ matrix.test_profile }}] NXF=${{ matrix.NXF_VER }}"
+    name: "Singularity [${{ matrix.test_profile }}] DIA-NN=1.8.1 NXF=${{ matrix.NXF_VER }}"
     needs: test-default
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
