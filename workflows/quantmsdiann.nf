@@ -79,8 +79,9 @@ workflow QUANTMSDIANN {
     // Validate protein database
     //
     if (!params.database) {
-        exit(1, 'No protein database provided')
+        exit(1, 'No protein database provided. Please specify --database <path/to/proteins.fasta>')
     }
+    ch_database = file(params.database, checkIfExists: true)
 
     DIA(
         ch_fileprep_result.dia,

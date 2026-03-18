@@ -63,7 +63,7 @@ nextflow run . -profile test_dia,docker --outdir results
 # DIA with Bruker .d files
 nextflow run . -profile test_dia_dotd,docker --outdir results
 
-# Latest DIA-NN version (2.2.0)
+# Latest DIA-NN (2.2.0)
 nextflow run . -profile test_latest_dia,docker --outdir results
 ```
 
@@ -84,7 +84,7 @@ quantmsdiann is developed and maintained by:
 
 ## License
 
-[Apache 2.0](LICENSE)
+[MIT](LICENSE)
 
 ## Citation
 

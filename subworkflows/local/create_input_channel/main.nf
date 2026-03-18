@@ -23,7 +23,7 @@ workflow CREATE_INPUT_CHANNEL {
 
     def wrapper = [
         acquisition_method: "",
-        experiment_id: ch_sdrf,
+        experiment_id: file(ch_sdrf.toString()).baseName,
     ]
 
     ch_config
@@ -32,7 +32,7 @@ workflow CREATE_INPUT_CHANNEL {
         .set { ch_meta_config_dia }
 
     emit:
-    ch_meta_config_dia // [meta, [spectra files ]]
+    ch_meta_config_dia // [meta, spectra_file]
     ch_expdesign
     versions = ch_versions
 }
@@ -51,7 +51,7 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
     }
 
     meta.mzml_id = file(filestr).name.take(file(filestr).name.lastIndexOf('.'))
-    meta.experiment_id = file(wrapper.experiment_id.toString()).baseName
+    meta.experiment_id = wrapper.experiment_id
 
     // apply transformations given by specified root_folder and type
     if (params.root_folder) {
