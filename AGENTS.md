@@ -98,17 +98,20 @@ The pipeline executes the following steps:
 
 ### Test Profiles (DIA only)
 
-| Change Area      | Test Profile      | Command                                                           |
-| ---------------- | ----------------- | ----------------------------------------------------------------- |
-| DIA workflow     | `test_dia`        | `nextflow run . -profile test_dia,docker --outdir results`        |
-| DIA with Bruker  | `test_dia_dotd`   | `nextflow run . -profile test_dia_dotd,docker --outdir results`   |
-| Latest DIA-NN    | `test_latest_dia` | `nextflow run . -profile test_latest_dia,docker --outdir results` |
-| Full DIA dataset | `test_full_dia`   | `nextflow run . -profile test_full_dia,docker --outdir results`   |
+| Change Area        | Test Profile        | Container                       | Command                                                               |
+| ------------------ | ------------------- | ------------------------------- | --------------------------------------------------------------------- |
+| DIA workflow       | `test_dia`          | default (1.8.1)                 | `nextflow run . -profile test_dia,docker --outdir results`            |
+| DIA with Bruker    | `test_dia_dotd`     | default (1.8.1)                 | `nextflow run . -profile test_dia_dotd,docker --outdir results`       |
+| QuantUMS quant     | `test_dia_quantums` | ghcr.io/bigbio/diann:2.1.0     | `nextflow run . -profile test_dia_quantums,docker --outdir results`   |
+| Parquet / decoys   | `test_dia_parquet`  | ghcr.io/bigbio/diann:2.1.0     | `nextflow run . -profile test_dia_parquet,docker --outdir results`    |
+| DIA-NN 2.2.0       | `test_dia_2_2_0`    | ghcr.io/bigbio/diann:2.2.0     | `nextflow run . -profile test_dia_2_2_0,docker --outdir results`      |
+| Latest DIA-NN      | `test_latest_dia`   | ghcr.io/bigbio/diann:2.1.0     | `nextflow run . -profile test_latest_dia,docker --outdir results`     |
+| Full DIA dataset   | `test_full_dia`     | default (1.8.1)                 | `nextflow run . -profile test_full_dia,docker --outdir results`       |
 
 ### CI Test Matrix
 
 - **ci.yml**: `test_dia`, `test_dia_dotd` (Docker)
-- **extended_ci.yml**: `test_dia`, `test_dia_dotd`, `test_latest_dia` (Docker + Singularity)
+- **extended_ci.yml**: `test_dia`, `test_dia_dotd`, `test_dia_quantums`, `test_dia_parquet`, `test_dia_2_2_0`, `test_latest_dia` (Docker + Singularity)
 
 ---
 

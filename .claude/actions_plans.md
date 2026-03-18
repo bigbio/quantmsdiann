@@ -1,7 +1,7 @@
 # quantmsdiann — Action Plans & Roadmap
 
 > Standalone DIA-NN (DIA) pipeline refactored from quantms.
-> Last updated: 2026-03-17
+> Last updated: 2026-03-18
 
 ---
 
@@ -23,20 +23,66 @@
 
 ### 1.3 Clean parameter schema and config
 
-- **Files**: `nextflow.config`
-- **Action**: Removed `id_only` parameter. Updated manifest name to `bigbio/quantmsdiann` and description to DIA-NN focused. Removed dead PSM_CONVERSION and MSSTATS_LFQ/TMT publishDir rules from shared.config. Removed unused iso/lfq channel mix from quantmsdiann.nf.
+- **Files**: `nextflow.config`, `nextflow_schema.json`
+- **Action**: Removed `id_only` parameter and `statistical_post_processing` schema section. Updated manifest name to `bigbio/quantmsdiann`. Removed dead publishDir rules from shared.config. Created missing nf-core lint files (logos, docs/README.md).
 - **Status**: [x] DONE
 
 ### 1.4 Update documentation
 
 - **Files**: `README.md`, `docs/usage.md`, `docs/output.md`, `AGENTS.md`
-- **Action**: Rewrote README with DIA-NN workflow ASCII diagram, supported formats table, quick start, key outputs. Rewrote AGENTS.md focused on DIA-only pipeline. Updated usage.md and output.md to remove LFQ/TMT/DDA references.
+- **Action**: Rewrote README with DIA-NN workflow SVG diagram. Rewrote AGENTS.md for DIA-only. Cleaned docs. Removed 10 legacy quantms images from docs/images/, created `quantmsdiann_workflow.svg`.
 - **Status**: [x] DONE
 
-### 1.5 Remove unused modules
+### 1.5 Remove unused modules and files
 
-- **Action**: Removed `modules/local/msstats/` directory and `bin/msstats_plfq.R`. All remaining modules (diann, openms, pmultiqc, samplesheet_check, sdrf_parsing, utils) are actively used.
+- **Action**: Removed `modules/local/msstats/`, `bin/msstats_plfq.R`, `.devcontainer/`, `diann_private.yml`. Cleaned all legacy quantms images.
 - **Status**: [x] DONE
+
+---
+
+## Phase 1b — Version-Aware Testing Strategy (COMPLETED)
+
+**Goal**: Map each DIA-NN feature to the minimum version that supports it, with conditional CI.
+
+### DIA-NN Version → Feature Matrix
+
+| Version | Key Features | Container |
+| ------- | ------------ | --------- |
+| **1.8.1** (default) | Core DIA-NN workflow, library-free, .quant caching | `biocontainers/diann:v1.8.1_cv1` (public) |
+| **1.9.2** | QuantUMS quantification, Parquet libraries, redesigned NN | `ghcr.io/bigbio/diann:1.9.2` (private, needs build) |
+| **2.0** | Parquet output, proteoform confidence, decoy reporting | `ghcr.io/bigbio/diann:2.1.0` (private) |
+| **2.1.0** | Native .raw on Linux, latest improvements | `ghcr.io/bigbio/diann:2.1.0` (private) |
+| **2.2.0** | Latest release | `ghcr.io/bigbio/diann:latest` (private, needs build) |
+
+### Test Profiles Created
+
+| Profile | Feature Tested | Min DIA-NN | Container |
+| ------- | -------------- | ---------- | --------- |
+| `test_dia` | Core workflow | 1.8.1 | biocontainers (public) |
+| `test_dia_dotd` | Bruker .d format | 1.8.1 | biocontainers (public) |
+| `test_dia_quantums` | QuantUMS quantification | 1.9.2 | ghcr.io/bigbio/diann:2.1.0 |
+| `test_dia_parquet` | Parquet output + decoys | 2.0 | ghcr.io/bigbio/diann:2.1.0 |
+| `test_latest_dia` | Latest version validation | latest | ghcr.io/bigbio/diann:2.1.0 |
+| `test_full_dia` | Full-size dataset | 1.8.1 | biocontainers (public) |
+
+### CI/CD Structure
+
+**ci.yml** (every PR, fast):
+- `test_dia`, `test_dia_dotd` — public containers, no auth needed
+
+**extended_ci.yml** (5 jobs):
+1. **test-default** — always runs `test_dia`, `test_dia_dotd` (Docker, 2 NXF versions)
+2. **detect-changes** — uses `dorny/paths-filter` to detect which feature files changed
+3. **test-features** — always runs on push to dev/master, releases, manual dispatch: `test_latest_dia`, `test_dia_quantums`, `test_dia_parquet`
+4. **test-features-pr** — runs on PRs only when relevant files change (conditional per-feature)
+5. **test-singularity** — default tests only, after Docker passes
+
+### Container Build Needed
+
+- **DIA-NN 1.9.2**: Dockerfile created at `quantms-containers/diann-1.9.2/Dockerfile`. Needs to be built and pushed to `ghcr.io/bigbio/diann:1.9.2`.
+- **DIA-NN 2.2.0**: Need Dockerfile when ready to test latest.
+
+### Status: [x] DONE
 
 ---
 
@@ -47,29 +93,22 @@
 ### 2.1 Promote DIA-NN 2.1.0 to default
 
 - **Files**: All `modules/local/diann/*/main.nf`, `nextflow.config`
-- **Action**: Update default container from `diann:v1.8.1_cv1` to `diann:2.1.0`. Keep 1.8.1 available as a fallback profile. Run full test suite against 2.1.0.
+- **Action**: Update default container from `diann:v1.8.1_cv1` to `diann:2.1.0`. Keep 1.8.1 available as a fallback profile.
 - **Dependencies**: Verify all 7 DIA-NN modules work with 2.1.0 CLI changes.
-- **Effort**: Medium (requires testing)
+- **Effort**: Medium
 - **Status**: [ ] TODO
 
 ### 2.2 Parquet-native pipeline path
 
 - **Files**: `modules/local/diann/final_quantification/main.nf`, `modules/local/diann/diann_msstats/main.nf`
-- **Action**: DIA-NN 2.0+ outputs Parquet natively. Ensure `DIANN_MSSTATS` (`diann2msstats`) handles Parquet input end-to-end. Add Parquet as a first-class output alongside TSV matrices.
+- **Action**: Ensure DIANN_MSSTATS handles Parquet input end-to-end. Validated by `test_dia_parquet` CI profile.
 - **Effort**: Medium
 - **Status**: [ ] TODO
 
-### 2.3 Add decoy reporting test profile
-
-- **Files**: `conf/tests/`
-- **Action**: Create `test_dia_decoys.config` that exercises `diann_report_decoys = true`. Add to CI matrix.
-- **Effort**: Small
-- **Status**: [ ] TODO
-
-### 2.4 DIA-NN version parameter
+### 2.3 DIA-NN version parameter
 
 - **Files**: `nextflow.config`, `nextflow_schema.json`
-- **Action**: Add a `diann_version` parameter that switches between container images (1.8.1 vs 2.1.0) without needing separate profiles. Use conditional container selection in modules.
+- **Action**: Add a `diann_version` parameter that switches container images without needing separate profiles.
 - **Effort**: Medium
 - **Status**: [ ] TODO
 
@@ -82,28 +121,28 @@
 ### 3.1 Smarter pre-analysis file selection
 
 - **Files**: `workflows/dia.nf`
-- **Action**: When `random_preanalysis = true`, implement stratified selection (by condition or batch from SDRF metadata) instead of purely random. This produces better empirical libraries for heterogeneous datasets.
+- **Action**: Implement stratified selection (by condition/batch from SDRF) instead of purely random.
 - **Effort**: Medium
 - **Status**: [ ] TODO
 
 ### 3.2 Resource profiling and tuning
 
 - **Files**: `conf/base.config`
-- **Action**: Profile actual CPU, memory, and wall-time usage for each DIA-NN step across dataset sizes (10, 50, 200, 1000+ files). Adjust resource labels. Consider dynamic resource allocation based on input file count.
+- **Action**: Profile resource usage across dataset sizes. Adjust labels. Consider dynamic allocation.
 - **Effort**: Medium
 - **Status**: [ ] TODO
 
 ### 3.3 GPU support profile
 
 - **Files**: `conf/gpu.config` (new), `modules/local/diann/*/main.nf`
-- **Action**: DIA-NN supports GPU acceleration. Create a `gpu` profile with NVIDIA container runtime configuration, GPU resource labels (`accelerator` directive), and GPU-enabled DIA-NN container image.
+- **Action**: Create `gpu` profile with NVIDIA runtime, `accelerator` directives, GPU container.
 - **Effort**: Medium-Large
 - **Status**: [ ] TODO
 
 ### 3.4 Improved caching strategy
 
 - **Files**: DIA-NN modules
-- **Action**: Evaluate adding `storeDir` for expensive steps (library generation, preliminary analysis) to enable cross-run caching beyond Nextflow's work directory.
+- **Action**: Evaluate `storeDir` for expensive steps (library generation, preliminary analysis).
 - **Effort**: Small
 - **Status**: [ ] TODO
 
@@ -111,11 +150,12 @@
 
 ## Priority Summary
 
-| Priority        | Phase   | Items                 | Timeline             |
-| --------------- | ------- | --------------------- | -------------------- |
-| **Done**        | Phase 1 | 1.1-1.5 (cleanup)     | Completed 2026-03-17 |
-| **Short-term**  | Phase 2 | 2.1-2.4 (DIA-NN 2.x)  | 1-2 weeks            |
-| **Medium-term** | Phase 3 | 3.1-3.4 (performance) | 2-4 weeks            |
+| Priority        | Phase    | Items                       | Timeline             |
+| --------------- | -------- | --------------------------- | -------------------- |
+| **Done**        | Phase 1  | 1.1-1.5 (cleanup)           | Completed 2026-03-17 |
+| **Done**        | Phase 1b | Version-aware testing        | Completed 2026-03-18 |
+| **Short-term**  | Phase 2  | 2.1-2.3 (DIA-NN 2.x)        | 1-2 weeks            |
+| **Medium-term** | Phase 3  | 3.1-3.4 (performance)       | 2-4 weeks            |
 
 ---
 
@@ -127,3 +167,6 @@
 | 2026-03-17 | Completed Phase 1 cleanup                        | Remove all non-DIA artifacts                                                 |
 | 2026-03-17 | Keep DIANN_MSSTATS, remove MSSTATS_LFQ           | Generate MSstats-compatible CSV but don't run MSstats analysis in-pipeline   |
 | 2026-03-17 | Removed Phases 4-6 (quantification, QC, interop) | pMultiQC already covers QC; downstream analysis/interop out of scope for now |
+| 2026-03-18 | Version-aware testing with conditional CI         | Each feature maps to min DIA-NN version; PRs only run affected feature tests |
+| 2026-03-18 | DIA-NN containers are private (license)           | Academic-only license; GHCR_USERNAME + GHCR_TOKEN secrets required           |
+| 2026-03-18 | Created DIA-NN 1.9.2 Dockerfile                  | Needed for QuantUMS feature testing at minimum supported version             |
