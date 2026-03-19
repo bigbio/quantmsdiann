@@ -34,4 +34,4 @@ template:
   name: quantmsdiann
   org: bigbio
   outdir: .
-  version: 1.8.0dev
+  version: 1.0.0

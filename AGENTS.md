@@ -16,7 +16,7 @@ This is **non-negotiable**. All code must pass formatting and style checks befor
 
 ## Project Overview
 
-**quantmsdiann** is an nf-core bioinformatics best-practice analysis pipeline for **DIA-NN-based quantitative mass spectrometry**. It is a standalone pipeline focused exclusively on **Data-Independent Acquisition (DIA)** workflows using the DIA-NN search engine.
+**quantmsdiann** is a [bigbio](https://github.com/bigbio) bioinformatics pipeline, built following [nf-core](https://nf-co.re/) guidelines, for **DIA-NN-based quantitative mass spectrometry**. It is a standalone pipeline focused exclusively on **Data-Independent Acquisition (DIA)** workflows using the DIA-NN search engine.
 
 **This pipeline does NOT support DDA, TMT, iTRAQ, LFQ-DDA, or any non-DIA workflows.** Those are handled by the parent `quantms` pipeline.
 

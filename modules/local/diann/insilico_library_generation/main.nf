@@ -14,6 +14,7 @@ process INSILICO_LIBRARY_GENERATION {
     output:
     path "versions.yml", emit: versions
     path "*.predicted.speclib", emit: predict_speclib
+    path "*.tsv", emit: speclib_tsv, optional: true
     path "silicolibrarygeneration.log", emit: log
 
     when:

@@ -10,30 +10,34 @@
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-**quantmsdiann** is an [nf-core](https://nf-co.re/) bioinformatics pipeline for **Data-Independent Acquisition (DIA)** quantitative mass spectrometry analysis using [DIA-NN](https://github.com/vdemichev/DiaNN).
+## Introduction
 
-## Pipeline Overview
+**quantmsdiann** is a [bigbio](https://github.com/bigbio) bioinformatics pipeline, built following [nf-core](https://nf-co.re/) guidelines, for **Data-Independent Acquisition (DIA)** quantitative mass spectrometry analysis using [DIA-NN](https://github.com/vdemichev/DiaNN).
 
-The pipeline takes SDRF metadata and mass spectrometry data files as input, performs DIA-NN-based identification and quantification, and produces protein/peptide quantification matrices, MSstats-compatible output, and QC reports.
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a portable manner. It uses Docker/Singularity containers making results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process, making it easy to maintain and update software dependencies.
 
-### Workflow Diagram
+## Pipeline summary
 
 <p align="center">
-  <img src="docs/images/quantmsdiann_workflow.svg" alt="quantmsdiann workflow" width="520">
+  <img src="docs/images/quantmsdiann_workflow.svg" alt="quantmsdiann workflow" width="800">
 </p>
 
-### Supported Input Formats
+The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:
 
-| Format  | Description                 | Handling                                |
-| ------- | --------------------------- | --------------------------------------- |
-| `.raw`  | Thermo RAW files            | Converted to mzML (ThermoRawFileParser) |
-| `.mzML` | Open standard mzML          | Optionally re-indexed                   |
-| `.d`    | Bruker timsTOF directories  | Native or converted to mzML             |
-| `.dia`  | DIA-NN native binary format | Passed through without conversion       |
+1. **Input validation** — SDRF parsing and validation
+2. **File preparation** — RAW to mzML conversion (ThermoRawFileParser), indexing, Bruker `.d` handling
+3. **In-silico spectral library generation** — or use a user-provided library (`--diann_speclib`)
+4. **Preliminary analysis** — per-file calibration and mass accuracy estimation
+5. **Empirical library assembly** — consensus library from preliminary results
+6. **Individual analysis** — per-file search with the empirical library
+7. **Final quantification** — protein/peptide/gene group matrices
+8. **MSstats conversion** — DIA-NN report to MSstats-compatible format
+9. **Quality control** — interactive QC report via [pmultiqc](https://github.com/bigbio/pmultiqc)
 
-Compressed formats (`.gz`, `.tar`, `.tar.gz`, `.zip`) are supported for `.raw`, `.mzML`, and `.d`.
+## Quick start
 
-## Quick Start
+> [!NOTE]
+> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set up Nextflow.
 
 ```bash
 nextflow run bigbio/quantmsdiann \
@@ -43,34 +47,13 @@ nextflow run bigbio/quantmsdiann \
     -profile docker
 ```
 
-## Key Output Files
-
-| File                                      | Description                         |
-| ----------------------------------------- | ----------------------------------- |
-| `quant_tables/diann_report.{tsv,parquet}` | Main DIA-NN peptide/protein report  |
-| `quant_tables/diann_report.pg_matrix.tsv` | Protein group quantification matrix |
-| `quant_tables/diann_report.pr_matrix.tsv` | Precursor quantification matrix     |
-| `quant_tables/diann_report.gg_matrix.tsv` | Gene group quantification matrix    |
-| `quant_tables/out_msstats_in.csv`         | MSstats-compatible quantification   |
-| `pmultiqc/`                               | Interactive QC HTML report          |
-
-## Test Profiles
-
-```bash
-# Quick DIA test
-nextflow run . -profile test_dia,docker --outdir results
-
-# DIA with Bruker .d files
-nextflow run . -profile test_dia_dotd,docker --outdir results
-
-# Latest DIA-NN (2.2.0)
-nextflow run . -profile test_latest_dia,docker --outdir results
-```
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), not for defining parameters.
 
 ## Documentation
 
-- [Usage](docs/usage.md) - How to run the pipeline
-- [Output](docs/output.md) - Description of output files
+- [Usage](docs/usage.md) — How to run the pipeline, input formats, optional outputs, and custom configuration
+- [Output](docs/output.md) — Description of all output files produced by the pipeline
 
 ## Credits
 
@@ -82,12 +65,18 @@ quantmsdiann is developed and maintained by:
 - [Vadim Demichev](https://github.com/vdemichev) (Charite Universitaetsmedizin Berlin)
 - [Qi-Xuan Yue](https://github.com/yueqixuan) (Chongqing University of Posts and Telecommunications)
 
-## License
+## Contributions and Support
 
-[MIT](LICENSE)
+If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
 ## Citation
 
 If you use quantmsdiann in your research, please cite:
 
 > Dai et al. "quantms: a cloud-based pipeline for quantitative proteomics" (2024). DOI: [10.5281/zenodo.15573386](https://doi.org/10.5281/zenodo.15573386)
+
+An extensive list of references for the tools used by the pipeline can be found in the [CITATIONS.md](CITATIONS.md) file.
+
+## License
+
+[MIT](LICENSE)

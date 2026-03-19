@@ -70,6 +70,12 @@ results/
   - `quant_tables/diann_report.unique_genes_matrix.tsv` - Unique gene quantification matrix
   - `quant_tables/out_msstats_in.csv` - MSstats-compatible quantification table
 
+### Optional Output Files
+
+These files are not published by default. Enable them with `save_*` parameters or `ext.*` config properties (see [Usage: Optional outputs](usage.md#optional-outputs)).
+
+- `library_generation/*.tsv` - TSV spectral library from in-silico library generation (`--save_speclib_tsv`)
+
 ### Nextflow pipeline info
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline.
