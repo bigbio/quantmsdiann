@@ -88,6 +88,46 @@ nextflow run . -profile test_dia_dotd,docker --outdir results
 nextflow run . -profile test_latest_dia,docker --outdir results
 ```
 
+## Optional outputs
+
+By default, only final result files are published. Intermediate files can be exported using `save_*` parameters or via `ext.*` properties in a custom Nextflow config.
+
+| Parameter            | Default | Description                                                                                        |
+| -------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `--save_speclib_tsv` | `false` | Publish the TSV spectral library from in-silico library generation to `library_generation/` |
+
+**Using a parameter:**
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    --input 'experiment.sdrf.tsv' \
+    --database 'proteins.fasta' \
+    --save_speclib_tsv \
+    --outdir './results' \
+    -profile docker
+```
+
+**Using a custom Nextflow config (ext properties):**
+
+```groovy
+// custom.config
+process {
+    withName: '.*:INSILICO_LIBRARY_GENERATION' {
+        ext.publish_speclib_tsv = true
+    }
+}
+```
+
+```bash
+nextflow run bigbio/quantmsdiann -c custom.config ...
+```
+
+For full verbose output of all intermediate files (useful for debugging), use the `verbose_modules` profile:
+
+```bash
+nextflow run bigbio/quantmsdiann -profile verbose_modules,docker ...
+```
+
 ## Custom configuration
 
 ### Resource requests
