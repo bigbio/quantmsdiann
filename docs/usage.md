@@ -92,8 +92,8 @@ nextflow run . -profile test_latest_dia,docker --outdir results
 
 By default, only final result files are published. Intermediate files can be exported using `save_*` parameters or via `ext.*` properties in a custom Nextflow config.
 
-| Parameter            | Default | Description                                                                                        |
-| -------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| Parameter            | Default | Description                                                                                 |
+| -------------------- | ------- | ------------------------------------------------------------------------------------------- |
 | `--save_speclib_tsv` | `false` | Publish the TSV spectral library from in-silico library generation to `library_generation/` |
 
 **Using a parameter:**
