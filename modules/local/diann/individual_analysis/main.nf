@@ -58,6 +58,8 @@ process INDIVIDUAL_ANALYSIS {
     }
 
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
 
     """
     # Extract --var-mod and --fixed-mod flags from diann_config.cfg (DIA-NN best practice)
@@ -77,6 +79,8 @@ process INDIVIDUAL_ANALYSIS {
             --relaxed-prot-inf \\
             --pg-level $params.pg_level \\
             ${diann_no_peptidoforms} \\
+            ${diann_tims_sum} \\
+            ${diann_im_window} \\
             \${mod_flags} \\
             $args
 

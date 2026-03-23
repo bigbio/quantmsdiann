@@ -66,6 +66,7 @@ process FINAL_QUANTIFICATION {
     quantums_sel_runs = params.quantums_sel_runs ? "--quant-sel-runs $params.quantums_sel_runs": ""
     quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_use_quant = params.diann_use_quant ? "--use-quant" : ""
 
     """
     # Notes: if .quant files are passed, mzml/.d files are not accessed, so the name needs to be passed but files
@@ -95,6 +96,7 @@ process FINAL_QUANTIFICATION {
             ${quantums_sel_runs} \\
             ${quantums_params} \\
             ${diann_no_peptidoforms} \\
+            ${diann_use_quant} \\
             \${mod_flags} \\
             $args
 

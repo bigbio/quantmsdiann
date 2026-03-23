@@ -54,6 +54,8 @@ process PRELIMINARY_ANALYSIS {
 
     // Notes: Use double quotes for params, so that it is escaped in the shell.
     scan_window = params.scan_window_automatic ? '' : "--window $params.scan_window"
+    diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
 
     """
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
@@ -76,6 +78,8 @@ process PRELIMINARY_ANALYSIS {
             ${quick_mass_acc} \\
             ${performance_flags} \\
             ${diann_no_peptidoforms} \\
+            ${diann_tims_sum} \\
+            ${diann_im_window} \\
             \${mod_flags} \\
             $args
 

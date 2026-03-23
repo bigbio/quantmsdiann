@@ -49,6 +49,8 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     }
     scan_window = params.scan_window_automatic ? '--individual-windows' : "--window $params.scan_window"
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
 
     """
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
@@ -73,6 +75,8 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             ${scan_window} \\
             --gen-spec-lib \\
             ${diann_no_peptidoforms} \\
+            ${diann_tims_sum} \\
+            ${diann_im_window} \\
             \${mod_flags} \\
             $args
 

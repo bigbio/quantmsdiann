@@ -393,7 +393,25 @@
                 },
                 "diann_no_peptidoforms": {
                     "type": "boolean",
-                    "description": "Set no-peptidoforms mode: disables automatic peptidoform scoring when variable modifications are declared (DIA-NN: not recommended)",
+                    "description": "Set no-peptidoforms mode: disables automatic peptidoform scoring when variable modifications are declared (DIA-NN: not recommended).",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
+                "diann_tims_sum": {
+                    "type": "boolean",
+                    "description": "Enable '--quant-tims-sum' for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF).",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
+                "diann_im_window": {
+                    "type": "number",
+                    "description": "Set '--im-window' to ensure the IM extraction window is not smaller than the specified value.",
+                    "fa_icon": "fas fa-filter",
+                    "default": null
+                },
+                "diann_use_quant": {
+                    "type": "boolean",
+                    "description": "Set '--use-quant' to reuse existing .quant files if available.",
                     "fa_icon": "far fa-check-square",
                     "default": false
                 },
