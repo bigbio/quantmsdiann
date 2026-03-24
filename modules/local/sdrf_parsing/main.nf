@@ -20,11 +20,13 @@ process SDRF_PARSING {
     def args = task.ext.args ?: ''
     def mod_loc_flag = (params.enable_mod_localization && params.mod_localization) ?
         "--mod_localization '${params.mod_localization}'" : ''
+    def diann_version_flag = params.diann_version ? "--diann_version '${params.diann_version}'" : ''
 
     """
     parse_sdrf convert-diann \\
         -s ${sdrf} \\
         ${mod_loc_flag} \\
+        ${diann_version_flag} \\
         $args \\
         2>&1 | tee ${sdrf.baseName}_parsing.log
 
