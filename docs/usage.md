@@ -241,6 +241,58 @@ Use `screen`, `tmux`, or the Nextflow `-bg` flag to run the pipeline in the back
 nextflow run bigbio/quantmsdiann -profile docker --input sdrf.tsv --database db.fasta --outdir results -bg
 ```
 
+## Developer testing with local containers
+
+When developing changes to `sdrf-pipelines` or `quantms-utils`, you can build local Docker containers and test them with the pipeline without publishing to a registry.
+
+### 1. Build local dev containers
+
+```bash
+# From sdrf-pipelines repo
+cd /path/to/sdrf-pipelines
+docker build -f Dockerfile.dev -t local/sdrf-pipelines:dev .
+
+# From quantms-utils repo
+cd /path/to/quantms-utils
+docker build -f Dockerfile.dev -t local/quantms-utils:dev .
+```
+
+### 2. Run the pipeline with local containers
+
+Use the `test_dia_local.config` to override container references:
+
+```bash
+nextflow run main.nf \
+    -profile test_dia,docker \
+    -c conf/tests/test_dia_local.config \
+    --outdir results
+```
+
+This config (`conf/tests/test_dia_local.config`) overrides:
+- `SDRF_PARSING` → `local/sdrf-pipelines:dev`
+- `SAMPLESHEET_CHECK` → `local/quantms-utils:dev`
+- `DIANN_MSSTATS` → `local/quantms-utils:dev`
+
+### 3. Using pre-converted mzML files
+
+To skip ThermoRawFileParser (useful on macOS/ARM where Mono crashes):
+
+```bash
+# Convert raw files with ThermoRawFileParser v2.0+
+docker run --rm --platform=linux/amd64 \
+    -v /path/to/raw:/data -v /path/to/mzml:/out \
+    quay.io/biocontainers/thermorawfileparser:2.0.0.dev--h9ee0642_0 \
+    ThermoRawFileParser -d /data -o /out -f 2
+
+# Run pipeline with pre-converted files
+nextflow run main.nf \
+    -profile test_dia,docker \
+    -c conf/tests/test_dia_local.config \
+    --root_folder /path/to/mzml \
+    --local_input_type mzML \
+    --outdir results
+```
+
 ## Nextflow memory requirements
 
 Add the following to your environment to limit Java memory:
