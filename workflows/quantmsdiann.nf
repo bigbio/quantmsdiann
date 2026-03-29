@@ -116,6 +116,7 @@ workflow QUANTMSDIANN {
     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_config)
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(FILE_PREPARATION.out.statistics)
+    ch_multiqc_files = ch_multiqc_files.mix(DIA.out.diann_log)
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: false))
     ch_multiqc_quantms_logo = file("${projectDir}/assets/nf-core-quantmsdiann_logo_light.png")

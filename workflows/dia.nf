@@ -159,6 +159,7 @@ workflow DIA {
     emit:
     versions                = ch_software_versions
     diann_report            = diann_main_report
+    diann_log               = FINAL_QUANTIFICATION.out.log
     msstats_in              = DIANN_MSSTATS.out.out_msstats
 }
 
