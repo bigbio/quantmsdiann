@@ -10,7 +10,6 @@ process SDRF_PARSING {
     path sdrf
 
     output:
-    path "diann_design.tsv"  , emit: ch_sdrf_config_file
     path "diann_design.tsv"  , emit: ch_expdesign
     path "diann_config.cfg"  , emit: ch_diann_cfg
     path "*.log"             , emit: log

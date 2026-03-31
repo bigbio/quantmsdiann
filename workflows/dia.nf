@@ -7,8 +7,9 @@
 //
 // MODULES: Local to the pipeline
 //
-include { DIANN_MSSTATS              } from '../modules/local/diann/diann_msstats/main'
+include { DIANN_MSSTATS               } from '../modules/local/diann/diann_msstats/main'
 include { PRELIMINARY_ANALYSIS        } from '../modules/local/diann/preliminary_analysis/main'
+include { PARSE_EMPIRICAL_LOG         } from '../modules/local/parse_empirical_log/main'
 include { ASSEMBLE_EMPIRICAL_LIBRARY  } from '../modules/local/diann/assemble_empirical_library/main'
 include { INSILICO_LIBRARY_GENERATION } from '../modules/local/diann/insilico_library_generation/main'
 include { INDIVIDUAL_ANALYSIS         } from '../modules/local/diann/individual_analysis/main'
@@ -59,26 +60,30 @@ workflow DIA {
     }
 
     if (params.skip_preliminary_analysis) {
-        def log_file = params.empirical_assembly_log ? file(params.empirical_assembly_log) : null
-        def parsed_m2 = "0"
-        def parsed_m1 = "0"
-        def parsed_w  = "0"
-        if (log_file && log_file.exists()) {
-            def matcher = log_file.text =~ /Mass accuracy = ([0-9.]+)ppm, MS1 accuracy = ([0-9.]+)ppm, Scan window = ([0-9.]+)/
-            if (matcher) {
-                parsed_m2 = matcher[0][1]
-                parsed_m1 = matcher[0][2]
-                parsed_w  = matcher[0][3]
+        if (params.empirical_assembly_log) {
+            ch_log_file = Channel.fromPath(params.empirical_assembly_log, checkIfExists: true)
+            PARSE_EMPIRICAL_LOG(ch_log_file)
+            ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals.map { parsed_str ->
+                def clean_str = parsed_str.trim()
+                if (clean_str == "0,0,0") {
+                    return "${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}"
+                } else {
+                    return clean_str
+                }
             }
+        } else {
+            ch_parsed_vals = Channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
         }
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(speclib)
-            .map { meta_map, ms_file, fasta, library ->
+            .combine(ch_parsed_vals)
+            .map { meta_map, ms_file, fasta, library, param_string ->
+                def values = param_string.split(',')
                 def new_meta = meta_map + [
-                    mass_acc_ms2 : parsed_m2,
-                    mass_acc_ms1 : parsed_m1,
-                    scan_window  : parsed_w
+                    mass_acc_ms2 : values[0],
+                    mass_acc_ms1 : values[1],
+                    scan_window  : values[2]
                 ]
                 return [ new_meta, ms_file, fasta, library ]
             }
@@ -121,9 +126,9 @@ workflow DIA {
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.empirical_library)
-            .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.calibrated_params)
-            .map { meta_map, ms_file, fasta, library, param_file ->
-                def values = param_file.text.trim().split(',')
+            .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.calibrated_params_val)
+            .map { meta_map, ms_file, fasta, library, param_string ->
+                def values = param_string.trim().split(',')
                 def new_meta = meta_map + [
                     mass_acc_ms2 : values[0],
                     mass_acc_ms1 : values[1],
