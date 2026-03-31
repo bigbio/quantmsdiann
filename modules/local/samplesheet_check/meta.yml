@@ -12,9 +12,6 @@ input:
     type: file
     description: Input samplesheet or experimental design file
     pattern: "*.{tsv,csv,sdrf}"
-  - meta: validate_ontologies
-    type: boolean
-    description: Whether to validate ontologies
 output:
   - meta: log
     type: file

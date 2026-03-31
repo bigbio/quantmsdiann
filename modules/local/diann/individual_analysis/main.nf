@@ -50,7 +50,7 @@ process INDIVIDUAL_ANALYSIS {
             mass_acc_ms1 = meta.mass_acc_ms1
             scan_window  = meta.scan_window
         }
-        else if (meta['fragmentmasstolerance']) {
+        else if (meta['precursormasstoleranceunit']?.toLowerCase()?.endsWith('ppm') && meta['fragmentmasstoleranceunit']?.toLowerCase()?.endsWith('ppm')) {
             mass_acc_ms2 = meta['fragmentmasstolerance']
             mass_acc_ms1 = meta['precursormasstolerance']
             scan_window  = params.scan_window
@@ -60,19 +60,18 @@ process INDIVIDUAL_ANALYSIS {
             mass_acc_ms1 = params.mass_acc_ms1
             scan_window  = params.scan_window
         }
-    } else if (meta['precursormasstoleranceunit']?.toLowerCase()?.endsWith('ppm') && meta['fragmentmasstoleranceunit']?.toLowerCase()?.endsWith('ppm')) {
-        mass_acc_ms1 = meta["precursormasstolerance"]
-        mass_acc_ms2 = meta["fragmentmasstolerance"]
     } else {
-        if (meta.mass_acc_ms2 != "0" && meta.mass_acc_ms2 != null) {
+        if (meta['precursormasstoleranceunit']?.toLowerCase()?.endsWith('ppm') && meta['fragmentmasstoleranceunit']?.toLowerCase()?.endsWith('ppm')) {
+            mass_acc_ms1 = meta["precursormasstolerance"]
+            mass_acc_ms2 = meta["fragmentmasstolerance"]
+            scan_window  = params.scan_window
+        }
+        else if (meta.mass_acc_ms2 != "0" && meta.mass_acc_ms2 != null) {
             mass_acc_ms2 = meta.mass_acc_ms2
             mass_acc_ms1 = meta.mass_acc_ms1
             scan_window  = meta.scan_window
-        } else if (meta['fragmentmasstolerance']) {
-            mass_acc_ms2 = meta['fragmentmasstolerance']
-            mass_acc_ms1 = meta['precursormasstolerance']
-            scan_window  = params.scan_window
-        } else {
+        }
+        else {
             mass_acc_ms2 = params.mass_acc_ms2
             mass_acc_ms1 = params.mass_acc_ms1
             scan_window  = params.scan_window

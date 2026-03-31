@@ -15,7 +15,6 @@ workflow CREATE_INPUT_CHANNEL {
     // Always parse as SDRF using DIA-NN converter
     SDRF_PARSING(ch_sdrf)
     ch_versions = ch_versions.mix(SDRF_PARSING.out.versions)
-    ch_config = SDRF_PARSING.out.ch_sdrf_config_file
     ch_expdesign = SDRF_PARSING.out.ch_expdesign
     ch_diann_cfg = SDRF_PARSING.out.ch_diann_cfg
 
@@ -27,7 +26,7 @@ workflow CREATE_INPUT_CHANNEL {
         experiment_id: file(ch_sdrf.toString()).baseName,
     ]
 
-    ch_config
+    ch_expdesign
         .splitCsv(header: true, sep: '\t')
         .map { row -> create_meta_channel(row, enzymes, files, wrapper) }
         .set { ch_meta_config_dia }

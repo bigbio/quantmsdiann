@@ -19,7 +19,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     path "empirical_library.*", emit: empirical_library
     path "assemble_empirical_library.log", emit: log
     path "versions.yml", emit: versions
-    path "diann_calibrated_params.csv", emit: calibrated_params
+    env CALIBRATED_PARAMS_VAL, emit: calibrated_params_val
 
     when:
     task.ext.when == null || task.ext.when
@@ -90,7 +90,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     if [ -z "\$val_mass_acc_ms2" ]; then val_mass_acc_ms2="0"; fi
     if [ -z "\$val_mass_acc_ms1" ]; then val_mass_acc_ms1="0"; fi
     if [ -z "\$val_scan_window" ]; then val_scan_window="0"; fi
-    echo "\${val_mass_acc_ms2},\${val_mass_acc_ms1},\${val_scan_window}" > diann_calibrated_params.csv
+    export CALIBRATED_PARAMS_VAL="\${val_mass_acc_ms2},\${val_mass_acc_ms1},\${val_scan_window}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
