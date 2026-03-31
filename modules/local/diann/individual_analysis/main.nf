@@ -49,12 +49,12 @@ process INDIVIDUAL_ANALYSIS {
             mass_acc_ms2 = meta.mass_acc_ms2
             mass_acc_ms1 = meta.mass_acc_ms1
             scan_window  = meta.scan_window
-        } 
+        }
         else if (meta['fragmentmasstolerance']) {
             mass_acc_ms2 = meta['fragmentmasstolerance']
             mass_acc_ms1 = meta['precursormasstolerance']
             scan_window  = params.scan_window
-        } 
+        }
         else {
             mass_acc_ms2 = params.mass_acc_ms2
             mass_acc_ms1 = params.mass_acc_ms1

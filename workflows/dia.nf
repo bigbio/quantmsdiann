@@ -62,7 +62,7 @@ workflow DIA {
         def log_file = params.empirical_assembly_log ? file(params.empirical_assembly_log) : null
         def parsed_m2 = "0"
         def parsed_m1 = "0"
-        def parsed_w  = "0"        
+        def parsed_w  = "0"
         if (log_file && log_file.exists()) {
             def matcher = log_file.text =~ /Mass accuracy = ([0-9.]+)ppm, MS1 accuracy = ([0-9.]+)ppm, Scan window = ([0-9.]+)/
             if (matcher) {
@@ -70,7 +70,7 @@ workflow DIA {
                 parsed_m1 = matcher[0][2]
                 parsed_w  = matcher[0][3]
             }
-        }        
+        }
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(speclib)
