@@ -5,7 +5,7 @@ process PARSE_EMPIRICAL_LOG {
     path log_file
 
     output:
-    env PARSED_VALS, emit: parsed_vals
+    env "PARSED_VALS", emit: parsed_vals
 
     script:
     """

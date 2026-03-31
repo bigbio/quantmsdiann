@@ -19,7 +19,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     path "empirical_library.*", emit: empirical_library
     path "assemble_empirical_library.log", emit: log
     path "versions.yml", emit: versions
-    env CALIBRATED_PARAMS_VAL, emit: calibrated_params_val
+    env "CALIBRATED_PARAMS_VAL", emit: calibrated_params_val
 
     when:
     task.ext.when == null || task.ext.when
