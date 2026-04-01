@@ -20,6 +20,7 @@ input:
 output:
   - parsed_vals:
       type: string
-      description: "A comma-separated string containing extracted mass_acc_ms2, mass_acc_ms1, and scan_window values (e.g., '15,20,8').
+      description: "A comma-separated string containing extracted mass_acc_ms2, mass_acc_ms1, and scan_window values (e.g., '15,20,8')."
+      pattern: "*,*,*"
 authors:
   - "@bigbio"
