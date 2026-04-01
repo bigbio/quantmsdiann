@@ -35,9 +35,5 @@ output:
       type: file
       description: File containing software version
       pattern: "versions.yml"
-  - calibrated_params_val:
-      type: string
-      description: A comma-separated string containing mass_acc_ms2, mass_acc_ms1, and scan_window extracted from the DIA-NN log.
-      pattern: "*,*,*"
 authors:
   - "@daichengxin"
