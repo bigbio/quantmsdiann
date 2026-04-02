@@ -35,7 +35,7 @@ workflow DIA {
     main:
 
     ch_software_versions = channel.empty()
-    ch_searchdb = Channel.fromPath(params.database, checkIfExists: true).first()
+    ch_searchdb = channel.fromPath(params.database, checkIfExists: true).first()
 
     ch_file_preparation_results.multiMap {
         result ->
@@ -61,11 +61,11 @@ workflow DIA {
 
     if (params.skip_preliminary_analysis) {
         if (params.empirical_assembly_log) {
-            ch_empirical_log = Channel.fromPath(params.empirical_assembly_log, checkIfExists: true)
+            ch_empirical_log = channel.fromPath(params.empirical_assembly_log, checkIfExists: true)
             PARSE_EMPIRICAL_LOG(ch_empirical_log)
             ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
         } else {
-            ch_parsed_vals = Channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
+            ch_parsed_vals = channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
         }
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
