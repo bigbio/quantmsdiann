@@ -9,7 +9,7 @@ jobs:
     if: >
       contains(github.event.comment.html_url, '/pull/') &&
       contains(github.event.comment.body, '@nf-core-bot fix linting') &&
-      github.repository == 'bigbio/quantms'
+      github.repository == 'bigbio/quantmsdiann'
     runs-on: ubuntu-latest
     permissions:
       contents: write
