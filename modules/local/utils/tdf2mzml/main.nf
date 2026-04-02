@@ -3,7 +3,7 @@ process TDF2MZML {
     label 'process_single'
     label 'error_retry'
 
-    container 'quay.io/bigbio/tdf2mzml:latest' // Switch to latest tag in bigbio
+    container 'quay.io/bigbio/tdf2mzml:latest' // TODO: pin to a specific version tag for reproducibility
 
     input:
     tuple val(meta), path(rawfile)

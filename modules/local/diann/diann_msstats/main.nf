@@ -9,10 +9,6 @@ process DIANN_MSSTATS {
     input:
     path(report)
     path(exp_design)
-    path(report_pg)
-    path(report_pr)
-    val(meta)
-    path(fasta)
 
     output:
     path "*msstats_in.csv", emit: out_msstats

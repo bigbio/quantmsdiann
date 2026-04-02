@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/bigbio/quantms/master/nextflow_schema.json",
-    "title": "bigbio/quantms pipeline parameters",
-    "description": "Quantitative Mass Spectrometry nf-core workflow",
+    "$id": "https://raw.githubusercontent.com/bigbio/quantmsdiann/main/nextflow_schema.json",
+    "title": "bigbio/quantmsdiann pipeline parameters",
+    "description": "DIA-NN quantitative mass spectrometry nf-core workflow",
     "type": "object",
     "$defs": {
         "input_output_options": {

@@ -86,7 +86,6 @@ process FINAL_QUANTIFICATION {
             --pg-level $params.pg_level \\
             ${species_genes} \\
             ${no_norm} \\
-            --use-quant \\
             --matrices \\
             --out diann_report.tsv \\
             --qvalue $params.protein_level_fdr_cutoff \\

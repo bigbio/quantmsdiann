@@ -8,8 +8,8 @@ process INSILICO_LIBRARY_GENERATION {
         'docker.io/biocontainers/diann:v1.8.1_cv1' }"
 
     input:
-    file(fasta)
-    file(diann_config)
+    path(fasta)
+    path(diann_config)
 
     output:
     path "versions.yml", emit: versions

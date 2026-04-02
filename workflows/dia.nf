@@ -62,11 +62,11 @@ workflow DIA {
     if (params.skip_preliminary_analysis) {
         if (params.empirical_assembly_log) {
             ch_empirical_log = Channel.fromPath(params.empirical_assembly_log, checkIfExists: true)
+            PARSE_EMPIRICAL_LOG(ch_empirical_log)
+            ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
         } else {
-            ch_empirical_log = Channel.empty()
+            ch_parsed_vals = Channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
         }
-        PARSE_EMPIRICAL_LOG(ch_empirical_log)
-        ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(speclib)
@@ -173,11 +173,7 @@ workflow DIA {
     //
     DIANN_MSSTATS(
         diann_main_report,
-        ch_expdesign,
-        FINAL_QUANTIFICATION.out.pg_matrix,
-        FINAL_QUANTIFICATION.out.pr_matrix,
-        meta,
-        ch_searchdb
+        ch_expdesign
     )
     ch_software_versions = ch_software_versions
         .mix(DIANN_MSSTATS.out.versions)
