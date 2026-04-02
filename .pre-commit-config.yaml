@@ -20,6 +20,7 @@ repos:
       - id: end-of-file-fixer
         exclude: |
           (?x)^(
+              modules\.json$|
               .*ro-crate-metadata.json$|
               modules/nf-core/.*|
               subworkflows/nf-core/.*|
