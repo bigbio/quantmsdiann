@@ -1,5 +1,5 @@
 name: thermorawfileparser
-description: Convert RAW file to mzML or MGF files
+description: Convert RAW file to mzML, MGF, or Parquet files
 keywords:
   - raw
   - mzML

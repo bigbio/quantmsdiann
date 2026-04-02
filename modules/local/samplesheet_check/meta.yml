@@ -20,7 +20,7 @@ output:
   - meta: checked_file
     type: file
     description: Validated input file
-    pattern: "*.{sdrf.tsv}"
+    pattern: "*.sdrf.tsv"
   - meta: versions
     type: file
     description: File containing software versions

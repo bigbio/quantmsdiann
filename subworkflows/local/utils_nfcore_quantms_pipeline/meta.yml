@@ -16,12 +16,12 @@ input:
   - ch_input:
       type: file
       description: |
-        Channel containing input files for FDR control
+        Channel containing pipeline execution summary or status information
 output:
-  - ch_fdr_results:
+  - ch_completion_status:
       type: file
       description: |
-        Channel containing FDR-controlled results
+        Channel containing pipeline completion status and summary information
   - versions:
       type: file
       description: |

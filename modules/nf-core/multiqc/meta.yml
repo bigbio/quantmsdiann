@@ -60,7 +60,7 @@ output:
     - "*.html":
         type: file
         description: MultiQC report file
-        pattern: ".html"
+        pattern: "*.html"
         ontologies: []
   data:
     - "*_data":
@@ -69,9 +69,9 @@ output:
         pattern: "multiqc_data"
   plots:
     - "*_plots":
-        type: file
+        type: directory
         description: Plots created by MultiQC
-        pattern: "*_data"
+        pattern: "*_plots"
         ontologies: []
   versions:
     - versions.yml:

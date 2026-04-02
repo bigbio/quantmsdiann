@@ -28,7 +28,7 @@ output:
       type: file
       description: DIA-NN log file
       pattern: "silicolibrarygeneration.log"
-  - version:
+  - versions:
       type: file
       description: File containing software version
       pattern: "versions.yml"

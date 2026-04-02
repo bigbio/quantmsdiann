@@ -34,11 +34,12 @@ runs:
           $(if [ -n "${{ inputs.tags }}" ]; then echo "--tag ${{ inputs.tags }}"; fi) \
           --dry-run \
           --ci \
-          --changed-since HEAD^) || {
-            echo "nf-test command failed with exit code $?"
+          --changed-since HEAD^) || nftest_exit_code=$?
+        if [ "${nftest_exit_code:-0}" -ne 0 ]; then
+            echo "nf-test command failed with exit code $nftest_exit_code"
             echo "Full output: $nftest_output"
             exit 1
-        }
+        fi
         echo "nf-test dry-run output: $nftest_output"
 
         # Default values for shard and total_shards

@@ -1,12 +1,12 @@
 name: mzml_statistics
-description: A module for mzMLs statistics
+description: A module for mzML file statistics
 keywords:
   - mzML
   - statistics
 tools:
   - custom:
       description: |
-        A custom module for mzMLs statistics.
+        A custom module for mzML file statistics.
       homepage: https://github.com/bigbio/quantms
       documentation: https://github.com/bigbio/quantms/tree/readthedocs
 input:

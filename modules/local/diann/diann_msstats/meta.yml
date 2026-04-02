@@ -39,7 +39,7 @@ output:
       type: file
       description: MSstats input file
       pattern: "*msstats_in.csv"
-  - version:
+  - versions:
       type: file
       description: File containing software version
       pattern: "versions.yml"
