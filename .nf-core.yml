@@ -1,8 +1,7 @@
 lint:
   files_exist:
-    - conf/igenomes.config
-    - conf/test_full.config
-    - conf/test.config
+    - conf/tests/test_full.config
+    - conf/tests/test.config
     - .github/workflows/awstest.yml
     - .github/workflows/awsfulltest.yml
     - .github/workflows/ci.yml
