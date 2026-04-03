@@ -2,6 +2,7 @@ process FINAL_QUANTIFICATION {
     tag "$meta.experiment_id"
     label 'process_high'
     label 'diann'
+    label 'error_retry'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
