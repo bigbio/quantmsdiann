@@ -27,7 +27,7 @@ process PRELIMINARY_ANALYSIS {
          '--mass-acc', '--mass-acc-ms1', '--window',
          '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod']
+         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -52,6 +52,13 @@ process PRELIMINARY_ANALYSIS {
     } else {
         log.info "Warning: DIA-NN only supports ppm unit tolerance for MS1 and MS2. Falling back to `mass_acc_automatic`=`true` to automatically determine the tolerance by DIA-NN!"
         mass_acc = ""
+    }
+
+    // Warn about auto-calibration with Bruker/timsTOF data
+    if (params.mass_acc_automatic && ms_file.name.toString().toLowerCase().endsWith('.d')) {
+        log.warn "Bruker/timsTOF .d file detected (${ms_file.name}) with automatic mass accuracy calibration enabled. " +
+            "DIA-NN recommends manually fixing MS1 and MS2 mass accuracy to 10-15 ppm for timsTOF datasets. " +
+            "Consider using: --mass_acc_automatic false --mass_acc_ms1 10 --mass_acc_ms2 10"
     }
 
     // Notes: Use double quotes for params, so that it is escaped in the shell.
@@ -92,6 +99,7 @@ process PRELIMINARY_ANALYSIS {
             ${diann_no_peptidoforms} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
+            --no-prot-inf \\
             \${mod_flags} \\
             $args
 
