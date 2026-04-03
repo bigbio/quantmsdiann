@@ -29,6 +29,26 @@ The pipeline supports the following mass spectrometry data file formats:
 
 Compressed variants are supported for `.raw`, `.mzML`, and `.d` formats: `.gz`, `.tar`, `.tar.gz`, `.zip`.
 
+### Bruker/timsTOF Data
+
+For Bruker timsTOF datasets, DIA-NN recommends manually fixing MS1 and MS2 mass accuracy to 10-15 ppm rather than using automatic calibration:
+
+```bash
+nextflow run bigbio/quantmsdiann \
+  --input sdrf.tsv \
+  --database proteins.fasta \
+  --mass_acc_automatic false \
+  --mass_acc_ms1 10 \
+  --mass_acc_ms2 10 \
+  --diann_tims_sum \
+  -profile docker
+```
+
+For Synchro-PASEF data, enable `--diann_tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
+
+> [!NOTE]
+> The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled.
+
 ### Pipeline settings via params file
 
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`:
