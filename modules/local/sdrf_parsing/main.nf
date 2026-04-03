@@ -22,6 +22,7 @@ process SDRF_PARSING {
     def diann_version_flag = params.diann_version ? "--diann_version '${params.diann_version}'" : ''
 
     """
+    set -o pipefail
     parse_sdrf convert-diann \\
         -s ${sdrf} \\
         ${mod_loc_flag} \\

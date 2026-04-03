@@ -18,6 +18,7 @@ process GENERATE_CFG {
     def args = task.ext.args ?: ''
 
     """
+    set -o pipefail
     quantmsutilsc dianncfg \\
         --enzyme "${meta.enzyme}" \\
         --fix_mod "${meta.fixedmodifications}" \\

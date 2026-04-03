@@ -13,6 +13,7 @@
 ## Task 1: Fix tee pipes masking failures
 
 **Files:**
+
 - Modify: `modules/local/diann/generate_cfg/main.nf:26`
 - Modify: `modules/local/diann/diann_msstats/main.nf:21-26`
 - Modify: `modules/local/samplesheet_check/main.nf:38-43`
@@ -22,7 +23,7 @@
 
 In `modules/local/diann/generate_cfg/main.nf`, find the `"""` opening the script block (line 20) and add `set -o pipefail` as the first line:
 
-```groovy
+````groovy
     """
     set -o pipefail
     parse_sdrf generate-diann-cfg \\
@@ -71,13 +72,14 @@ git commit -m "fix: add pipefail to all modules with tee pipes
 Without pipefail, if the command before tee fails, tee returns 0 and
 the Nextflow task appears to succeed. This masked failures in
 generate_cfg, diann_msstats, samplesheet_check, and sdrf_parsing."
-```
+````
 
 ---
 
 ## Task 2: Add error retry to long-running DIA-NN tasks
 
 **Files:**
+
 - Modify: `modules/local/diann/preliminary_analysis/main.nf:3-4`
 - Modify: `modules/local/diann/individual_analysis/main.nf:3-4`
 - Modify: `modules/local/diann/final_quantification/main.nf:3-4`
@@ -102,6 +104,7 @@ Change to:
 ```
 
 Do the same for:
+
 - `individual_analysis/main.nf` (after `label 'diann'`)
 - `final_quantification/main.nf` (after `label 'diann'`)
 - `insilico_library_generation/main.nf` (after `label 'diann'`)
@@ -124,6 +127,7 @@ retry on signal exits (130-145, 104, 175)."
 ## Task 3: Add empty input guards
 
 **Files:**
+
 - Modify: `workflows/dia.nf:38,46`
 
 - [ ] **Step 1: Guard ch_searchdb with ifEmpty**
@@ -174,6 +178,7 @@ with clear error messages instead of hanging indefinitely."
 ## Task 4: Add DIA-NN 2.3.2 version config and profile
 
 **Files:**
+
 - Create: `conf/diann_versions/v2_3_2.config`
 - Modify: `nextflow.config:245-247` (profiles section)
 
@@ -223,6 +228,7 @@ Enables DDA support and InfinDIA features."
 ## Task 5: Implement DDA support — params, version guard, flag passthrough
 
 **Files:**
+
 - Modify: `nextflow.config:53-57` (DIA-NN general params)
 - Modify: `nextflow_schema.json` (DIA-NN section)
 - Modify: `workflows/dia.nf:35-38` (version guard)
@@ -301,6 +307,7 @@ For each of the 5 DIA-NN modules, make two changes:
 Then append `${diann_dda_flag} \\` to the DIA-NN command, before `\${mod_flags}` (or before `$args` if no mod_flags).
 
 Apply to:
+
 - `modules/local/diann/insilico_library_generation/main.nf`
 - `modules/local/diann/preliminary_analysis/main.nf`
 - `modules/local/diann/assemble_empirical_library/main.nf`
@@ -329,6 +336,7 @@ Closes #5"
 ## Task 6: Add DDA test config
 
 **Files:**
+
 - Create: `conf/tests/test_dda.config`
 - Modify: `.github/workflows/extended_ci.yml:110-191` (stage 2a)
 
@@ -404,7 +412,7 @@ In `nextflow.config`, after the `test_dia_2_2_0` profile line (around line 241),
 In `.github/workflows/extended_ci.yml`, in the `test-latest` job matrix (around line 120), add `"test_dda"` to the `test_profile` array:
 
 ```yaml
-        test_profile: ["test_latest_dia", "test_dia_quantums", "test_dia_parquet", "test_dda"]
+test_profile: ["test_latest_dia", "test_dia_quantums", "test_dia_parquet", "test_dda"]
 ```
 
 - [ ] **Step 4: Validate and commit**
@@ -424,6 +432,7 @@ extended_ci.yml stage 2a (private containers)."
 ## Task 7: Add test configs for skip_preliminary_analysis and speclib input
 
 **Files:**
+
 - Create: `conf/tests/test_dia_skip_preanalysis.config`
 - Modify: `nextflow.config` (profiles section)
 - Modify: `.github/workflows/extended_ci.yml` (stage 2a)
@@ -511,6 +520,7 @@ skipped and default mass accuracy parameters are used directly."
 ## Task 8: Add new DIA-NN feature parameters (light-models, export-quant, site-ms1-quant)
 
 **Files:**
+
 - Modify: `nextflow.config` (params section)
 - Modify: `nextflow_schema.json`
 - Modify: `modules/local/diann/insilico_library_generation/main.nf` (light-models)
@@ -578,6 +588,7 @@ All require DIA-NN >= 2.0."
 ## Task 9: Add InfinDIA groundwork
 
 **Files:**
+
 - Modify: `nextflow.config` (params section)
 - Modify: `nextflow_schema.json`
 - Modify: `workflows/dia.nf` (version guard)
@@ -640,6 +651,7 @@ No test config — InfinDIA requires large databases."
 ## Task 10: Documentation — parameters.md
 
 **Files:**
+
 - Create: `docs/parameters.md`
 
 - [ ] **Step 1: Create comprehensive parameter reference**
@@ -677,6 +689,7 @@ Closes #1"
 ## Task 11: Documentation — complete usage.md and output.md
 
 **Files:**
+
 - Modify: `docs/usage.md`
 - Modify: `docs/output.md`
 - Modify: `CITATIONS.md`
@@ -685,6 +698,7 @@ Closes #1"
 - [ ] **Step 1: Add DDA section to usage.md**
 
 Add a "DDA Analysis Mode" section after the Bruker/timsTOF section with:
+
 - How to enable (`--diann_dda true -profile diann_v2_3_2`)
 - Limitations (beta, trusted columns only, PTM unreliable, MBR limited)
 - Example command
@@ -693,6 +707,7 @@ Add a "DDA Analysis Mode" section after the Bruker/timsTOF section with:
 - [ ] **Step 2: Add missing param sections to usage.md**
 
 Add sections for:
+
 - Preprocessing params (`reindex_mzml`, `mzml_statistics`, `convert_dotd`)
 - QC params (`enable_pmultiqc`, `skip_table_plots`, `contaminant_string`)
 - `diann_extra_args` scope per module
@@ -704,6 +719,7 @@ Add sections for:
 - [ ] **Step 3: Update output.md**
 
 Add:
+
 - Parquet vs TSV output explanation
 - MSstats format section
 - Intermediate outputs under `--verbose_modules`

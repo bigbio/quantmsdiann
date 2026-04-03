@@ -18,6 +18,7 @@ process DIANN_MSSTATS {
     script:
     def args = task.ext.args ?: ''
     """
+    set -o pipefail
     quantmsutilsc diann2msstats \\
         --report ${report} \\
         --exp_design ${exp_design} \\

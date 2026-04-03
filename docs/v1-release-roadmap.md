@@ -29,6 +29,7 @@ DDA parallelization is identical to DIA — per-file parallel for PRELIMINARY_AN
 ### 1.1 Fix tee pipes masking failures
 
 Add `set -o pipefail` or `exit ${PIPESTATUS[0]}` to script blocks in:
+
 - `modules/local/diann/generate_cfg/main.nf`
 - `modules/local/diann/diann_msstats/main.nf`
 - `modules/local/samplesheet_check/main.nf`
@@ -39,6 +40,7 @@ Add `set -o pipefail` or `exit ${PIPESTATUS[0]}` to script blocks in:
 ### 1.2 Add error retry to long-running DIA-NN tasks
 
 Add `label 'error_retry'` to:
+
 - PRELIMINARY_ANALYSIS (process_high)
 - INDIVIDUAL_ANALYSIS (process_high)
 - FINAL_QUANTIFICATION (process_high)
@@ -55,12 +57,14 @@ These are the longest-running tasks and most susceptible to transient failures (
 ### 1.4 New test configs
 
 **`conf/tests/test_dia_skip_preanalysis.config`:**
+
 - Sets `skip_preliminary_analysis = true`
 - Uses default `mass_acc_ms1`, `mass_acc_ms2`, `scan_window` params
 - Same PXD026600 test data as test_dia
 - Validates the skip path that is currently untested in CI
 
 **`conf/tests/test_dia_speclib.config`:**
+
 - Sets `diann_speclib` to a pre-built spectral library
 - Skips INSILICO_LIBRARY_GENERATION (the `if` branch in dia.nf line 55-56)
 - Requires a small test spectral library in quantms-test-datasets (or generated from existing test data)
@@ -78,6 +82,7 @@ Build and push `ghcr.io/bigbio/diann:2.3.2` from existing Dockerfile at `quantms
 ### 2.2 Version config
 
 Add `conf/diann_versions/v2_3_2.config`:
+
 ```groovy
 params.diann_version = '2.3.2'
 process {
@@ -90,6 +95,7 @@ docker.enabled = true
 ```
 
 Add profile in `nextflow.config`:
+
 ```groovy
 diann_v2_3_2 { includeConfig 'conf/diann_versions/v2_3_2.config' }
 ```
@@ -97,11 +103,13 @@ diann_v2_3_2 { includeConfig 'conf/diann_versions/v2_3_2.config' }
 ### 2.3 DDA implementation
 
 **New param** in `nextflow.config`:
+
 ```groovy
 diann_dda = false  // Enable DDA analysis mode (requires DIA-NN >= 2.3.2)
 ```
 
 **Version guard** in `workflows/dia.nf` at workflow start:
+
 ```groovy
 if (params.diann_dda && params.diann_version < '2.3.2') {
     error("DDA mode requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
@@ -109,12 +117,15 @@ if (params.diann_dda && params.diann_version < '2.3.2') {
 ```
 
 **Pass `--dda` to all DIA-NN modules** — In each module's script block, add:
+
 ```groovy
 diann_dda_flag = params.diann_dda ? "--dda" : ""
 ```
+
 And append `${diann_dda_flag}` to the DIA-NN command. Add `'--dda'` to the `blocked` list in all 5 modules.
 
 **Accept DDA in create_input_channel** — Modify `create_input_channel/main.nf` lines 78-88:
+
 ```groovy
 if (acqMethod.toLowerCase().contains("data-independent acquisition") || acqMethod.toLowerCase().contains("dia")) {
     meta.acquisition_method = "dia"
@@ -135,6 +146,7 @@ Add `comment[proteomics data acquisition method]` column with value `NT=Data-Dep
 ### 2.5 Test config
 
 **`conf/tests/test_dda.config`:**
+
 - Points to BSA dataset from `bigbio/quantms-test-datasets/testdata/lfq_ci/BSA/`
 - Sets `diann_dda = true`
 - Pins to `ghcr.io/bigbio/diann:2.3.2`
@@ -151,22 +163,24 @@ Add `comment[proteomics data acquisition method]` column with value `NT=Data-Dep
 
 ### 3.1 New DIA-NN parameters
 
-| Parameter | Flag | Min Version | Module | Default |
-|---|---|---|---|---|
-| `diann_light_models` | `--light-models` | 2.0 | INSILICO_LIBRARY_GENERATION | false |
-| `diann_export_quant` | `--export-quant` | 2.0 | FINAL_QUANTIFICATION | false |
-| `diann_read_threads` | `--read-threads N` | 2.0 | All DIA-NN steps | null (disabled) |
-| `diann_site_ms1_quant` | `--site-ms1-quant` | 2.0 | FINAL_QUANTIFICATION | false |
+| Parameter              | Flag               | Min Version | Module                      | Default         |
+| ---------------------- | ------------------ | ----------- | --------------------------- | --------------- |
+| `diann_light_models`   | `--light-models`   | 2.0         | INSILICO_LIBRARY_GENERATION | false           |
+| `diann_export_quant`   | `--export-quant`   | 2.0         | FINAL_QUANTIFICATION        | false           |
+| `diann_read_threads`   | `--read-threads N` | 2.0         | All DIA-NN steps            | null (disabled) |
+| `diann_site_ms1_quant` | `--site-ms1-quant` | 2.0         | FINAL_QUANTIFICATION        | false           |
 
 Each parameter: add to `nextflow.config`, `nextflow_schema.json`, module script block (with version guard where needed), and module blocked list.
 
 ### 3.2 InfinDIA groundwork (issue #10)
 
 New params:
+
 - `enable_infin_dia` (boolean, default: false) — requires >= 2.3.0
 - `diann_pre_select` (integer, optional) — `--pre-select N` precursor limit
 
 Implementation:
+
 - Pass `--infin-dia` to INSILICO_LIBRARY_GENERATION when enabled
 - Version guard: error if enabled with DIA-NN < 2.3.0
 - No test config — InfinDIA needs large databases to be meaningful
@@ -185,6 +199,7 @@ Implementation:
 ### 4.1 Create `docs/parameters.md`
 
 Comprehensive parameter reference with all ~70 params grouped by:
+
 - Input/output options
 - File preparation (conversion, indexing, statistics)
 - DIA-NN general settings
@@ -202,6 +217,7 @@ Each param: name, type, default, description, version requirement (if any).
 ### 4.2 Complete `docs/usage.md`
 
 Add missing sections:
+
 - Preprocessing params (`reindex_mzml`, `mzml_statistics`, `convert_dotd`)
 - QC params (`enable_pmultiqc`, `skip_table_plots`, `contaminant_string`)
 - MultiQC options
@@ -231,20 +247,20 @@ Add missing sections:
 
 ## Issues Status After Release
 
-| Issue | Status | Resolution |
-|---|---|---|
-| #1 | Closed | Parameter documentation created |
-| #2 | Closed | Superseded by #4 |
-| #3 | Closed | ext.args scope documented |
-| #5 | Closed | DDA support implemented |
-| #7 | Closed | Phase 2 features wired |
-| #9 | Closed | Container docs added |
-| #10 | Partially closed | InfinDIA groundwork done, full support needs testing |
-| #15 | Closed | Docs mismatch fixed |
-| #17 | Closed | Already implemented |
-| #4 | Open | Blocked on sdrf-pipelines converter release |
-| #6 | Open | Blocked on PRIDE ontology release |
-| #25 | Open | QPX deferred to next release |
+| Issue | Status           | Resolution                                           |
+| ----- | ---------------- | ---------------------------------------------------- |
+| #1    | Closed           | Parameter documentation created                      |
+| #2    | Closed           | Superseded by #4                                     |
+| #3    | Closed           | ext.args scope documented                            |
+| #5    | Closed           | DDA support implemented                              |
+| #7    | Closed           | Phase 2 features wired                               |
+| #9    | Closed           | Container docs added                                 |
+| #10   | Partially closed | InfinDIA groundwork done, full support needs testing |
+| #15   | Closed           | Docs mismatch fixed                                  |
+| #17   | Closed           | Already implemented                                  |
+| #4    | Open             | Blocked on sdrf-pipelines converter release          |
+| #6    | Open             | Blocked on PRIDE ontology release                    |
+| #25   | Open             | QPX deferred to next release                         |
 
 ---
 

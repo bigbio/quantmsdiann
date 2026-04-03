@@ -23,6 +23,7 @@ process SAMPLESHEET_CHECK {
     def string_use_ols_cache_only = params.use_ols_cache_only == true ? "--use_ols_cache_only" : ""
 
     """
+    set -o pipefail
     # Get basename and create output filename
     BASENAME=\$(basename "${input_file}")
     # Remove .sdrf.tsv, .sdrf.csv, or .sdrf extension (in that order to match longest first)
