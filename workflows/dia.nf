@@ -41,6 +41,11 @@ workflow DIA {
         error("DDA mode (--diann_dda) requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
     }
 
+    // Version guard for InfinDIA
+    if (params.enable_infin_dia && params.diann_version < '2.3.0') {
+        error("InfinDIA requires DIA-NN >= 2.3.0. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
+    }
+
     ch_searchdb = channel.fromPath(params.database, checkIfExists: true)
         .ifEmpty { error("No protein database found at '${params.database}'. Provide --database <path/to/proteins.fasta>") }
         .first()

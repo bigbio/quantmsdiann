@@ -493,6 +493,17 @@
                     "fa_icon": "fas fa-crosshairs",
                     "default": false
                 },
+                "enable_infin_dia": {
+                    "type": "boolean",
+                    "description": "Enable InfinDIA for ultra-large search spaces (DIA-NN >= 2.3.0). Experimental.",
+                    "fa_icon": "fas fa-infinity",
+                    "default": false
+                },
+                "diann_pre_select": {
+                    "type": "integer",
+                    "description": "Set --pre-select N precursor limit for InfinDIA pre-search.",
+                    "fa_icon": "fas fa-filter"
+                },
                 "save_speclib_tsv": {
                     "type": "boolean",
                     "default": false,
