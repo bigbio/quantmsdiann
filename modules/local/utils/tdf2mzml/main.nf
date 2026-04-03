@@ -1,5 +1,5 @@
 process TDF2MZML {
-    tag "$meta.mzml_id"
+    tag "$meta.id"
     label 'process_single'
     label 'error_retry'
 
@@ -15,7 +15,7 @@ process TDF2MZML {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.mzml_id}"
+    def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
     echo "Converting..." | tee --append ${rawfile.baseName}_conversion.log

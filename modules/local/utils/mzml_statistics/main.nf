@@ -1,5 +1,5 @@
 process MZML_STATISTICS {
-    tag "$meta.mzml_id"
+    tag "$meta.id"
     label 'process_very_low'
     label 'process_single'
 
@@ -19,7 +19,7 @@ process MZML_STATISTICS {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.mzml_id}"
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def string_ms2_file = params.mzml_features == true ? "--ms2_file" : ""
     def string_features_file = params.mzml_features == true ? "--feature_detection" : ""
 

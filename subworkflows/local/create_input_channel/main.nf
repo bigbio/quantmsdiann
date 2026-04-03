@@ -56,7 +56,7 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
 
     def fileName = file(filestr).name
     def dotIndex = fileName.lastIndexOf('.')
-    meta.mzml_id = dotIndex > 0 ? fileName.take(dotIndex) : fileName
+    meta.id = dotIndex > 0 ? fileName.take(dotIndex) : fileName
     meta.experiment_id = wrapper.experiment_id
 
     // apply transformations given by specified root_folder and type

@@ -1,6 +1,6 @@
 
 process DECOMPRESS {
-    tag "$meta.mzml_id"
+    tag "$meta.id"
     label 'process_low'
     label 'error_retry'
 
@@ -35,7 +35,7 @@ process DECOMPRESS {
     path '*.log',   emit: log
 
     script:
-    String prefix = task.ext.prefix ?: "${meta.mzml_id}"
+    String prefix = task.ext.prefix ?: "${meta.id}"
 
     """
     function verify_tar {

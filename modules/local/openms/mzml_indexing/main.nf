@@ -1,5 +1,5 @@
 process MZML_INDEXING {
-    tag "$meta.mzml_id"
+    tag "$meta.id"
     label 'process_low'
     label 'openms'
 
@@ -17,7 +17,7 @@ process MZML_INDEXING {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.mzml_id}"
+    def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
     mkdir -p out
