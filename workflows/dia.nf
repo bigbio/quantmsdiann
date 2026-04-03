@@ -35,6 +35,12 @@ workflow DIA {
     main:
 
     ch_software_versions = channel.empty()
+
+    // Version guard for DDA mode
+    if (params.diann_dda && params.diann_version < '2.3.2') {
+        error("DDA mode (--diann_dda) requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
+    }
+
     ch_searchdb = channel.fromPath(params.database, checkIfExists: true)
         .ifEmpty { error("No protein database found at '${params.database}'. Provide --database <path/to/proteins.fasta>") }
         .first()

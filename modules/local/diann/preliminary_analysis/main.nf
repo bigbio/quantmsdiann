@@ -28,7 +28,7 @@ process PRELIMINARY_ANALYSIS {
          '--mass-acc', '--mass-acc-ms1', '--window',
          '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf']
+         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf', '--dda']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -67,6 +67,7 @@ process PRELIMINARY_ANALYSIS {
     scan_window = params.scan_window_automatic ? '' : "--window $params.scan_window"
     diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
     diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
+    diann_dda_flag = params.diann_dda ? "--dda" : ""
 
     // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
     min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
@@ -102,6 +103,7 @@ process PRELIMINARY_ANALYSIS {
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             --no-prot-inf \\
+            ${diann_dda_flag} \\
             \${mod_flags} \\
             $args
 

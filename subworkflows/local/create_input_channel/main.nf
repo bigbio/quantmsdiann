@@ -72,18 +72,16 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
         exit(1, "ERROR: Please check input file -> File Uri does not exist!\n${filestr}")
     }
 
-    // Validate acquisition method is DIA
-    // AcquisitionMethod is already extracted by convert-diann (e.g. "Data-Independent Acquisition")
+    // Validate acquisition method
     def acqMethod = row.AcquisitionMethod?.toString()?.trim() ?: ""
     if (acqMethod.toLowerCase().contains("data-independent acquisition") || acqMethod.toLowerCase().contains("dia")) {
         meta.acquisition_method = "dia"
-    }
-    else if (acqMethod.isEmpty()) {
-        // If no acquisition method column in SDRF, assume DIA (this is a DIA-only pipeline)
-        meta.acquisition_method = "dia"
-    }
-    else {
-        log.error("This pipeline only supports Data-Independent Acquisition (DIA). Found: '${acqMethod}'. Use the quantms pipeline for DDA workflows.")
+    } else if (params.diann_dda && (acqMethod.toLowerCase().contains("data-dependent acquisition") || acqMethod.toLowerCase().contains("dda"))) {
+        meta.acquisition_method = "dda"
+    } else if (acqMethod.isEmpty()) {
+        meta.acquisition_method = params.diann_dda ? "dda" : "dia"
+    } else {
+        log.error("Unsupported acquisition method: '${acqMethod}'. This pipeline supports DIA" + (params.diann_dda ? " and DDA (--diann_dda)" : "") + ". Found in file: ${filestr}")
         exit(1)
     }
 

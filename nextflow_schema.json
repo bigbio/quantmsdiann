@@ -469,6 +469,12 @@
                     "hidden": false,
                     "help_text": "Pass additional DIA-NN command-line arguments that will be appended to all DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION). Flags that conflict with a specific step are automatically stripped with a warning. For step-specific overrides, use custom Nextflow config files with ext.args."
                 },
+                "diann_dda": {
+                    "type": "boolean",
+                    "description": "Enable DDA (Data-Dependent Acquisition) analysis mode. Passes --dda to all DIA-NN steps. Requires DIA-NN >= 2.3.2 (use -profile diann_v2_3_2). Beta feature.",
+                    "fa_icon": "fas fa-flask",
+                    "default": false
+                },
                 "save_speclib_tsv": {
                     "type": "boolean",
                     "default": false,

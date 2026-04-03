@@ -28,7 +28,7 @@ process INDIVIDUAL_ANALYSIS {
          '--mass-acc', '--mass-acc-ms1', '--window',
          '--no-ifs-removal', '--no-main-report', '--relaxed-prot-inf', '--pg-level',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod']
+         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -82,6 +82,7 @@ process INDIVIDUAL_ANALYSIS {
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
     diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
     diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
+    diann_dda_flag = params.diann_dda ? "--dda" : ""
 
     // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
     min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
@@ -113,6 +114,7 @@ process INDIVIDUAL_ANALYSIS {
             ${diann_no_peptidoforms} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
+            ${diann_dda_flag} \\
             \${mod_flags} \\
             $args
 

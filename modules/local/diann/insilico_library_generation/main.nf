@@ -30,7 +30,7 @@ process INSILICO_LIBRARY_GENERATION {
          '--missed-cleavages', '--min-pep-len', '--max-pep-len',
          '--min-pr-charge', '--max-pr-charge', '--var-mods',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--met-excision', '--monitor-mod']
+         '--met-excision', '--monitor-mod', '--dda']
     // Sort by length descending so longer flags (e.g. --fasta-search) are matched before shorter prefixes (--fasta, --f)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -46,6 +46,7 @@ process INSILICO_LIBRARY_GENERATION {
     max_fr_mz = params.max_fr_mz ? "--max-fr-mz $params.max_fr_mz":""
     met_excision = params.met_excision ? "--met-excision" : ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_dda_flag = params.diann_dda ? "--dda" : ""
 
     """
     diann `cat ${diann_config}` \\
@@ -67,6 +68,7 @@ process INSILICO_LIBRARY_GENERATION {
             --gen-spec-lib \\
             ${diann_no_peptidoforms} \\
             ${met_excision} \\
+            ${diann_dda_flag} \\
             ${args}
 
     cp *lib.log.txt silicolibrarygeneration.log
