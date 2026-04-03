@@ -35,7 +35,9 @@ workflow DIA {
     main:
 
     ch_software_versions = channel.empty()
-    ch_searchdb = channel.fromPath(params.database, checkIfExists: true).first()
+    ch_searchdb = channel.fromPath(params.database, checkIfExists: true)
+        .ifEmpty { error("No protein database found at '${params.database}'. Provide --database <path/to/proteins.fasta>") }
+        .first()
 
     ch_file_preparation_results.multiMap {
         result ->
@@ -43,7 +45,9 @@ workflow DIA {
         ms_file:result[1]
     }.set { ch_result }
 
-    ch_experiment_meta = ch_result.meta.unique { m -> m.experiment_id }.first()
+    ch_experiment_meta = ch_result.meta.unique { m -> m.experiment_id }
+        .ifEmpty { error("No valid input files found after SDRF parsing. Check your SDRF file and input paths.") }
+        .first()
 
     // diann_config.cfg comes directly from SDRF_PARSING (convert-diann)
     // Convert to value channel so it can be consumed by all per-file processes
