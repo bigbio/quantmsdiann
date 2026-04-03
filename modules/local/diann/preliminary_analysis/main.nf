@@ -56,9 +56,10 @@ process PRELIMINARY_ANALYSIS {
 
     // Warn about auto-calibration with Bruker/timsTOF data
     if (params.mass_acc_automatic && ms_file.name.toString().toLowerCase().endsWith('.d')) {
-        log.warn "Bruker/timsTOF .d file detected (${ms_file.name}) with automatic mass accuracy calibration enabled. " +
-            "DIA-NN recommends manually fixing MS1 and MS2 mass accuracy to 10-15 ppm for timsTOF datasets. " +
-            "Consider using: --mass_acc_automatic false --mass_acc_ms1 10 --mass_acc_ms2 10"
+        log.warn "Bruker/timsTOF .d file detected (${ms_file.name}) with automatic mass accuracy calibration. " +
+            "DIA-NN recommends manually fixing MS1 and MS2 mass accuracy for timsTOF datasets (typically 10-15 ppm). " +
+            "Set tolerances via SDRF columns (PrecursorMassTolerance, FragmentMassTolerance) for per-file control, " +
+            "or use --mass_acc_automatic false with --mass_acc_ms1 and --mass_acc_ms2 pipeline parameters for a global override."
     }
 
     // Notes: Use double quotes for params, so that it is escaped in the shell.

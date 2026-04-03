@@ -31,23 +31,28 @@ Compressed variants are supported for `.raw`, `.mzML`, and `.d` formats: `.gz`, 
 
 ### Bruker/timsTOF Data
 
-For Bruker timsTOF datasets, DIA-NN recommends manually fixing MS1 and MS2 mass accuracy to 10-15 ppm rather than using automatic calibration:
+For Bruker timsTOF datasets, DIA-NN recommends manually fixing MS1 and MS2 mass accuracy (typically 10-15 ppm) rather than using automatic calibration. There are two ways to set this:
+
+**Option 1 — SDRF columns (per-file control, recommended):**
+
+Set `PrecursorMassTolerance`, `PrecursorMassToleranceUnit`, `FragmentMassTolerance`, and `FragmentMassToleranceUnit` columns in your SDRF file. The pipeline reads these per-file and passes them to DIA-NN when `--mass_acc_automatic false` is set. This allows different tolerances for different files in the same experiment.
+
+**Option 2 — Pipeline parameters (global override):**
 
 ```bash
 nextflow run bigbio/quantmsdiann \
   --input sdrf.tsv \
   --database proteins.fasta \
   --mass_acc_automatic false \
-  --mass_acc_ms1 10 \
-  --mass_acc_ms2 10 \
-  --diann_tims_sum \
+  --mass_acc_ms1 <value> \
+  --mass_acc_ms2 <value> \
   -profile docker
 ```
 
 For Synchro-PASEF data, enable `--diann_tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
 
 > [!NOTE]
-> The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled.
+> The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled, recommending to set tolerances via SDRF or pipeline parameters.
 
 ### Pipeline settings via params file
 
