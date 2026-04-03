@@ -46,6 +46,15 @@ workflow DIA {
         error("InfinDIA requires DIA-NN >= 2.3.0. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
     }
 
+    // Version guard for DIA-NN 2.0+ features
+    if ((params.diann_light_models || params.diann_export_quant || params.diann_site_ms1_quant) && params.diann_version < '2.0') {
+        def enabled = []
+        if (params.diann_light_models) enabled << '--light-models'
+        if (params.diann_export_quant) enabled << '--export-quant'
+        if (params.diann_site_ms1_quant) enabled << '--site-ms1-quant'
+        error("${enabled.join(', ')} require DIA-NN >= 2.0. Current version: ${params.diann_version}. Use -profile diann_v2_1_0 or later")
+    }
+
     ch_searchdb = channel.fromPath(params.database, checkIfExists: true)
         .ifEmpty { error("No protein database found at '${params.database}'. Provide --database <path/to/proteins.fasta>") }
         .first()

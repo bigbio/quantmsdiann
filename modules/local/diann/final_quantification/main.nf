@@ -35,6 +35,7 @@ process FINAL_QUANTIFICATION {
     // Different library files format are exported due to different DIA-NN versions
     path "empirical_library.tsv", emit: final_speclib, optional: true
     path "empirical_library.tsv.skyline.speclib", emit: skyline_speclib, optional: true
+    path "*.site_report.parquet", emit: site_report, optional: true
     path "versions.yml", emit: versions
 
     when:
