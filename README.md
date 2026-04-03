@@ -34,6 +34,17 @@ The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard
 8. **MSstats conversion** — DIA-NN report to MSstats-compatible format
 9. **Quality control** — interactive QC report via [pmultiqc](https://github.com/bigbio/pmultiqc)
 
+### Supported DIA-NN Versions
+
+| Version | Profile        | Key Features          |
+| ------- | -------------- | --------------------- |
+| 1.8.1   | (default)      | Core DIA analysis     |
+| 2.1.0   | `diann_v2_1_0` | Native .raw support   |
+| 2.2.0   | `diann_v2_2_0` | Speed optimizations   |
+| 2.3.2   | `diann_v2_3_2` | DDA support, InfinDIA |
+
+See [docs/parameters.md](docs/parameters.md) for the full parameter reference.
+
 ## Quick start
 
 > [!NOTE]

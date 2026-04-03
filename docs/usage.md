@@ -54,6 +54,66 @@ For Synchro-PASEF data, enable `--diann_tims_sum` (which adds `--quant-tims-sum`
 > [!NOTE]
 > The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled, recommending to set tolerances via SDRF or pipeline parameters.
 
+### DDA Analysis Mode (Beta)
+
+DIA-NN 2.3.2+ supports DDA data analysis via the `--dda` flag. Enable it with:
+
+```bash
+nextflow run bigbio/quantmsdiann \
+  --input sdrf.tsv \
+  --database proteins.fasta \
+  --diann_dda true \
+  -profile diann_v2_3_2,docker
+```
+
+**Limitations (beta feature):**
+
+- Only trust: q-values, PEP values, RT/IM values, Ms1.Apex.Area, Normalisation.Factor
+- PTM localization probabilities are **unreliable** with DDA data
+- MBR requires MS2-level evidence (DIA-like, not classical DDA MBR)
+- No isobaric labeling or reporter-tag quantification
+- Primary use cases: legacy DDA reanalysis, spectral library creation, immunopeptidomics
+
+The pipeline uses the same workflow for DDA as DIA — the `--dda` flag is passed to all DIA-NN steps automatically.
+
+### Preprocessing Options
+
+- `--reindex_mzml` (default: true) — Re-index mzML files before processing. Disable with `--reindex_mzml false` if files are already indexed.
+- `--mzml_statistics` (default: false) — Generate mzML statistics (parquet format) for QC.
+- `--mzml_features` (default: false) — Enable feature detection in mzML statistics.
+- `--convert_dotd` (default: false) — Convert Bruker .d files to mzML via tdf2mzml instead of passing natively to DIA-NN.
+
+### Passing Extra Arguments to DIA-NN
+
+Use `--diann_extra_args` to pass additional flags to all DIA-NN steps. The pipeline validates and strips flags it manages internally to prevent conflicts.
+
+Managed flags (stripped with a warning if passed via extra_args): `--lib`, `--f`, `--fasta`, `--threads`, `--verbose`, `--temp`, `--out`, `--matrices`, `--use-quant`, `--gen-spec-lib`, `--mass-acc`, `--mass-acc-ms1`, `--window`, `--var-mod`, `--fixed-mod`, `--monitor-mod`, and others.
+
+To enable this, add `includeConfig 'conf/modules/dia.config'` to your configuration (already included by default).
+
+### DIA-NN Version Selection
+
+The default DIA-NN version is 1.8.1. To use a different version:
+
+| Version | Profile                 | Features                            |
+| ------- | ----------------------- | ----------------------------------- |
+| 1.8.1   | (default)               | Core DIA analysis                   |
+| 2.1.0   | `-profile diann_v2_1_0` | Native .raw support, reduced memory |
+| 2.2.0   | `-profile diann_v2_2_0` | Speed optimizations                 |
+| 2.3.2   | `-profile diann_v2_3_2` | DDA support, InfinDIA               |
+
+Example: `nextflow run bigbio/quantmsdiann -profile test_dia,docker,diann_v2_2_0`
+
+### Verbose Module Output
+
+Use `-profile verbose_modules` to publish intermediate files from all pipeline steps:
+
+```bash
+nextflow run bigbio/quantmsdiann -profile test_dia,docker,verbose_modules --outdir results
+```
+
+This publishes ThermoRawFileParser conversions, mzML indexing results, per-file DIA-NN logs, and spectral library intermediates.
+
 ### Pipeline settings via params file
 
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`:

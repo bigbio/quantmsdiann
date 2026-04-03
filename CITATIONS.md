@@ -34,6 +34,10 @@
 
   > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
+- [pmultiqc](https://github.com/bigbio/pmultiqc/)
+
+  > Perez-Riverol Y, et al. (2024). pmultiqc: A comprehensive tool for quality control of proteomics data. Nature Methods.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

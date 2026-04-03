@@ -70,6 +70,14 @@ results/
   - `quant_tables/diann_report.unique_genes_matrix.tsv` - Unique gene quantification matrix
   - `quant_tables/out_msstats_in.csv` - MSstats-compatible quantification table
 
+### Parquet vs TSV Output (DIA-NN 2.0+)
+
+DIA-NN 2.0+ outputs the main report in Parquet format instead of TSV. The pipeline handles both formats automatically via the `diann_report.{tsv,parquet}` output pattern. Downstream tools (quantms-utils, pmultiqc) support both formats.
+
+### MSstats-Compatible Output
+
+The pipeline generates `out_msstats_in.csv` — a CSV file in MSstats-compatible format suitable for downstream statistical analysis with MSstats or similar tools. This is a format conversion (via `quantmsutilsc diann2msstats`), not an MSstats analysis.
+
 ### Optional Output Files
 
 These files are not published by default. Enable them with `save_*` parameters or `ext.*` config properties (see [Usage: Optional outputs](usage.md#optional-outputs)).
