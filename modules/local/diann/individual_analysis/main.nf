@@ -84,6 +84,10 @@ process INDIVIDUAL_ANALYSIS {
     diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
     diann_dda_flag = params.diann_dda ? "--dda" : ""
 
+    // Flags removed in DIA-NN 2.3.x — only pass for older versions
+    no_ifs_removal = params.diann_version < '2.3' ? "--no-ifs-removal" : ""
+    no_main_report = params.diann_version < '2.3' ? "--no-main-report" : ""
+
     // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
     min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
     max_pr_mz = meta['ms1maxmz'] ? "--max-pr-mz ${meta['ms1maxmz']}" : ""
@@ -103,8 +107,8 @@ process INDIVIDUAL_ANALYSIS {
             --mass-acc ${mass_acc_ms2} \\
             --mass-acc-ms1 ${mass_acc_ms1} \\
             --window ${scan_window} \\
-            --no-ifs-removal \\
-            --no-main-report \\
+            ${no_ifs_removal} \\
+            ${no_main_report} \\
             --relaxed-prot-inf \\
             --pg-level $params.pg_level \\
             ${min_pr_mz} \\
