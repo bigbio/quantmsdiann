@@ -27,7 +27,8 @@ process PRELIMINARY_ANALYSIS {
          '--mass-acc', '--mass-acc-ms1', '--window',
          '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf']
+         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf',
+         '--channels', '--lib-fixed-mod', '--original-mods']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -82,7 +83,7 @@ process PRELIMINARY_ANALYSIS {
     # Final mass accuracy is '${mass_acc}'
 
     # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
-    mod_flags=\$(cat ${diann_config} | grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+)' | tr '\\n' ' ')
+    mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
 
     diann   --lib ${predict_library} \\
             --f ${ms_file} \\

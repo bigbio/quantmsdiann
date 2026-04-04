@@ -19,7 +19,7 @@ input:
       type: file
       description: |
         Bruker Raw file archived using tar
-      pattern: "*.d.tar"
+      pattern: "*.d"
 output:
   - meta:
       type: map

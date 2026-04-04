@@ -81,7 +81,6 @@ workflow QUANTMSDIANN {
     if (!params.database) {
         error('No protein database provided. Please specify --database <path/to/proteins.fasta>')
     }
-    ch_database = file(params.database, checkIfExists: true)
 
     DIA(
         ch_fileprep_result.dia,

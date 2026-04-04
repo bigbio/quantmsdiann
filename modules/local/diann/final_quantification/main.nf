@@ -47,7 +47,8 @@ process FINAL_QUANTIFICATION {
          '--use-quant', '--matrices', '--out', '--relaxed-prot-inf', '--pg-level',
          '--qvalue', '--window', '--individual-windows',
          '--species-genes', '--report-decoys', '--xic', '--no-norm',
-         '--monitor-mod', '--var-mod', '--fixed-mod']
+         '--monitor-mod', '--var-mod', '--fixed-mod',
+         '--channels', '--lib-fixed-mod', '--original-mods']
     // Sort by length descending so longer flags (e.g. --individual-windows) are matched before shorter prefixes (--window)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -74,7 +75,7 @@ process FINAL_QUANTIFICATION {
     # do not need to be present.
 
     # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
-    mod_flags=\$(cat ${diann_config} | grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+)' | tr '\\n' ' ')
+    mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
 
     diann   --lib ${empirical_library} \\
             --fasta ${fasta} \\
