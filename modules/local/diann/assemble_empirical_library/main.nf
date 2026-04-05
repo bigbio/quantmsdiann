@@ -19,6 +19,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     path "empirical_library.*", emit: empirical_library
     path "assemble_empirical_library.log", emit: log
     path "versions.yml", emit: versions
+    env CALIBRATED_PARAMS, emit: calibrated_params
 
     when:
     task.ext.when == null || task.ext.when
@@ -83,6 +84,15 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             $args
 
     cp report.log.txt assemble_empirical_library.log
+
+    # Parse calibrated mass accuracy and scan window from the log
+    val_mass_acc_ms2=\$(grep "Averaged recommended settings" assemble_empirical_library.log | cut -d ' ' -f 11 | tr -cd "[0-9.]")
+    val_mass_acc_ms1=\$(grep "Averaged recommended settings" assemble_empirical_library.log | cut -d ' ' -f 15 | tr -cd "[0-9.]")
+    val_scan_window=\$(grep "Averaged recommended settings" assemble_empirical_library.log | cut -d ' ' -f 19 | tr -cd "[0-9.]")
+    if [ -z "\$val_mass_acc_ms2" ]; then val_mass_acc_ms2=${params.mass_acc_ms2}; fi
+    if [ -z "\$val_mass_acc_ms1" ]; then val_mass_acc_ms1=${params.mass_acc_ms1}; fi
+    if [ -z "\$val_scan_window" ]; then val_scan_window=${params.scan_window}; fi
+    export CALIBRATED_PARAMS="\${val_mass_acc_ms2},\${val_mass_acc_ms1},\${val_scan_window}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -9,7 +9,6 @@
 //
 include { DIANN_MSSTATS               } from '../modules/local/diann/diann_msstats/main'
 include { PRELIMINARY_ANALYSIS        } from '../modules/local/diann/preliminary_analysis/main'
-include { PARSE_EMPIRICAL_LOG         } from '../subworkflows/local/parse_empirical_log/main'
 include { ASSEMBLE_EMPIRICAL_LIBRARY  } from '../modules/local/diann/assemble_empirical_library/main'
 include { INSILICO_LIBRARY_GENERATION } from '../modules/local/diann/insilico_library_generation/main'
 include { INDIVIDUAL_ANALYSIS         } from '../modules/local/diann/individual_analysis/main'
@@ -60,13 +59,8 @@ workflow DIA {
     }
 
     if (params.skip_preliminary_analysis) {
-        if (params.empirical_assembly_log) {
-            ch_empirical_log = channel.fromPath(params.empirical_assembly_log, checkIfExists: true)
-            PARSE_EMPIRICAL_LOG(ch_empirical_log)
-            ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
-        } else {
-            ch_parsed_vals = channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
-        }
+        // Users who skip preliminary analysis provide mass accuracy and scan window directly
+        ch_parsed_vals = channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(speclib)
@@ -116,8 +110,7 @@ workflow DIA {
         )
         ch_software_versions = ch_software_versions
             .mix(ASSEMBLE_EMPIRICAL_LIBRARY.out.versions)
-        PARSE_EMPIRICAL_LOG(ASSEMBLE_EMPIRICAL_LIBRARY.out.log)
-        ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
+        ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.calibrated_params
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.empirical_library)

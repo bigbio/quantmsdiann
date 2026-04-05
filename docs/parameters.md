@@ -95,7 +95,6 @@ This document lists every pipeline parameter organised by category. Default valu
 | Parameter                     | Type    | Default | Description                                                                                                                        |
 | ----------------------------- | ------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `--skip_preliminary_analysis` | boolean | `false` | Skip preliminary analysis. Use the provided spectral library as-is instead of generating a local consensus library.                |
-| `--empirical_assembly_log`    | string  | `null`  | Path to a DIA-NN empirical assembly log file. Only used when `--skip_preliminary_analysis true` and `--diann_speclib` is provided. |
 | `--random_preanalysis`        | boolean | `false` | Enable random selection of spectrum files for empirical library generation.                                                        |
 | `--random_preanalysis_seed`   | integer | `42`    | Random seed for file selection when `--random_preanalysis` is enabled.                                                             |
 | `--empirical_assembly_ms_n`   | integer | `200`   | Number of randomly selected spectrum files when `--random_preanalysis` is enabled.                                                 |
