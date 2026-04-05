@@ -110,8 +110,19 @@ workflow DIA {
         )
         ch_software_versions = ch_software_versions
             .mix(ASSEMBLE_EMPIRICAL_LIBRARY.out.versions)
-        ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.calibrated_params
-            .map { f -> f.text.trim() }
+        // Parse calibrated params from the assembly log on the head node
+        ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.log
+            .map { log_file ->
+                def match = log_file.text.readLines().find { it.contains("Averaged recommended settings") }
+                if (match) {
+                    def parts = match.trim().split(/\s+/)
+                    def ms2 = parts.size() > 10 ? parts[10].replaceAll(/[^0-9.]/, '') : "${params.mass_acc_ms2}"
+                    def ms1 = parts.size() > 14 ? parts[14].replaceAll(/[^0-9.]/, '') : "${params.mass_acc_ms1}"
+                    def sw  = parts.size() > 18 ? parts[18].replaceAll(/[^0-9.]/, '') : "${params.scan_window}"
+                    return "${ms2},${ms1},${sw}"
+                }
+                return "${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}"
+            }
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.empirical_library)
