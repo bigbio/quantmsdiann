@@ -251,23 +251,30 @@ process {
 
 The pipeline supports multiple DIA-NN versions via built-in Nextflow profiles. Each profile sets `params.diann_version` and overrides the container image for all `diann`-labelled processes.
 
-| Profile        | DIA-NN Version | Container                                  | Notes                                                            |
-| -------------- | -------------- | ------------------------------------------ | ---------------------------------------------------------------- |
-| `diann_v1_8_1` | 1.8.1          | `docker.io/biocontainers/diann:v1.8.1_cv1` | Default. Public BioContainers image. Supports `--monitor-mod`.   |
-| `diann_v2_1_0` | 2.1.0          | `ghcr.io/bigbio/diann:2.1.0`               | Parquet output. PTM localization is automatic with `--var-mod`.  |
-| `diann_v2_2_0` | 2.2.0          | `ghcr.io/bigbio/diann:2.2.0`               | Latest supported. Parquet output. PTM localization is automatic. |
+| Profile        | DIA-NN Version | Container                                  | Key features                                                   |
+| -------------- | -------------- | ------------------------------------------ | -------------------------------------------------------------- |
+| `diann_v1_8_1` | 1.8.1          | `docker.io/biocontainers/diann:v1.8.1_cv1` | Default. Public BioContainers image. TSV output.               |
+| `diann_v2_1_0` | 2.1.0          | `ghcr.io/bigbio/diann:2.1.0`               | Parquet output. Native .raw on Linux. QuantUMS (`--quantums`). |
+| `diann_v2_2_0` | 2.2.0          | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC). Parquet output.       |
+| `diann_v2_3_2` | 2.3.2          | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (`--diann_dda`), InfinDIA, up to 9 variable mods.  |
+
+**Version-dependent features:** Some parameters are only available with newer DIA-NN versions. The pipeline handles version compatibility automatically:
+
+- **QuantUMS** (`--quantums`): Requires >= 1.9.2. The `--direct-quant` flag is automatically skipped for DIA-NN 1.8.x where direct quantification is the only mode.
+- **DDA mode** (`--diann_dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
+- **InfinDIA** (`--enable_infin_dia`): Requires >= 2.3.0.
 
 Usage:
 
 ```bash
-# Run with DIA-NN 2.1.0
-nextflow run bigbio/quantmsdiann \
-    -profile diann_v2_1_0,docker \
-    --input sdrf.tsv --database db.fasta --outdir results
-
 # Run with DIA-NN 2.2.0
 nextflow run bigbio/quantmsdiann \
     -profile diann_v2_2_0,docker \
+    --input sdrf.tsv --database db.fasta --outdir results
+
+# Run with DIA-NN 2.3.2 (latest, enables DDA and InfinDIA)
+nextflow run bigbio/quantmsdiann \
+    -profile diann_v2_3_2,docker \
     --input sdrf.tsv --database db.fasta --outdir results
 ```
 
