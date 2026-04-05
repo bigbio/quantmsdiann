@@ -71,13 +71,6 @@ workflow QUANTMSDIANN {
     ch_msstats_in = channel.empty()
     ch_consensus_pmultiqc = channel.empty()
 
-    //
-    // Validate protein database
-    //
-    if (!params.database) {
-        error('No protein database provided. Please specify --database <path/to/proteins.fasta>')
-    }
-
     DIA(
         ch_fileprep_result.dia,
         CREATE_INPUT_CHANNEL.out.ch_expdesign,
