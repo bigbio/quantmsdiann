@@ -1,0 +1,341 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        {
+            "GithubService": "https://w3id.org/ro/terms/test#GithubService",
+            "JenkinsService": "https://w3id.org/ro/terms/test#JenkinsService",
+            "PlanemoEngine": "https://w3id.org/ro/terms/test#PlanemoEngine",
+            "TestDefinition": "https://w3id.org/ro/terms/test#TestDefinition",
+            "TestInstance": "https://w3id.org/ro/terms/test#TestInstance",
+            "TestService": "https://w3id.org/ro/terms/test#TestService",
+            "TestSuite": "https://w3id.org/ro/terms/test#TestSuite",
+            "TravisService": "https://w3id.org/ro/terms/test#TravisService",
+            "definition": "https://w3id.org/ro/terms/test#definition",
+            "engineVersion": "https://w3id.org/ro/terms/test#engineVersion",
+            "instance": "https://w3id.org/ro/terms/test#instance",
+            "resource": "https://w3id.org/ro/terms/test#resource",
+            "runsOn": "https://w3id.org/ro/terms/test#runsOn"
+        }
+    ],
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "creativeWorkStatus": "InProgress",
+            "datePublished": "2026-02-20T15:36:51+00:00",
+            "description": "# quantmsdiann\n\n[![GitHub Actions CI Status](https://github.com/bigbio/quantmsdiann/actions/workflows/ci.yml/badge.svg)](https://github.com/bigbio/quantmsdiann/actions/workflows/ci.yml)\n[![GitHub Actions Linting Status](https://github.com/bigbio/quantmsdiann/actions/workflows/linting.yml/badge.svg)](https://github.com/bigbio/quantmsdiann/actions/workflows/linting.yml)\n[![Cite with Zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.15573386.svg)](https://doi.org/10.5281/zenodo.15573386)\n[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)\n\n[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)\n[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)\n[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)\n[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)\n\n## Introduction\n\n**quantmsdiann** is a [bigbio](https://github.com/bigbio) bioinformatics pipeline, built following [nf-core](https://nf-co.re/) guidelines, for **Data-Independent Acquisition (DIA)** quantitative mass spectrometry analysis using [DIA-NN](https://github.com/vdemichev/DiaNN).\n\nThe pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a portable manner. It uses Docker/Singularity containers making results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process, making it easy to maintain and update software dependencies.\n\n## Pipeline summary\n\n<p align=\"center\">\n  <img src=\"docs/images/quantmsdiann_workflow.svg\" alt=\"quantmsdiann workflow\" width=\"800\">\n</p>\n\nThe pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:\n\n1. **Input validation** \u2014 SDRF parsing and validation\n2. **File preparation** \u2014 RAW to mzML conversion (ThermoRawFileParser), indexing, Bruker `.d` handling\n3. **In-silico spectral library generation** \u2014 or use a user-provided library (`--diann_speclib`)\n4. **Preliminary analysis** \u2014 per-file calibration and mass accuracy estimation\n5. **Empirical library assembly** \u2014 consensus library from preliminary results\n6. **Individual analysis** \u2014 per-file search with the empirical library\n7. **Final quantification** \u2014 protein/peptide/gene group matrices\n8. **MSstats conversion** \u2014 DIA-NN report to MSstats-compatible format\n9. **Quality control** \u2014 interactive QC report via [pmultiqc](https://github.com/bigbio/pmultiqc)\n\n## Supported DIA-NN Versions\n\n| Version         | Profile        | Container                                  | Output format |\n| --------------- | -------------- | ------------------------------------------ | ------------- |\n| 1.8.1 (default) | `diann_v1_8_1` | `docker.io/biocontainers/diann:v1.8.1_cv1` | TSV           |\n| 2.1.0           | `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0`               | Parquet       |\n| 2.2.0           | `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0`               | Parquet       |\n\nSwitch versions with `-profile diann_v2_1_0,docker`. See the [DIA-NN Version Selection](docs/usage.md#dia-nn-version-selection) section for details.\n\n## Quick start\n\n> [!NOTE]\n> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set up Nextflow.\n\n```bash\nnextflow run bigbio/quantmsdiann \\\n    --input 'experiment.sdrf.tsv' \\\n    --database 'proteins.fasta' \\\n    --outdir './results' \\\n    -profile docker\n```\n\n> [!WARNING]\n> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), not for defining parameters.\n\n## Documentation\n\n- [Usage](docs/usage.md) \u2014 How to run the pipeline, input formats, optional outputs, and custom configuration\n- [Parameters](docs/parameters.md) \u2014 Complete reference of all pipeline parameters organised by category\n- [Output](docs/output.md) \u2014 Description of all output files produced by the pipeline\n\n## Credits\n\nquantmsdiann is developed and maintained by:\n\n- [Yasset Perez-Riverol](https://github.com/ypriverol) (EMBL-EBI)\n- [Dai Chengxin](https://github.com/daichengxin) (Beijing Proteome Research Center)\n- [Julianus Pfeuffer](https://github.com/jpfeuffer) (Freie Universitat Berlin)\n- [Vadim Demichev](https://github.com/vdemichev) (Charite Universitaetsmedizin Berlin)\n- [Qi-Xuan Yue](https://github.com/yueqixuan) (Chongqing University of Posts and Telecommunications)\n\n## Contributions and Support\n\nIf you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).\n\n## Citation\n\nIf you use quantmsdiann in your research, please cite:\n\n> Dai et al. \"quantms: a cloud-based pipeline for quantitative proteomics\" (2024). DOI: [10.5281/zenodo.15573386](https://doi.org/10.5281/zenodo.15573386)\n\nAn extensive list of references for the tools used by the pipeline can be found in the [CITATIONS.md](CITATIONS.md) file.\n\n## License\n\n[MIT](LICENSE)\n",
+            "hasPart": [
+                {
+                    "@id": "main.nf"
+                },
+                {
+                    "@id": "assets/"
+                },
+                {
+                    "@id": "bin/"
+                },
+                {
+                    "@id": "conf/"
+                },
+                {
+                    "@id": "docs/"
+                },
+                {
+                    "@id": "docs/images/"
+                },
+                {
+                    "@id": "modules/"
+                },
+                {
+                    "@id": "modules/nf-core/"
+                },
+                {
+                    "@id": "workflows/"
+                },
+                {
+                    "@id": "subworkflows/"
+                },
+                {
+                    "@id": "nextflow.config"
+                },
+                {
+                    "@id": "README.md"
+                },
+                {
+                    "@id": "nextflow_schema.json"
+                },
+                {
+                    "@id": "CHANGELOG.md"
+                },
+                {
+                    "@id": "LICENSE"
+                },
+                {
+                    "@id": "CODE_OF_CONDUCT.md"
+                },
+                {
+                    "@id": "CITATIONS.md"
+                },
+                {
+                    "@id": "modules.json"
+                },
+                {
+                    "@id": "docs/usage.md"
+                },
+                {
+                    "@id": "docs/output.md"
+                },
+                {
+                    "@id": ".nf-core.yml"
+                },
+                {
+                    "@id": ".pre-commit-config.yaml"
+                },
+                {
+                    "@id": ".prettierignore"
+                }
+            ],
+            "isBasedOn": "https://github.com/bigbio/quantmsdiann",
+            "license": "MIT",
+            "mainEntity": {
+                "@id": "main.nf"
+            },
+            "mentions": [
+                {
+                    "@id": "#e08e8618-13c7-4107-9b03-f44529aa5fad"
+                }
+            ],
+            "name": "bigbio/quantmsdiann"
+        },
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "main.nf",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
+            "creator": [
+                {
+                    "@id": "https://orcid.org/0000-0001-6579-6941"
+                }
+            ],
+            "dateCreated": "",
+            "dateModified": "2026-02-20T15:36:51Z",
+            "dct:conformsTo": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE/",
+            "keywords": [
+                "nf-core",
+                "nextflow",
+                "dia",
+                "dia-nn",
+                "mass-spec",
+                "mass-spectrometry",
+                "proteomics",
+                "quantitative-proteomics"
+            ],
+            "license": [
+                "MIT"
+            ],
+            "maintainer": [
+                {
+                    "@id": "https://orcid.org/0000-0001-6579-6941"
+                }
+            ],
+            "name": [
+                "bigbio/quantmsdiann"
+            ],
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow"
+            },
+            "sdPublisher": {
+                "@id": "https://nf-co.re/"
+            },
+            "url": [
+                "https://github.com/bigbio/quantmsdiann",
+                "https://nf-co.re/bigbio/quantmsdiann/dev/"
+            ],
+            "version": [
+                "1.0.0"
+            ]
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow",
+            "@type": "ComputerLanguage",
+            "identifier": {
+                "@id": "https://www.nextflow.io/"
+            },
+            "name": "Nextflow",
+            "url": {
+                "@id": "https://www.nextflow.io/"
+            },
+            "version": "!>=25.04.0"
+        },
+        {
+            "@id": "#e08e8618-13c7-4107-9b03-f44529aa5fad",
+            "@type": "TestSuite",
+            "instance": [
+                {
+                    "@id": "#3117cd02-e7cf-46fa-b9ff-69f935d897c9"
+                }
+            ],
+            "mainEntity": {
+                "@id": "main.nf"
+            },
+            "name": "Test suite for bigbio/quantmsdiann"
+        },
+        {
+            "@id": "#3117cd02-e7cf-46fa-b9ff-69f935d897c9",
+            "@type": "TestInstance",
+            "name": "GitHub Actions workflow for testing bigbio/quantmsdiann",
+            "resource": "repos/bigbio/quantmsdiann/actions/workflows/nf-test.yml",
+            "runsOn": {
+                "@id": "https://w3id.org/ro/terms/test#GithubService"
+            },
+            "url": "https://api.github.com"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/test#GithubService",
+            "@type": "TestService",
+            "name": "Github Actions",
+            "url": {
+                "@id": "https://github.com"
+            }
+        },
+        {
+            "@id": "assets/",
+            "@type": "Dataset",
+            "description": "Additional files"
+        },
+        {
+            "@id": "bin/",
+            "@type": "Dataset",
+            "description": "Pipeline utility scripts"
+        },
+        {
+            "@id": "conf/",
+            "@type": "Dataset",
+            "description": "Configuration files"
+        },
+        {
+            "@id": "docs/",
+            "@type": "Dataset",
+            "description": "Markdown files for documenting the pipeline"
+        },
+        {
+            "@id": "docs/images/",
+            "@type": "Dataset",
+            "description": "Images for the documentation files"
+        },
+        {
+            "@id": "modules/",
+            "@type": "Dataset",
+            "description": "Modules used by the pipeline"
+        },
+        {
+            "@id": "modules/nf-core/",
+            "@type": "Dataset",
+            "description": "nf-core modules"
+        },
+        {
+            "@id": "workflows/",
+            "@type": "Dataset",
+            "description": "Main pipeline workflows to be executed in main.nf"
+        },
+        {
+            "@id": "subworkflows/",
+            "@type": "Dataset",
+            "description": "Smaller subworkflows"
+        },
+        {
+            "@id": "nextflow.config",
+            "@type": "File",
+            "description": "Main Nextflow configuration file"
+        },
+        {
+            "@id": "README.md",
+            "@type": "File",
+            "description": "Basic pipeline usage information"
+        },
+        {
+            "@id": "nextflow_schema.json",
+            "@type": "File",
+            "description": "JSON schema for pipeline parameter specification"
+        },
+        {
+            "@id": "CHANGELOG.md",
+            "@type": "File",
+            "description": "Information on changes made to the pipeline"
+        },
+        {
+            "@id": "LICENSE",
+            "@type": "File",
+            "description": "The license - should be MIT"
+        },
+        {
+            "@id": "CODE_OF_CONDUCT.md",
+            "@type": "File",
+            "description": "The nf-core code of conduct"
+        },
+        {
+            "@id": "CITATIONS.md",
+            "@type": "File",
+            "description": "Citations needed when using the pipeline"
+        },
+        {
+            "@id": "modules.json",
+            "@type": "File",
+            "description": "Version information for modules from nf-core/modules"
+        },
+        {
+            "@id": "docs/usage.md",
+            "@type": "File",
+            "description": "Usage documentation"
+        },
+        {
+            "@id": "docs/output.md",
+            "@type": "File",
+            "description": "Output documentation"
+        },
+        {
+            "@id": ".nf-core.yml",
+            "@type": "File",
+            "description": "nf-core configuration file, configuring template features and linting rules"
+        },
+        {
+            "@id": ".pre-commit-config.yaml",
+            "@type": "File",
+            "description": "Configuration file for pre-commit hooks"
+        },
+        {
+            "@id": ".prettierignore",
+            "@type": "File",
+            "description": "Ignore file for prettier"
+        },
+        {
+            "@id": "https://nf-co.re/",
+            "@type": "Organization",
+            "name": "nf-core",
+            "url": "https://nf-co.re/"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-6579-6941",
+            "@type": "Person",
+            "email": "ypriverol@gmail.com",
+            "name": "Yasset Perez-Riverol"
+        }
+    ]
+}

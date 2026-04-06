@@ -1,0 +1,30 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/bigbio/quantmsdiann/main/assets/schema_input.json",
+    "title": "bigbio/quantmsdiann pipeline - params.input schema",
+    "description": "Schema for the file provided with params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "required": ["source name", "comment[data file]", "assay name"],
+        "properties": {
+            "source name": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Sample name must be provided and cannot contain spaces"
+            },
+            "comment[data file]": {
+                "type": "string",
+                "format": "file-path",
+                "errorMessage": "Spectrum files must be provided",
+                "meta": ["id"]
+            },
+            "assay name": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Assay name must be provided and cannot contain spaces",
+                "meta": ["assay"]
+            }
+        }
+    }
+}
