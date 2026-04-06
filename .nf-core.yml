@@ -10,6 +10,7 @@ lint:
     - .github/PULL_REQUEST_TEMPLATE.md
     - .github/CONTRIBUTING.md
     - .github/workflows/branch.yml
+    - .github/workflows/linting.yml
     - .github/workflows/linting_comment.yml
     - .github/.dockstore.yml
     - docs/README.md
