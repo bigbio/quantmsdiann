@@ -64,16 +64,20 @@ jobs:
         if: matrix.test_profile == 'test_dda'
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
         run: |
-          if [ -n "$GHCR_TOKEN" ]; then
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+          if [ -z "$GHCR_TOKEN" ] || [ -z "$GHCR_USERNAME" ]; then
+            echo "::warning::Skipping test_dda: GHCR credentials not available (expected for fork PRs)"
+            echo "SKIP_DDA=true" >> $GITHUB_ENV
+            exit 0
           fi
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
       - name: Disk space cleanup
         uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Run pipeline with test data in docker/singularity profile
-        if: github.event.pull_request.base.ref != 'master'
+        if: github.event.pull_request.base.ref != 'master' && env.SKIP_DDA != 'true'
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile $TEST_PROFILE,$EXEC_PROFILE,dev --outdir ${TEST_PROFILE}_${EXEC_PROFILE}_results
 

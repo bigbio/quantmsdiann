@@ -51,7 +51,7 @@ process INSILICO_LIBRARY_GENERATION {
     diann_dda_flag = is_dda ? "--dda" : ""
     diann_light_models = params.diann_light_models ? "--light-models" : ""
     infin_dia_flag = params.enable_infin_dia ? "--infin-dia" : ""
-    pre_select_flag = params.diann_pre_select ? "--pre-select $params.diann_pre_select" : ""
+    pre_select_flag = (params.enable_infin_dia && params.diann_pre_select) ? "--pre-select $params.diann_pre_select" : ""
 
     """
     diann `cat ${diann_config}` \\
