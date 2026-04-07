@@ -9,7 +9,7 @@ keywords:
 components:
   - samplesheet/check
 input:
-  - input_file:
+  - ch_input_file:
       type: file
       description: |
         Input file to be validated

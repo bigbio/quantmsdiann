@@ -11,7 +11,7 @@
             "source name": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces"
+                "errorMessage": "Source name must be provided and cannot contain spaces"
             },
             "comment[data file]": {
                 "type": "string",
@@ -22,7 +22,7 @@
             "assay name": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Assay name must be provided and cannot contain spaces",
+                "errorMessage": "Assay name must be provided and cannot contain whitespace",
                 "meta": ["assay"]
             }
         }

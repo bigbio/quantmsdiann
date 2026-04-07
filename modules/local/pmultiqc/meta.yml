@@ -23,7 +23,7 @@ output:
       pattern: "*.html"
   - quantmsdb:
       type: file
-      description: Sqlite3 database file stored protein psm and quantification information
+      description: SQLite3 database file that stores protein, PSM, and quantification information
       pattern: "*.db"
   - data:
       type: dir

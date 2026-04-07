@@ -22,7 +22,7 @@ input:
       type: file
       description: |
         Bruker Raw file archived using tar
-      pattern: "*.{d.tar,.tar,.gz,.d.tar.gz}"
+      pattern: "*.{d.tar,tar,gz,d.tar.gz}"
 output:
   - meta:
       type: map

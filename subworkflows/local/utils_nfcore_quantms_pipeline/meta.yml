@@ -4,7 +4,7 @@ description: Pipeline completion utilities for the nf-core quantmsdiann pipeline
 keywords:
   - utils
   - nf-core
-  - quantms
+  - quantmsdiann
 components:
   - completionemail
   - completionsummary
