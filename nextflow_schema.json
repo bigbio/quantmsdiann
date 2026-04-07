@@ -97,12 +97,6 @@
             "description": "Configure file conversion and preprocessing options.",
             "default": "",
             "properties": {
-                "convert_dotd": {
-                    "type": "boolean",
-                    "description": "Convert bruker .d files to mzML",
-                    "fa_icon": "far fa-check-square",
-                    "help_text": "Whether to convert raw .d bruker files to .mzML"
-                },
                 "reindex_mzml": {
                     "type": "boolean",
                     "default": true,
@@ -421,13 +415,6 @@
                     "type": "boolean",
                     "description": "Skip the preliminary analysis step, thus use the passed spectral library as-is instead of generating a local consensus library.",
                     "fa_icon": "fas fa-forward",
-                    "hidden": false
-                },
-                "empirical_assembly_log": {
-                    "type": "string",
-                    "description": "The log file for the empirical assembly, Only used if `--skip_preliminary_analysis` is set to `true` and `--diann_speclib` is passed. If passed, will use that log file to carry out the DIA-NN search, instead of running a preliminary search.",
-                    "fa_icon": "fas fa-file",
-                    "help_text": "If passed, will use that log file to carry out the DIA-NN search, instead of predicting one from the fasta file.",
                     "hidden": false
                 },
                 "diann_debug": {

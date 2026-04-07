@@ -4,9 +4,6 @@ inputs:
   max_shards:
     description: "Maximum number of shards allowed"
     required: true
-  paths:
-    description: "Component paths to test"
-    required: false
   tags:
     description: "Tags to pass as argument for nf-test --tag parameter"
     required: false

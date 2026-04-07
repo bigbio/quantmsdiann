@@ -8,8 +8,8 @@ tools:
   - custom:
       description: |
         A custom module for DIA-NN report to MSstats conversion.
-      homepage: https://github.com/bigbio/quantms
-      documentation: https://github.com/bigbio/quantms/tree/readthedocs
+      homepage: https://github.com/bigbio/quantmsdiann
+      documentation: https://github.com/bigbio/quantmsdiann
 input:
   - report:
       type: file

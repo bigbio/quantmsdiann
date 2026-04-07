@@ -24,10 +24,20 @@ The pipeline supports the following mass spectrometry data file formats:
 
 - **`.raw`** - Thermo RAW files (automatically converted to mzML)
 - **`.mzML`** - Open standard mzML files
-- **`.d`** - Bruker timsTOF files (optionally converted to mzML when `--convert_dotd` is set)
+- **`.d`** - Bruker timsTOF files (processed natively by DIA-NN)
 - **`.dia`** - DIA-NN native binary format (passed through without conversion)
 
 Compressed variants are supported for `.raw`, `.mzML`, and `.d` formats: `.gz`, `.tar`, `.tar.gz`, `.zip`.
+
+### Preprocessing Options
+
+The pipeline includes several preprocessing steps that can be controlled via parameters:
+
+- **`--reindex_mzml`** (default: `true`) -- Force re-indexing of input mzML files at the start of the pipeline. This fixes common issues with slightly incomplete or outdated mzML files and is enabled by default for safety. Set to `false` only if you are certain your mzML files are well-formed.
+
+- **`--mzml_statistics`** (default: `false`) -- Compute MS1/MS2 statistics from mzML files. When enabled, `*_ms_info.parquet` files are generated for each mzML file and used in QC reporting. Bruker `.d` files are always skipped by this step.
+
+- **`--mzml_features`** (default: `false`) -- Compute MS1-level features during the mzML statistics step. Only available for mzML files.
 
 ### Bruker/timsTOF Data
 
@@ -261,6 +271,131 @@ Supported modification name mappings:
 | Oxidation   | `UniMod:35`  | `Oxidation (M)`                       |
 | Deamidated  | `UniMod:7`   | `Deamidated (N),Deamidated (Q)`       |
 | Methylation | `UniMod:34`  | `Methylation (K),Methylation (R)`     |
+
+## Passing Extra Arguments to DIA-NN
+
+The `--diann_extra_args` parameter appends additional DIA-NN command-line flags to **all** DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION).
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    --diann_extra_args '--smart-profiling --peak-center' \
+    ...
+```
+
+Flags that conflict with a specific step are **automatically stripped** with a warning. Each module maintains its own block list of managed flags. The table below summarises the key blocked flags per step:
+
+| Step                        | Key blocked flags (managed by pipeline)                                                                                                                                                                                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| INSILICO_LIBRARY_GENERATION | `--fasta`, `--fasta-search`, `--gen-spec-lib`, `--predictor`, `--lib`, `--missed-cleavages`, `--min-pep-len`, `--max-pep-len`, `--min-pr-charge`, `--max-pr-charge`, `--var-mods`, `--min-pr-mz`, `--max-pr-mz`, `--min-fr-mz`, `--max-fr-mz`, `--met-excision`, `--monitor-mod` |
+| PRELIMINARY_ANALYSIS        | `--mass-acc`, `--mass-acc-ms1`, `--window`, `--quick-mass-acc`, `--min-corr`, `--corr-diff`, `--time-corr-only`, `--min-pr-mz`, `--max-pr-mz`, `--min-fr-mz`, `--max-fr-mz`, `--monitor-mod`, `--var-mod`, `--fixed-mod`                                                         |
+| ASSEMBLE_EMPIRICAL_LIBRARY  | `--mass-acc`, `--mass-acc-ms1`, `--window`, `--individual-mass-acc`, `--individual-windows`, `--out-lib`, `--gen-spec-lib`, `--rt-profiling`, `--monitor-mod`, `--var-mod`, `--fixed-mod`                                                                                        |
+| INDIVIDUAL_ANALYSIS         | `--mass-acc`, `--mass-acc-ms1`, `--window`, `--pg-level`, `--relaxed-prot-inf`, `--no-ifs-removal`, `--min-pr-mz`, `--max-pr-mz`, `--min-fr-mz`, `--max-fr-mz`, `--monitor-mod`, `--var-mod`, `--fixed-mod`                                                                      |
+| FINAL_QUANTIFICATION        | `--pg-level`, `--species-genes`, `--no-norm`, `--report-decoys`, `--xic`, `--qvalue`, `--window`, `--individual-windows`, `--monitor-mod`, `--var-mod`, `--fixed-mod`                                                                                                            |
+
+All steps also block shared infrastructure flags: `--out`, `--temp`, `--threads`, `--verbose`, `--lib`, `--f`, `--fasta`, `--use-quant`, `--matrices`, `--no-main-report`.
+
+For step-specific overrides that bypass this mechanism, use custom Nextflow config files with `ext.args`:
+
+```groovy
+// custom.config -- add a flag only to FINAL_QUANTIFICATION
+process {
+    withName: '.*:FINAL_QUANTIFICATION' {
+        ext.args = '--my-special-flag'
+    }
+}
+```
+
+## DIA-NN Version Selection
+
+The pipeline supports multiple DIA-NN versions via built-in Nextflow profiles. Each profile sets `params.diann_version` and overrides the container image for all `diann`-labelled processes.
+
+| Profile        | DIA-NN Version | Container                                  | Key features                                                   |
+| -------------- | -------------- | ------------------------------------------ | -------------------------------------------------------------- |
+| `diann_v1_8_1` | 1.8.1          | `docker.io/biocontainers/diann:v1.8.1_cv1` | Default. Public BioContainers image. TSV output.               |
+| `diann_v2_1_0` | 2.1.0          | `ghcr.io/bigbio/diann:2.1.0`               | Parquet output. Native .raw on Linux. QuantUMS (`--quantums`). |
+| `diann_v2_2_0` | 2.2.0          | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC). Parquet output.       |
+| `diann_v2_3_2` | 2.3.2          | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (`--diann_dda`), InfinDIA, up to 9 variable mods.  |
+
+**Version-dependent features:** Some parameters are only available with newer DIA-NN versions. The pipeline handles version compatibility automatically:
+
+- **QuantUMS** (`--quantums`): Requires >= 1.9.2. The `--direct-quant` flag is automatically skipped for DIA-NN 1.8.x where direct quantification is the only mode.
+- **DDA mode** (`--diann_dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
+- **InfinDIA** (`--enable_infin_dia`): Requires >= 2.3.0.
+
+Usage:
+
+```bash
+# Run with DIA-NN 2.2.0
+nextflow run bigbio/quantmsdiann \
+    -profile diann_v2_2_0,docker \
+    --input sdrf.tsv --database db.fasta --outdir results
+
+# Run with DIA-NN 2.3.2 (latest, enables DDA and InfinDIA)
+nextflow run bigbio/quantmsdiann \
+    -profile diann_v2_3_2,docker \
+    --input sdrf.tsv --database db.fasta --outdir results
+```
+
+> [!NOTE]
+> DIA-NN 2.x images are hosted on `ghcr.io/bigbio` and may require authentication for private registries. The `diann_v2_1_0` and `diann_v2_2_0` profiles force Docker mode by default; for Singularity, override with your own config.
+
+## Verbose Module Output
+
+By default, only final result files are published. For debugging or detailed inspection, the `verbose_modules` profile publishes all intermediate files from every DIA-NN step:
+
+```bash
+nextflow run bigbio/quantmsdiann -profile verbose_modules,docker ...
+```
+
+This publishes intermediate outputs to descriptive subdirectories (e.g. `spectra/thermorawfileparser/`, `diann_preprocessing/preliminary_analysis/`, `library_generation/`). See [Output: Verbose Output Structure](output.md#verbose-output-structure) for the full directory layout.
+
+## Container Version Override Guide
+
+You can override the container image for any process without modifying pipeline code. This is useful for testing custom or newer DIA-NN builds.
+
+**Docker:**
+
+```groovy
+// custom_container.config
+process {
+    withLabel: diann {
+        container = 'my-registry.io/diann:custom-build'
+    }
+}
+```
+
+```bash
+nextflow run bigbio/quantmsdiann -c custom_container.config -profile docker ...
+```
+
+**Singularity with caching:**
+
+```groovy
+// custom_singularity.config
+singularity.cacheDir = '/path/to/singularity/cache'
+
+process {
+    withLabel: diann {
+        container = '/path/to/diann_custom.sif'
+    }
+}
+```
+
+```bash
+nextflow run bigbio/quantmsdiann -c custom_singularity.config -profile singularity ...
+```
+
+## SLURM Example
+
+For running on HPC clusters with SLURM, the pipeline includes a reference configuration at `conf/pride_codon_slurm.config`. Use it via the `pride_slurm` profile:
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    -profile pride_slurm \
+    --input sdrf.tsv --database db.fasta --outdir results
+```
+
+This profile enables Singularity, sets SLURM as the executor, and provides resource scaling for large experiments. Adapt it as a template for your own cluster by creating a custom config file.
 
 ## Optional outputs
 

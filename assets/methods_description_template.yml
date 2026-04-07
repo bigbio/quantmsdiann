@@ -1,12 +1,12 @@
-id: "bigbio-quantms-methods-description"
+id: "bigbio-quantmsdiann-methods-description"
 description: "Suggested text and references to use when describing pipeline usage within the methods section of a publication."
-section_name: "bigbio/quantms Methods Description"
-section_href: "https://github.com/bigbio/quantms"
+section_name: "bigbio/quantmsdiann Methods Description"
+section_href: "https://github.com/bigbio/quantmsdiann"
 plot_type: "html"
 ## You can inject any metadata from the Nextflow '${workflow}' object
 data: |
   <h4>Methods</h4>
-  <p>Data was processed using bigbio/quantms v${workflow.manifest.version} ${doi_text} a bigbio pipeline built following nf-core guidelines (<a href="https://doi.org/10.1038/s41587-020-0439-x">Ewels <em>et al.</em>, 2020</a>), utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects.</p>
+  <p>Data was processed using bigbio/quantmsdiann v${workflow.manifest.version} ${doi_text} a bigbio pipeline built following nf-core guidelines (<a href="https://doi.org/10.1038/s41587-020-0439-x">Ewels <em>et al.</em>, 2020</a>), utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects.</p>
   <p>The pipeline was executed with Nextflow v${workflow.nextflow.version} (<a href="https://doi.org/10.1038/nbt.3820">Di Tommaso <em>et al.</em>, 2017</a>) with the following command:</p>
   <pre><code>${workflow.commandLine}</code></pre>
   <p>${tool_citations}</p>

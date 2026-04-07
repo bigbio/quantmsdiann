@@ -11,23 +11,16 @@ tools:
       homepage: https://github.com/bigbio/pmultiqc/
       documentation: https://github.com/bigbio/pmultiqc/
 input:
-  - expdesign:
+  - multiqc_inputs:
       type: file
-      description: experimental design file in openms style
-  - mzmls:
-      type: dir
-      description: mzML files directory
-  - quantms_results:
-      type: dir
-      description: the directory of quantms results including out.mzTab/out_msstats.csv
-  - raw_ids:
-      type: dir
-      description: idXML files directory
+      description: |
+        Collection of files staged under results/ for MultiQC
+        (e.g. experimental design, pipeline outputs, version files, config)
 output:
   - report:
       type: file
       description: MultiQC report file
-      pattern: "multiqc_report.html"
+      pattern: "*.html"
   - quantmsdb:
       type: file
       description: Sqlite3 database file stored protein psm and quantification information
@@ -35,10 +28,6 @@ output:
   - data:
       type: dir
       description: MultiQC data dir
-      pattern: "multiqc_data"
-  - plots:
-      type: file
-      description: Plots created by MultiQC
       pattern: "*_data"
   - versions:
       type: file

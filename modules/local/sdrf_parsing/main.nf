@@ -1,5 +1,5 @@
 process SDRF_PARSING {
-    tag "$sdrf.Name"
+    tag "$sdrf.name"
     label 'process_tiny'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

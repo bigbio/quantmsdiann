@@ -80,7 +80,7 @@ quantmsdiann/
 │   ├── pmultiqc/              # QC reporting
 │   ├── sdrf_parsing/          # SDRF parsing
 │   ├── samplesheet_check/     # Input validation
-│   └── utils/                 # tdf2mzml, decompress, mzml stats
+│   └── utils/                 # decompress, mzml stats
 ├── conf/
 │   ├── base.config            # Resource definitions
 │   ├── modules/               # Module-specific configs
@@ -97,7 +97,7 @@ quantmsdiann/
 The pipeline executes the following steps:
 
 1. **SDRF Validation & Parsing** - Validates input SDRF and extracts metadata
-2. **File Preparation** - Converts RAW/mzML/.d/.dia files (ThermoRawFileParser, tdf2mzml)
+2. **File Preparation** - Converts RAW/mzML/.d/.dia files (ThermoRawFileParser)
 3. **Generate Config** - Creates DIA-NN config from enzyme/modifications (`quantmsutilsc dianncfg`)
 4. **In-Silico Library Generation** - Predicts spectral library from FASTA (or uses provided library)
 5. **Preliminary Analysis** - Per-file calibration and mass accuracy determination

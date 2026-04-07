@@ -61,7 +61,7 @@ These tests are run both with the latest available version of `Nextflow` and als
 
 ## Getting help
 
-For further information/help, please consult the [bigbio/quantms documentation](https://docs.quantms.org/en/latest/usage.html) and don't hesitate to get in touch on the nf-core Slack [#quantms](https://nfcore.slack.com/channels/quantms) channel ([join our Slack here](https://nf-co.re/join/slack)).
+For further information/help, please consult the [bigbio/quantmsdiann documentation](https://docs.quantms.org/en/latest/usage.html) and don't hesitate to get in touch on the nf-core Slack [#quantms](https://nfcore.slack.com/channels/quantms) channel ([join our Slack here](https://nf-co.re/join/slack)).
 
 ## Pipeline contribution conventions
 

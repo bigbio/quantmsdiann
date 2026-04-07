@@ -4,7 +4,7 @@ description: Create a sample-to-data-relationship format (SDRF) file (usually fr
 ---
 
 Create a sample-to-data-relationship format file based on the specification document. By default
-generate a csv. Quote where necessary. If required columns are missing, let the user know and provide help
+generate a tsv. Quote where necessary. If required columns are missing, let the user know and provide help
 in further filling by asking questions. In the end, self-validate the file by doing:
 
 ```bash

@@ -3,7 +3,6 @@
 //
 
 include { THERMORAWFILEPARSER } from '../../../modules/bigbio/thermorawfileparser/main'
-include { TDF2MZML            } from '../../../modules/local/utils/tdf2mzml/main'
 include { DECOMPRESS          } from '../../../modules/local/utils/decompress_dotd/main'
 include { MZML_INDEXING       } from '../../../modules/local/openms/mzml_indexing/main'
 include { MZML_STATISTICS     } from '../../../modules/local/utils/mzml_statistics/main'
@@ -83,20 +82,9 @@ workflow FILE_PREPARATION {
 
     ch_results.map{ it -> [it[0], it[1]] }.set{ indexed_mzml_bundle }
 
-    // Convert .d files to mzML
-    if (params.convert_dotd) {
-        TDF2MZML( ch_branched_input.dotd )
-        ch_versions = ch_versions.mix(TDF2MZML.out.versions)
-        ch_results = indexed_mzml_bundle.mix(TDF2MZML.out.mzmls_converted)
-    } else {
-        ch_results = indexed_mzml_bundle
-    }
-
-    // Pass through .d files without conversion when convert_dotd=false
-    // (DIA-NN handles them natively; they bypass mzML statistics as they are not mzML)
-    if (!params.convert_dotd) {
-        ch_results = ch_results.mix(ch_branched_input.dotd)
-    }
+    // Pass through .d files without conversion
+    // DIA-NN handles .d files natively; they bypass mzML statistics
+    ch_results = indexed_mzml_bundle.mix(ch_branched_input.dotd)
 
     // Pass through .dia files without conversion (DIA-NN handles them natively)
     ch_results = ch_results.mix(ch_branched_input.dia)

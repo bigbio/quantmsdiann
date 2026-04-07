@@ -49,7 +49,8 @@ process FINAL_QUANTIFICATION {
          '--use-quant', '--matrices', '--out', '--relaxed-prot-inf', '--pg-level',
          '--qvalue', '--window', '--individual-windows',
          '--species-genes', '--report-decoys', '--xic', '--no-norm',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda', '--export-quant', '--site-ms1-quant']
+         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda', '--export-quant', '--site-ms1-quant',
+         '--channels', '--lib-fixed-mod', '--original-mods']
     // Sort by length descending so longer flags (e.g. --individual-windows) are matched before shorter prefixes (--window)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -64,7 +65,8 @@ process FINAL_QUANTIFICATION {
     no_norm = params.diann_normalize ? "" : "--no-norm"
     report_decoys = params.diann_report_decoys ? "--report-decoys": ""
     diann_export_xic = params.diann_export_xic ? "--xic": ""
-    quantums = params.quantums ? "": "--direct-quant"
+    // --direct-quant only exists in DIA-NN >= 1.9.2 (QuantUMS counterpart); skip for older versions
+    quantums = params.quantums ? "" : (params.diann_version >= '1.9' ? "--direct-quant" : "")
     quantums_train_runs = params.quantums_train_runs ? "--quant-train-runs $params.quantums_train_runs": ""
     quantums_sel_runs = params.quantums_sel_runs ? "--quant-sel-runs $params.quantums_sel_runs": ""
     quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
@@ -79,7 +81,7 @@ process FINAL_QUANTIFICATION {
     # do not need to be present.
 
     # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
-    mod_flags=\$(cat ${diann_config} | grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+)' | tr '\\n' ' ')
+    mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
 
     diann   --lib ${empirical_library} \\
             --fasta ${fasta} \\

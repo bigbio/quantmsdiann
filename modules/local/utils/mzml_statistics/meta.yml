@@ -7,25 +7,35 @@ tools:
   - custom:
       description: |
         A custom module for mzML file statistics.
-      homepage: https://github.com/bigbio/quantms
-      documentation: https://github.com/bigbio/quantms/tree/readthedocs
+      homepage: https://github.com/bigbio/quantmsdiann
+      documentation: https://github.com/bigbio/quantmsdiann
 input:
   - mzml:
       type: file
       description: Spectra file in mzML format
       pattern: "*.mzML"
 output:
-  - mzml_statistics:
+  - ms_statistics:
       type: file
-      description: mzMLs statistics file
-      pattern: "*_mzml_info.parquet"
-  - spectrum_df:
+      description: MS-level statistics parquet file
+      pattern: "*_ms_info.parquet"
+  - ms2_statistics:
       type: file
-      description: spectrum data file
-      pattern: "*_spectrum_df.parquet"
-  - version:
+      description: MS2-level statistics parquet file (optional)
+      pattern: "*_ms2_info.parquet"
+      optional: true
+  - feature_statistics:
       type: file
-      description: File containing software version
+      description: Feature detection parquet file (optional)
+      pattern: "*_feature_info.parquet"
+      optional: true
+  - versions:
+      type: file
+      description: File containing software versions
       pattern: "versions.yml"
+  - log:
+      type: file
+      description: Log file from mzML statistics computation
+      pattern: "*.log"
 authors:
   - "@wanghong"

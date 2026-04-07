@@ -7,7 +7,6 @@ process PMULTIQC {
 
     input:
     path multiqc_inputs, stageAs: 'results/*'
-    path quantms_log
 
     output:
     path "*.html", emit: ch_pmultiqc_report

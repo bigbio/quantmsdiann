@@ -9,7 +9,6 @@
 //
 include { DIANN_MSSTATS               } from '../modules/local/diann/diann_msstats/main'
 include { PRELIMINARY_ANALYSIS        } from '../modules/local/diann/preliminary_analysis/main'
-include { PARSE_EMPIRICAL_LOG         } from '../subworkflows/local/parse_empirical_log/main'
 include { ASSEMBLE_EMPIRICAL_LIBRARY  } from '../modules/local/diann/assemble_empirical_library/main'
 include { INSILICO_LIBRARY_GENERATION } from '../modules/local/diann/insilico_library_generation/main'
 include { INDIVIDUAL_ANALYSIS         } from '../modules/local/diann/individual_analysis/main'
@@ -70,8 +69,8 @@ workflow DIA {
         .first()
 
     // diann_config.cfg comes directly from SDRF_PARSING (convert-diann)
-    // Convert to value channel so it can be consumed by all per-file processes
-    ch_diann_cfg_val = ch_diann_cfg.first()
+    // Use as value channel so it can be consumed by all per-file processes
+    ch_diann_cfg_val = ch_diann_cfg
 
     //
     // MODULE: SILICOLIBRARYGENERATION
@@ -84,13 +83,8 @@ workflow DIA {
     }
 
     if (params.skip_preliminary_analysis) {
-        if (params.empirical_assembly_log) {
-            ch_empirical_log = channel.fromPath(params.empirical_assembly_log, checkIfExists: true)
-            PARSE_EMPIRICAL_LOG(ch_empirical_log)
-            ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
-        } else {
-            ch_parsed_vals = channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
-        }
+        // Users who skip preliminary analysis provide mass accuracy and scan window directly
+        ch_parsed_vals = channel.value("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(speclib)
@@ -140,8 +134,19 @@ workflow DIA {
         )
         ch_software_versions = ch_software_versions
             .mix(ASSEMBLE_EMPIRICAL_LIBRARY.out.versions)
-        PARSE_EMPIRICAL_LOG(ASSEMBLE_EMPIRICAL_LIBRARY.out.log)
-        ch_parsed_vals = PARSE_EMPIRICAL_LOG.out.parsed_vals
+        // Parse calibrated params from the assembly log on the head node
+        ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.log
+            .map { log_file ->
+                def match = log_file.text.readLines().find { it.contains("Averaged recommended settings") }
+                if (match) {
+                    def parts = match.trim().split(/\s+/)
+                    def ms2 = parts.size() > 10 ? parts[10].replaceAll(/[^0-9.]/, '') : "${params.mass_acc_ms2}"
+                    def ms1 = parts.size() > 14 ? parts[14].replaceAll(/[^0-9.]/, '') : "${params.mass_acc_ms1}"
+                    def sw  = parts.size() > 18 ? parts[18].replaceAll(/[^0-9.]/, '') : "${params.scan_window}"
+                    return "${ms2},${ms1},${sw}"
+                }
+                return "${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}"
+            }
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.empirical_library)

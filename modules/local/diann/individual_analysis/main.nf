@@ -28,7 +28,8 @@ process INDIVIDUAL_ANALYSIS {
          '--mass-acc', '--mass-acc-ms1', '--window',
          '--no-ifs-removal', '--no-main-report', '--relaxed-prot-inf', '--pg-level',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda']
+         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda',
+         '--channels', '--lib-fixed-mod', '--original-mods']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -96,7 +97,7 @@ process INDIVIDUAL_ANALYSIS {
 
     """
     # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
-    mod_flags=\$(cat ${diann_config} | grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+)' | tr '\\n' ' ')
+    mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
 
     diann   --lib ${library} \\
             --f ${ms_file} \\
