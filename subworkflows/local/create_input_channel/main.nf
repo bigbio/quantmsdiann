@@ -104,7 +104,7 @@ def create_meta_channel_grouped(String filestr, List rows, Map wrapper) {
     def fixedMods = rows.collect { it.FixedModifications?.toString()?.trim() }.findAll { it }.unique()
     meta.fixedmodifications = fixedMods ? fixedMods[0] : null
 
-    // Validate required SDRF columns 
+    // Validate required SDRF columns
     def requiredColumns = [
         'Label': meta.labelling_type,
         'Enzyme': meta.enzyme,
