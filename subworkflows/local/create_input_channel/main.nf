@@ -29,8 +29,23 @@ workflow CREATE_INPUT_CHANNEL {
         .combine(ch_expdesign)
         .splitCsv(header: true, sep: '\t')
         .map { experiment_id, row ->
+            def filestr
+            if (!params.root_folder) {
+                filestr = row.URI?.toString()?.trim() ? row.URI.toString() : row.Filename.toString()
+            } else {
+                filestr = row.Filename.toString()
+                filestr = params.root_folder + File.separator + filestr
+                filestr = (params.local_input_type
+                    ? filestr.take(filestr.lastIndexOf('.')) + '.' + params.local_input_type
+                    : filestr)
+            }
+            return [filestr, experiment_id, row]
+        }
+        .groupTuple(by: 0)
+        .map { filestr, experiment_ids, rows ->
+            def experiment_id = experiment_ids[0]
             def wrapper = [acquisition_method: "", experiment_id: experiment_id]
-            create_meta_channel(row, enzymes, files, wrapper)
+            return create_meta_channel_grouped(filestr, rows, wrapper)
         }
         .set { ch_meta_config_dia }
 
@@ -42,30 +57,15 @@ workflow CREATE_INPUT_CHANNEL {
 }
 
 // Function to get list of [meta, [ spectra_files ]]
-def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
+def create_meta_channel_grouped(String filestr, List rows, Map wrapper) {
     def meta = [:]
-    def filestr
 
-    // Always use SDRF format
-    if (!params.root_folder) {
-        filestr = row.URI?.toString()?.trim() ? row.URI.toString() : row.Filename.toString()
-    }
-    else {
-        filestr = row.Filename.toString()
-    }
+    def base_row = rows[0]
 
     def fileName = file(filestr).name
     def dotIndex = fileName.lastIndexOf('.')
     meta.id = dotIndex > 0 ? fileName.take(dotIndex) : fileName
     meta.experiment_id = wrapper.experiment_id
-
-    // apply transformations given by specified root_folder and type
-    if (params.root_folder) {
-        filestr = params.root_folder + File.separator + filestr
-        filestr = (params.local_input_type
-            ? filestr.take(filestr.lastIndexOf('.')) + '.' + params.local_input_type
-            : filestr)
-    }
 
     // existence check
     if (!file(filestr).exists()) {
@@ -73,7 +73,7 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
     }
 
     // Detect acquisition method from SDRF or fallback to --diann_dda param
-    def acqMethod = row.AcquisitionMethod?.toString()?.trim() ?: ""
+    def acqMethod = base_row.AcquisitionMethod?.toString()?.trim() ?: ""
     if (acqMethod.toLowerCase().contains("data-independent acquisition") || acqMethod.toLowerCase().contains("dia")) {
         meta.acquisition_method = "dia"
     } else if (acqMethod.toLowerCase().contains("data-dependent acquisition") || acqMethod.toLowerCase().contains("dda")) {
@@ -85,21 +85,35 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
         exit(1)
     }
 
-    // DissociationMethod is already normalized by convert-diann (HCD, CID, ETD, ECD)
-    meta.dissociationmethod = row.DissociationMethod?.toString()?.trim() ?: ""
-
+    meta.dissociationmethod = base_row.DissociationMethod?.toString()?.trim() ?: ""
     wrapper.acquisition_method = meta.acquisition_method
 
-    // Validate required SDRF columns - these parameters are exclusively read from SDRF (no command-line override)
+    def labels = rows.collect { it.Label?.toString()?.trim() }.findAll { it }.unique()
+    meta.labelling_type = labels.join(';')
+
+    def is_plexdia = labels.size() > 1 || (labels.size() == 1 && !labels[0].toLowerCase().contains("label free"))
+    meta.plexdia = is_plexdia
+
+    def enzymes = rows.collect { it.Enzyme?.toString()?.trim() }.findAll { it }.unique()
+    if (enzymes.size() > 1) {
+        log.error("Currently only one enzyme is supported per file. Found conflicting enzymes for ${filestr}: '${enzymes}'.")
+        exit(1)
+    }
+    meta.enzyme = enzymes ? enzymes[0] : null
+
+    def fixedMods = rows.collect { it.FixedModifications?.toString()?.trim() }.findAll { it }.unique()
+    meta.fixedmodifications = fixedMods ? fixedMods[0] : null
+
+    // Validate required SDRF columns
     def requiredColumns = [
-        'Label': row.Label,
-        'Enzyme': row.Enzyme,
-        'FixedModifications': row.FixedModifications
+        'Label': meta.labelling_type,
+        'Enzyme': meta.enzyme,
+        'FixedModifications': meta.fixedmodifications
     ]
 
     def missingColumns = []
     requiredColumns.each { colName, colValue ->
-        if (colValue == null || colValue.toString().trim().isEmpty()) {
+        if (colValue == null || colValue.toString().isEmpty()) {
             missingColumns.add(colName)
         }
     }
@@ -110,20 +124,13 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
         exit(1)
     }
 
-    // Set values from SDRF (required columns)
-    meta.labelling_type = row.Label
-    meta.fixedmodifications = row.FixedModifications
-    meta.enzyme = row.Enzyme
-
-    // Set tolerance values: use SDRF if available, otherwise fall back to params
     def validUnits = ['ppm', 'da', 'Da', 'PPM']
 
-    // Precursor mass tolerance
-    if (row.PrecursorMassTolerance != null && !row.PrecursorMassTolerance.toString().trim().isEmpty()) {
+    if (base_row.PrecursorMassTolerance != null && !base_row.PrecursorMassTolerance.toString().trim().isEmpty()) {
         try {
-            meta.precursormasstolerance = Double.parseDouble(row.PrecursorMassTolerance)
+            meta.precursormasstolerance = Double.parseDouble(base_row.PrecursorMassTolerance)
         } catch (NumberFormatException e) {
-            log.error("ERROR: Invalid PrecursorMassTolerance value '${row.PrecursorMassTolerance}' for file '${filestr}'. Must be a valid number.")
+            log.error("ERROR: Invalid PrecursorMassTolerance value '${base_row.PrecursorMassTolerance}' for file '${filestr}'. Must be a valid number.")
             exit(1)
         }
     } else {
@@ -131,23 +138,21 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
         meta.precursormasstolerance = params.precursor_mass_tolerance
     }
 
-    // Precursor mass tolerance unit
-    if (row.PrecursorMassToleranceUnit != null && !row.PrecursorMassToleranceUnit.toString().trim().isEmpty()) {
-        if (!validUnits.any { row.PrecursorMassToleranceUnit.toString().equalsIgnoreCase(it) }) {
-            log.error("ERROR: Invalid PrecursorMassToleranceUnit '${row.PrecursorMassToleranceUnit}' for file '${filestr}'. Must be 'ppm' or 'Da'.")
+    if (base_row.PrecursorMassToleranceUnit != null && !base_row.PrecursorMassToleranceUnit.toString().trim().isEmpty()) {
+        if (!validUnits.any { base_row.PrecursorMassToleranceUnit.toString().equalsIgnoreCase(it) }) {
+            log.error("ERROR: Invalid PrecursorMassToleranceUnit '${base_row.PrecursorMassToleranceUnit}' for file '${filestr}'. Must be 'ppm' or 'Da'.")
             exit(1)
         }
-        meta.precursormasstoleranceunit = row.PrecursorMassToleranceUnit
+        meta.precursormasstoleranceunit = base_row.PrecursorMassToleranceUnit
     } else {
         meta.precursormasstoleranceunit = params.precursor_mass_tolerance_unit
     }
 
-    // Fragment mass tolerance
-    if (row.FragmentMassTolerance != null && !row.FragmentMassTolerance.toString().trim().isEmpty()) {
+    if (base_row.FragmentMassTolerance != null && !base_row.FragmentMassTolerance.toString().trim().isEmpty()) {
         try {
-            meta.fragmentmasstolerance = Double.parseDouble(row.FragmentMassTolerance)
+            meta.fragmentmasstolerance = Double.parseDouble(base_row.FragmentMassTolerance)
         } catch (NumberFormatException e) {
-            log.error("ERROR: Invalid FragmentMassTolerance value '${row.FragmentMassTolerance}' for file '${filestr}'. Must be a valid number.")
+            log.error("ERROR: Invalid FragmentMassTolerance value '${base_row.FragmentMassTolerance}' for file '${filestr}'. Must be a valid number.")
             exit(1)
         }
     } else {
@@ -155,43 +160,26 @@ def create_meta_channel(LinkedHashMap row, enzymes, files, wrapper) {
         meta.fragmentmasstolerance = params.fragment_mass_tolerance
     }
 
-    // Fragment mass tolerance unit
-    if (row.FragmentMassToleranceUnit != null && !row.FragmentMassToleranceUnit.toString().trim().isEmpty()) {
-        if (!validUnits.any { row.FragmentMassToleranceUnit.toString().equalsIgnoreCase(it) }) {
-            log.error("ERROR: Invalid FragmentMassToleranceUnit '${row.FragmentMassToleranceUnit}' for file '${filestr}'. Must be 'ppm' or 'Da'.")
+    if (base_row.FragmentMassToleranceUnit != null && !base_row.FragmentMassToleranceUnit.toString().trim().isEmpty()) {
+        if (!validUnits.any { base_row.FragmentMassToleranceUnit.toString().equalsIgnoreCase(it) }) {
+            log.error("ERROR: Invalid FragmentMassToleranceUnit '${base_row.FragmentMassToleranceUnit}' for file '${filestr}'. Must be 'ppm' or 'Da'.")
             exit(1)
         }
-        meta.fragmentmasstoleranceunit = row.FragmentMassToleranceUnit
+        meta.fragmentmasstoleranceunit = base_row.FragmentMassToleranceUnit
     } else {
         meta.fragmentmasstoleranceunit = params.fragment_mass_tolerance_unit
     }
 
-    // Variable modifications: use SDRF if available, otherwise fall back to params
-    if (row.VariableModifications != null && !row.VariableModifications.toString().trim().isEmpty()) {
-        meta.variablemodifications = row.VariableModifications
+    if (base_row.VariableModifications != null && !base_row.VariableModifications.toString().trim().isEmpty()) {
+        meta.variablemodifications = base_row.VariableModifications
     } else {
         meta.variablemodifications = params.variable_mods
     }
 
-    // Per-file scan ranges (empty string = no flags passed, DIA-NN auto-detects)
-    meta.ms1minmz = row.MS1MinMz?.toString()?.trim() ?: ""
-    meta.ms1maxmz = row.MS1MaxMz?.toString()?.trim() ?: ""
-    meta.ms2minmz = row.MS2MinMz?.toString()?.trim() ?: ""
-    meta.ms2maxmz = row.MS2MaxMz?.toString()?.trim() ?: ""
-
-    enzymes += row.Enzyme
-    if (enzymes.size() > 1) {
-        log.error("Currently only one enzyme is supported for the whole experiment. Specified was '${enzymes}'. Check or split your SDRF.")
-        log.error(filestr)
-        exit(1)
-    }
-
-    // Check for duplicate files
-    if (filestr in files) {
-        log.error("Currently only one DIA-NN setting per file is supported for the whole experiment. ${filestr} has multiple entries in your SDRF. Consider splitting your design into multiple experiments.")
-        exit(1)
-    }
-    files += filestr
+    meta.ms1minmz = base_row.MS1MinMz?.toString()?.trim() ?: ""
+    meta.ms1maxmz = base_row.MS1MaxMz?.toString()?.trim() ?: ""
+    meta.ms2minmz = base_row.MS2MinMz?.toString()?.trim() ?: ""
+    meta.ms2maxmz = base_row.MS2MaxMz?.toString()?.trim() ?: ""
 
     return [meta, filestr]
 }

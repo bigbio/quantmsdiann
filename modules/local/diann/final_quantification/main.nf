@@ -25,11 +25,11 @@ process FINAL_QUANTIFICATION {
     path "diann_report.{tsv,parquet}", emit: main_report, optional: true
     path "diann_report.manifest.txt", emit: report_manifest, optional: true
     path "diann_report.protein_description.tsv", emit: protein_description, optional: true
-    path "diann_report.stats.tsv", emit: report_stats
-    path "diann_report.pr_matrix.tsv", emit: pr_matrix
-    path "diann_report.pg_matrix.tsv", emit: pg_matrix
-    path "diann_report.gg_matrix.tsv", emit: gg_matrix
-    path "diann_report.unique_genes_matrix.tsv", emit: unique_gene_matrix
+    path "diann_report.stats.tsv", emit: report_stats, optional: true
+    path "diann_report.pr_matrix.tsv", emit: pr_matrix, optional: true
+    path "diann_report.pg_matrix.tsv", emit: pg_matrix, optional: true
+    path "diann_report.gg_matrix.tsv", emit: gg_matrix, optional: true
+    path "diann_report.unique_genes_matrix.tsv", emit: unique_gene_matrix, optional: true
     path "diannsummary.log", emit: log
 
     // Different library files format are exported due to different DIA-NN versions
@@ -75,6 +75,8 @@ process FINAL_QUANTIFICATION {
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
     diann_export_quant = params.diann_export_quant ? "--export-quant" : ""
     diann_site_ms1_quant = params.diann_site_ms1_quant ? "--site-ms1-quant" : ""
+    diann_channel_run_norm = params.diann_channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.diann_channel_spec_norm ? "--channel-spec-norm" : ""
 
     """
     # Notes: if .quant files are passed, mzml/.d files are not accessed, so the name needs to be passed but files
@@ -107,6 +109,8 @@ process FINAL_QUANTIFICATION {
             ${diann_dda_flag} \\
             ${diann_export_quant} \\
             ${diann_site_ms1_quant} \\
+            ${diann_channel_run_norm} \\
+            ${diann_channel_spec_norm} \\
             \${mod_flags} \\
             $args
 

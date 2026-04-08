@@ -411,6 +411,19 @@
                     "fa_icon": "far fa-check-square",
                     "default": true
                 },
+
+                "diann_channel_run_norm": {
+                    "type": "boolean",
+                    "description": "Set '--channel-run-norm'. Run-specific normalisation for multiplexing (e.g., Protein Turnover SILAC)",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
+                "diann_channel_spec_norm": {
+                    "type": "boolean",
+                    "description": "Set '--channel-spec-norm'. Channel-specific normalisation for multiplexing (Independent Samples)",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
                 "skip_preliminary_analysis": {
                     "type": "boolean",
                     "description": "Skip the preliminary analysis step, thus use the passed spectral library as-is instead of generating a local consensus library.",
