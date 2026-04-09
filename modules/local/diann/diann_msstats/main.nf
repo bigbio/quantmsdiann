@@ -17,12 +17,10 @@ process DIANN_MSSTATS {
 
     script:
     def args = task.ext.args ?: ''
-    // When both parquet and tsv are staged, prefer parquet (DIA-NN >= 2.x output)
-    def report_file = report instanceof List ? report.find { it.name.endsWith('.parquet') } ?: report[0] : report
     """
     set -o pipefail
     quantmsutilsc diann2msstats \\
-        --report ${report_file} \\
+        --report ${report} \\
         --exp_design ${exp_design} \\
         --qvalue_threshold $params.protein_level_fdr_cutoff \\
         $args \\

@@ -204,7 +204,9 @@ workflow DIA {
         FINAL_QUANTIFICATION.out.versions
     )
 
-    diann_main_report = FINAL_QUANTIFICATION.out.main_report
+    // Only one format is produced per DIA-NN version: parquet (>= 1.9) or TSV (< 1.9)
+    diann_main_report = FINAL_QUANTIFICATION.out.main_report_parquet
+        .mix(FINAL_QUANTIFICATION.out.main_report_tsv)
 
     //
     // MODULE: DIANN_MSSTATS — Convert DIA-NN report to MSstats-compatible format
