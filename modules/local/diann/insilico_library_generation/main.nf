@@ -15,7 +15,7 @@ process INSILICO_LIBRARY_GENERATION {
     path "versions.yml", emit: versions
     path "*.predicted.speclib", emit: predict_speclib
     path "*.tsv", emit: speclib_tsv, optional: true
-    path "silicolibrarygeneration.log", emit: log
+    path "*.log.txt", emit: log, optional: true
 
     when:
     task.ext.when == null || task.ext.when
@@ -67,12 +67,6 @@ process INSILICO_LIBRARY_GENERATION {
             ${diann_no_peptidoforms} \\
             ${met_excision} \\
             ${args}
-
-    if ls *.log.txt 1>/dev/null 2>&1; then
-        cp *.log.txt silicolibrarygeneration.log
-    else
-        echo "No DIA-NN log file produced (expected with DIA-NN >= 2.x)" > silicolibrarygeneration.log
-    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
