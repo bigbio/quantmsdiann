@@ -30,7 +30,7 @@ output:
   - log:
       type: file
       description: DIA-NN log file (optional, not produced by DIA-NN >= 2.x)
-      pattern: "report.log.txt"
+      pattern: "assemble_empirical_library.log"
   - versions:
       type: file
       description: File containing software version

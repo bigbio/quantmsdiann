@@ -114,6 +114,10 @@ process FINAL_QUANTIFICATION {
             \${mod_flags} \\
             $args
 
+    if [ -f diann_report.log.txt ]; then
+        cp diann_report.log.txt diannsummary.log
+    fi
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         DIA-NN: \$(diann 2>&1 | grep "DIA-NN" | grep -oP "\\d+\\.\\d+(\\.\\w+)*(\\.[\\d]+)?")
