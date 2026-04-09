@@ -13,7 +13,7 @@ process PRELIMINARY_ANALYSIS {
 
     output:
     path "*.quant", emit: diann_quant
-    tuple val(meta), path("report.log.txt"), emit: log, optional: true
+    tuple val(meta), path("*_diann.log"), emit: log, optional: true
     path "versions.yml", emit: versions
 
     when:
@@ -104,6 +104,10 @@ process PRELIMINARY_ANALYSIS {
             --no-prot-inf \\
             \${mod_flags} \\
             $args
+
+    if [ -f report.log.txt ]; then
+        cp report.log.txt ${ms_file.baseName}_diann.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

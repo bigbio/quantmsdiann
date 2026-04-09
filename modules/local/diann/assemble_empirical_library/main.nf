@@ -17,7 +17,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
 
     output:
     path "empirical_library.*", emit: empirical_library
-    path "report.log.txt", emit: log, optional: true
+    path "assemble_empirical_library.log", emit: log, optional: true
     path "versions.yml", emit: versions
 
     when:
@@ -81,6 +81,10 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             ${diann_im_window} \\
             \${mod_flags} \\
             $args
+
+    if [ -f report.log.txt ]; then
+        cp report.log.txt assemble_empirical_library.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

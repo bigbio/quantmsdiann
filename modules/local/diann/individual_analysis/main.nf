@@ -13,7 +13,7 @@ process INDIVIDUAL_ANALYSIS {
 
     output:
     path "*.quant", emit: diann_quant
-    path "report.log.txt", emit: log, optional: true
+    path "*_final_diann.log", emit: log, optional: true
     path "versions.yml", emit: versions
 
     when:
@@ -115,6 +115,10 @@ process INDIVIDUAL_ANALYSIS {
             ${diann_im_window} \\
             \${mod_flags} \\
             $args
+
+    if [ -f report.log.txt ]; then
+        cp report.log.txt ${ms_file.baseName}_final_diann.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
