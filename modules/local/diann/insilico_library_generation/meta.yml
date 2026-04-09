@@ -26,8 +26,8 @@ output:
       pattern: "*.predicted.speclib"
   - log:
       type: file
-      description: DIA-NN log file (optional, not produced by DIA-NN >= 2.x)
-      pattern: "*.log.txt"
+      description: DIA-NN log file (optional, may not be produced by some DIA-NN versions)
+      pattern: "silicolibrarygeneration.log.txt"
   - versions:
       type: file
       description: File containing software version

@@ -15,7 +15,7 @@ process INSILICO_LIBRARY_GENERATION {
     path "versions.yml", emit: versions
     path "*.predicted.speclib", emit: predict_speclib
     path "*.tsv", emit: speclib_tsv, optional: true
-    path "*.log.txt", emit: log, optional: true
+    path "silicolibrarygeneration.log.txt", emit: log, optional: true
 
     when:
     task.ext.when == null || task.ext.when
@@ -50,6 +50,7 @@ process INSILICO_LIBRARY_GENERATION {
     diann `cat ${diann_config}` \\
             --fasta ${fasta} \\
             --fasta-search \\
+            --out silicolibrarygeneration.tsv \\
             ${min_pr_mz} \\
             ${max_pr_mz} \\
             ${min_fr_mz} \\
