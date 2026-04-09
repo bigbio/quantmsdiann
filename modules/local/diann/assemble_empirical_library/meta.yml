@@ -29,8 +29,8 @@ output:
       pattern: "empirical_library.tsv"
   - log:
       type: file
-      description: DIA-NN log file
-      pattern: "assemble_empirical_library.log"
+      description: DIA-NN log file (optional, not produced by DIA-NN >= 2.x)
+      pattern: "report.log.txt"
   - versions:
       type: file
       description: File containing software version

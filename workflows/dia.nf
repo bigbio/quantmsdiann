@@ -111,6 +111,7 @@ workflow DIA {
         ch_software_versions = ch_software_versions
             .mix(ASSEMBLE_EMPIRICAL_LIBRARY.out.versions)
         // Parse calibrated params from the assembly log on the head node
+        // The log file is optional (not produced by DIA-NN >= 2.x); fall back to user params
         ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.log
             .map { log_file ->
                 def match = log_file.text.readLines().find { it.contains("Averaged recommended settings") }
@@ -123,6 +124,7 @@ workflow DIA {
                 }
                 return "${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}"
             }
+            .ifEmpty("${params.mass_acc_ms2},${params.mass_acc_ms1},${params.scan_window}")
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.empirical_library)

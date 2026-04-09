@@ -28,8 +28,8 @@ output:
       pattern: "*.quant"
   - log:
       type: file
-      description: DIA-NN log file
-      pattern: "*_diann.log"
+      description: DIA-NN log file (optional, not produced by DIA-NN >= 2.x)
+      pattern: "report.log.txt"
   - version:
       type: file
       description: File containing software version
