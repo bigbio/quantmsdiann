@@ -68,7 +68,11 @@ process INSILICO_LIBRARY_GENERATION {
             ${met_excision} \\
             ${args}
 
-    cp *lib.log.txt silicolibrarygeneration.log
+    if ls *.log.txt 1>/dev/null 2>&1; then
+        cp *.log.txt silicolibrarygeneration.log
+    else
+        echo "No DIA-NN log file produced (expected with DIA-NN >= 2.x)" > silicolibrarygeneration.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
