@@ -29,7 +29,7 @@ output:
       pattern: "*.predicted.speclib"
   - log:
       type: file
-      description: DIA-NN log file
+      description: DIA-NN log file (captured via tee, overwritten with native log if available)
       pattern: "silicolibrarygeneration.log"
   - versions:
       type: file

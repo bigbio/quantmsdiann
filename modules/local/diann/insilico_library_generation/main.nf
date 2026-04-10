@@ -57,6 +57,7 @@ process INSILICO_LIBRARY_GENERATION {
     diann `cat ${diann_config}` \\
             --fasta ${fasta} \\
             --fasta-search \\
+            --out silicolibrarygeneration.tsv \\
             ${min_pr_mz} \\
             ${max_pr_mz} \\
             ${min_fr_mz} \\
@@ -77,9 +78,12 @@ process INSILICO_LIBRARY_GENERATION {
             ${pre_select_flag} \\
             ${met_excision} \\
             ${diann_dda_flag} \\
-            ${args}
+            ${args} \\
+            2>&1 | tee silicolibrarygeneration.log
 
-    cp *lib.log.txt silicolibrarygeneration.log
+    if [ -f silicolibrarygeneration.log.txt ]; then
+        cp silicolibrarygeneration.log.txt silicolibrarygeneration.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

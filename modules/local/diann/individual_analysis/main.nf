@@ -121,9 +121,12 @@ process INDIVIDUAL_ANALYSIS {
             ${diann_im_window} \\
             ${diann_dda_flag} \\
             \${mod_flags} \\
-            $args
+            $args \\
+            2>&1 | tee ${ms_file.baseName}_final_diann.log
 
-    cp report.log.txt ${ms_file.baseName}_final_diann.log
+    if [ -f report.log.txt ]; then
+        cp report.log.txt ${ms_file.baseName}_final_diann.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

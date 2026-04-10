@@ -21,8 +21,10 @@ process FINAL_QUANTIFICATION {
     path(diann_config)
 
     output:
-    // DIA-NN 2.0 don't return report in tsv format
-    path "diann_report.{tsv,parquet}", emit: main_report, optional: true
+    // DIA-NN < 1.9 produces TSV; >= 1.9 produces parquet (ignores .tsv in --out)
+    // Both are optional since only one format will be produced per version
+    path "diann_report.parquet", emit: main_report_parquet, optional: true
+    path "diann_report.tsv", emit: main_report_tsv, optional: true
     path "diann_report.manifest.txt", emit: report_manifest, optional: true
     path "diann_report.protein_description.tsv", emit: protein_description, optional: true
     path "diann_report.stats.tsv", emit: report_stats, optional: true
@@ -112,9 +114,12 @@ process FINAL_QUANTIFICATION {
             ${diann_channel_run_norm} \\
             ${diann_channel_spec_norm} \\
             \${mod_flags} \\
-            $args
+            $args \\
+            2>&1 | tee diannsummary.log
 
-    cp diann_report.log.txt diannsummary.log
+    if [ -f diann_report.log.txt ]; then
+        cp diann_report.log.txt diannsummary.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

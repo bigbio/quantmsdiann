@@ -83,9 +83,12 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             ${diann_im_window} \\
             ${diann_dda_flag} \\
             \${mod_flags} \\
-            $args
+            $args \\
+            2>&1 | tee assemble_empirical_library.log
 
-    cp report.log.txt assemble_empirical_library.log
+    if [ -f report.log.txt ]; then
+        cp report.log.txt assemble_empirical_library.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -29,7 +29,7 @@ output:
       pattern: "empirical_library.tsv"
   - log:
       type: file
-      description: DIA-NN log file
+      description: DIA-NN log file (captured via tee, overwritten with native log if available)
       pattern: "assemble_empirical_library.log"
   - versions:
       type: file

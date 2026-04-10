@@ -21,9 +21,8 @@ workflow CREATE_INPUT_CHANNEL {
     def enzymes = new HashSet()
     def files = new HashSet()
 
-    // Extract experiment_id from the SDRF filename via the value channel
-    ch_sdrf_val = ch_sdrf.first()
-    ch_experiment_id = ch_sdrf_val.map { sdrf_file -> file(sdrf_file).baseName }
+    // Extract experiment_id from the SDRF filename
+    ch_experiment_id = ch_sdrf.map { sdrf_file -> file(sdrf_file).baseName }
 
     ch_experiment_id
         .combine(ch_expdesign)
