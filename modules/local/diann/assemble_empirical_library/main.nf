@@ -33,7 +33,8 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
          '--individual-mass-acc', '--individual-windows',
          '--out-lib', '--use-quant', '--gen-spec-lib', '--rt-profiling',
          '--monitor-mod', '--var-mod', '--fixed-mod', '--dda',
-         '--channels', '--lib-fixed-mod', '--original-mods']
+         '--channels', '--lib-fixed-mod', '--original-mods',
+         '--proteoforms', '--peptidoforms', '--no-peptidoforms']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -51,9 +52,10 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
         mass_acc = '--individual-mass-acc'
     }
     scan_window = params.scan_window_automatic ? '--individual-windows' : "--window $params.scan_window"
-    diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
-    diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
-    diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    diann_tims_sum = params.tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
 
     """
@@ -71,14 +73,14 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             --lib ${lib} \\
             --threads ${task.cpus} \\
             --out-lib empirical_library \\
-            --verbose $params.diann_debug \\
+            --verbose $params.debug_level \\
             --rt-profiling \\
             --temp ./quant/ \\
             --use-quant \\
             ${mass_acc} \\
             ${scan_window} \\
             --gen-spec-lib \\
-            ${diann_no_peptidoforms} \\
+            ${scoring_mode} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\

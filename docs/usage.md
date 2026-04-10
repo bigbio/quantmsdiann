@@ -59,7 +59,7 @@ nextflow run bigbio/quantmsdiann \
   -profile docker
 ```
 
-For Synchro-PASEF data, enable `--diann_tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
+For Synchro-PASEF data, enable `--tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
 
 > [!NOTE]
 > The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled, recommending to set tolerances via SDRF or pipeline parameters.
@@ -75,13 +75,13 @@ nextflow run bigbio/quantmsdiann \
   -profile diann_v2_3_2,docker
 ```
 
-If your SDRF does not include the acquisition method column, you can explicitly enable DDA mode with `--diann_dda true`:
+If your SDRF does not include the acquisition method column, you can explicitly enable DDA mode with `--dda true`:
 
 ```bash
 nextflow run bigbio/quantmsdiann \
   --input sdrf.tsv \
   --database proteins.fasta \
-  --diann_dda true \
+  --dda true \
   -profile diann_v2_3_2,docker
 ```
 
@@ -93,7 +93,7 @@ nextflow run bigbio/quantmsdiann \
 - No isobaric labeling or reporter-tag quantification
 - Primary use cases: legacy DDA reanalysis, spectral library creation, immunopeptidomics
 
-The pipeline uses the same workflow for DDA as DIA — the `--dda` flag is passed to all DIA-NN steps automatically when DDA is detected from the SDRF or enabled via `--diann_dda`.
+The pipeline uses the same workflow for DDA as DIA — the `--dda` flag is passed to all DIA-NN steps automatically when DDA is detected from the SDRF or enabled via `--dda`.
 
 ### Preprocessing Options
 
@@ -104,7 +104,7 @@ The pipeline uses the same workflow for DDA as DIA — the `--dda` flag is passe
 
 ### Passing Extra Arguments to DIA-NN
 
-Use `--diann_extra_args` to pass additional flags to all DIA-NN steps. The pipeline validates and strips flags it manages internally to prevent conflicts.
+Use `--extra_args` to pass additional flags to all DIA-NN steps. The pipeline validates and strips flags it manages internally to prevent conflicts.
 
 Managed flags (stripped with a warning if passed via extra_args): `--lib`, `--f`, `--fasta`, `--threads`, `--verbose`, `--temp`, `--out`, `--matrices`, `--use-quant`, `--gen-spec-lib`, `--mass-acc`, `--mass-acc-ms1`, `--window`, `--var-mod`, `--fixed-mod`, `--monitor-mod`, and others.
 
@@ -242,7 +242,7 @@ These parameters apply globally across all files. They are set in `diann_config.
 | `--min-corr 2 --corr-diff 1 --time-corr-only` | `--performance_mode`                               | `true`                                          | PRELIMINARY                              | High-speed, low-RAM mode                                        |
 | `--pg-level`                                  | `--pg_level`                                       | `2`                                             | INDIVIDUAL, FINAL                        | Protein grouping level                                          |
 | `--species-genes`                             | `--species_genes`                                  | `false`                                         | FINAL                                    | Use species-specific gene names                                 |
-| `--no-norm`                                   | `--diann_normalize`                                | `true`                                          | FINAL                                    | Disable normalization when `false`                              |
+| `--no-norm`                                   | `--normalize`                                      | `true`                                          | FINAL                                    | Disable normalization when `false`                              |
 
 ### PTM site localization (`--monitor-mod`)
 
@@ -283,11 +283,11 @@ Supported modification name mappings:
 
 ## Passing Extra Arguments to DIA-NN
 
-The `--diann_extra_args` parameter appends additional DIA-NN command-line flags to **all** DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION).
+The `--extra_args` parameter appends additional DIA-NN command-line flags to **all** DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION).
 
 ```bash
 nextflow run bigbio/quantmsdiann \
-    --diann_extra_args '--smart-profiling --peak-center' \
+    --extra_args '--smart-profiling --peak-center' \
     ...
 ```
 
@@ -323,12 +323,12 @@ The pipeline supports multiple DIA-NN versions via built-in Nextflow profiles. E
 | `diann_v1_8_1` | 1.8.1          | `docker.io/biocontainers/diann:v1.8.1_cv1` | Default. Public BioContainers image. TSV output.               |
 | `diann_v2_1_0` | 2.1.0          | `ghcr.io/bigbio/diann:2.1.0`               | Parquet output. Native .raw on Linux. QuantUMS (`--quantums`). |
 | `diann_v2_2_0` | 2.2.0          | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC). Parquet output.       |
-| `diann_v2_3_2` | 2.3.2          | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (`--diann_dda`), InfinDIA, up to 9 variable mods.  |
+| `diann_v2_3_2` | 2.3.2          | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (`--dda`), InfinDIA, up to 9 variable mods.        |
 
 **Version-dependent features:** Some parameters are only available with newer DIA-NN versions. The pipeline handles version compatibility automatically:
 
 - **QuantUMS** (`--quantums`): Requires >= 1.9.2. The `--direct-quant` flag is automatically skipped for DIA-NN 1.8.x where direct quantification is the only mode.
-- **DDA mode** (`--diann_dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
+- **DDA mode** (`--dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
 - **InfinDIA** (`--enable_infin_dia`): Requires >= 2.3.0.
 
 Usage:

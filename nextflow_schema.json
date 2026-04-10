@@ -347,20 +347,20 @@
                     "description": "Instructs DIA-NN to add the organism identifier to the gene names",
                     "fa_icon": "far fa-check-square"
                 },
-                "diann_speclib": {
+                "speclib": {
                     "type": "string",
                     "description": "The spectral library to use for DIA-NN",
                     "fa_icon": "fas fa-file",
                     "help_text": "If passed, will use that spectral library to carry out the DIA-NN search, instead of predicting one from the fasta file.",
                     "hidden": false
                 },
-                "diann_report_decoys": {
+                "report_decoys": {
                     "type": "boolean",
                     "description": "Save decoy PSMs to the main .parquet report for DIA-NN 2.0.*",
                     "fa_icon": "far fa-check-square",
                     "hidden": false
                 },
-                "diann_export_xic": {
+                "export_xic": {
                     "type": "boolean",
                     "description": "instructs DIA-NN to extract MS1/fragment chromatograms for identified precursors within X seconds from the elution apex, with X set to 10s if not provided;equivalent to the 'XICs' option in the GUI",
                     "fa_icon": "far fa-check-square",
@@ -393,37 +393,39 @@
                     "help_text": "Sets the DIA-NN parameter --quant-params. Provide previously obtained QuantUMS parameters to use instead of training new ones.",
                     "hidden": false
                 },
-                "diann_no_peptidoforms": {
-                    "type": "boolean",
-                    "description": "Set no-peptidoforms mode: disables automatic peptidoform scoring when variable modifications are declared (DIA-NN: not recommended).",
-                    "fa_icon": "far fa-check-square",
-                    "default": false
+                "scoring_mode": {
+                    "type": "string",
+                    "default": "generic",
+                    "enum": ["generic", "proteoforms", "peptidoforms"],
+                    "description": "DIA-NN scoring mode. 'generic' maximizes IDs (default). 'proteoforms' validates single-residue differences — recommended for proteogenomics/variant detection (requires DIA-NN >= 2.0). 'peptidoforms' provides extra peptidoform q-values for PTM analysis.",
+                    "fa_icon": "fas fa-bullseye",
+                    "help_text": "Controls DIA-NN's decoy generation strategy. In 'generic' mode, decoys are fully shuffled sequences. In 'proteoforms' mode, decoys differ by a single residue — directly modelling the confusion between canonical and variant peptides (e.g., COSMIC missense mutations). In 'peptidoforms' mode, generic q-values are calculated plus extra peptidoform-level q-values for PTM localization."
                 },
-                "diann_tims_sum": {
+                "tims_sum": {
                     "type": "boolean",
                     "description": "Enable '--quant-tims-sum' for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF).",
                     "fa_icon": "far fa-check-square",
                     "default": false
                 },
-                "diann_im_window": {
+                "im_window": {
                     "type": "number",
                     "description": "Set '--im-window' to ensure the IM extraction window is not smaller than the specified value.",
                     "fa_icon": "fas fa-filter"
                 },
-                "diann_use_quant": {
+                "use_quant": {
                     "type": "boolean",
                     "description": "Set '--use-quant' to reuse existing .quant files if available.",
                     "fa_icon": "far fa-check-square",
                     "default": true
                 },
 
-                "diann_channel_run_norm": {
+                "channel_run_norm": {
                     "type": "boolean",
                     "description": "Set '--channel-run-norm'. Run-specific normalisation for multiplexing (e.g., Protein Turnover SILAC)",
                     "fa_icon": "far fa-check-square",
                     "default": false
                 },
-                "diann_channel_spec_norm": {
+                "channel_spec_norm": {
                     "type": "boolean",
                     "description": "Set '--channel-spec-norm'. Channel-specific normalisation for multiplexing (Independent Samples)",
                     "fa_icon": "far fa-check-square",
@@ -435,7 +437,7 @@
                     "fa_icon": "fas fa-forward",
                     "hidden": false
                 },
-                "diann_debug": {
+                "debug_level": {
                     "type": "integer",
                     "description": "Debug level",
                     "default": 3,
@@ -443,7 +445,7 @@
                     "enum": [0, 1, 2, 3, 4],
                     "hidden": true
                 },
-                "diann_normalize": {
+                "normalize": {
                     "type": "boolean",
                     "description": "Enable cross-run normalization between runs by diann.",
                     "default": true,
@@ -467,32 +469,32 @@
                     "fa_icon": "fas fa-filter",
                     "hidden": true
                 },
-                "diann_extra_args": {
+                "extra_args": {
                     "type": "string",
                     "description": "Extra arguments appended to all DIA-NN steps. Flags incompatible with specific steps are automatically stripped with a warning.",
                     "fa_icon": "fas fa-terminal",
                     "hidden": false,
                     "help_text": "Pass additional DIA-NN command-line arguments that will be appended to all DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION). Flags that conflict with a specific step are automatically stripped with a warning. For step-specific overrides, use custom Nextflow config files with ext.args."
                 },
-                "diann_dda": {
+                "dda": {
                     "type": "boolean",
                     "description": "Explicitly enable DDA mode. Normally auto-detected from the SDRF acquisition method column. Use only when SDRF lacks this column. Requires DIA-NN >= 2.3.2.",
                     "fa_icon": "fas fa-flask",
                     "default": false
                 },
-                "diann_light_models": {
+                "light_models": {
                     "type": "boolean",
                     "description": "Enable --light-models for 10x faster in-silico library generation (DIA-NN >= 2.0).",
                     "fa_icon": "fas fa-bolt",
                     "default": false
                 },
-                "diann_export_quant": {
+                "export_quant": {
                     "type": "boolean",
                     "description": "Enable --export-quant for fragment-level parquet data export (DIA-NN >= 2.0).",
                     "fa_icon": "fas fa-file-export",
                     "default": false
                 },
-                "diann_site_ms1_quant": {
+                "site_ms1_quant": {
                     "type": "boolean",
                     "description": "Enable --site-ms1-quant to use MS1 apex intensities for PTM site quantification (DIA-NN >= 2.0).",
                     "fa_icon": "fas fa-crosshairs",
@@ -504,7 +506,7 @@
                     "fa_icon": "fas fa-infinity",
                     "default": false
                 },
-                "diann_pre_select": {
+                "pre_select": {
                     "type": "integer",
                     "description": "Set --pre-select N precursor limit for InfinDIA pre-search.",
                     "fa_icon": "fas fa-filter"

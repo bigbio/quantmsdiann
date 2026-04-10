@@ -109,13 +109,13 @@ The pipeline executes the following steps:
 
 ### DIA-NN Version-Specific Features
 
-| Feature                                     | Min Version | Parameter                    |
-| ------------------------------------------- | ----------- | ---------------------------- |
-| Core workflow, library-free, .quant caching | 1.8.1       | (default)                    |
-| QuantUMS quantification                     | 1.9.2       | `--quantums true`            |
-| Parquet output format                       | 2.0         | (automatic in 2.0+)          |
-| Decoy reporting                             | 2.0         | `--diann_report_decoys true` |
-| Native .raw on Linux                        | 2.1.0       | (automatic)                  |
+| Feature                                     | Min Version | Parameter              |
+| ------------------------------------------- | ----------- | ---------------------- |
+| Core workflow, library-free, .quant caching | 1.8.1       | (default)              |
+| QuantUMS quantification                     | 1.9.2       | `--quantums true`      |
+| Parquet output format                       | 2.0         | (automatic in 2.0+)    |
+| Decoy reporting                             | 2.0         | `--report_decoys true` |
+| Native .raw on Linux                        | 2.1.0       | (automatic)            |
 
 ---
 

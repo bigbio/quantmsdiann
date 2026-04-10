@@ -36,8 +36,8 @@ workflow DIA {
     ch_software_versions = channel.empty()
 
     // Version guard for DDA mode (when explicitly set via param)
-    if (params.diann_dda && VersionUtils.versionLessThan(params.diann_version, '2.3.2')) {
-        error("DDA mode (--diann_dda) requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
+    if (params.dda && VersionUtils.versionLessThan(params.diann_version, '2.3.2')) {
+        error("DDA mode (--dda) requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
     }
 
     // Version guard for InfinDIA
@@ -45,12 +45,17 @@ workflow DIA {
         error("InfinDIA requires DIA-NN >= 2.3.0. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
     }
 
+    // Version guard for scoring mode
+    if (params.scoring_mode == 'proteoforms' && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
+        error("--proteoforms scoring mode requires DIA-NN >= 2.0. Current version: ${params.diann_version}. Use -profile diann_v2_1_0 or later")
+    }
+
     // Version guard for DIA-NN 2.0+ features
-    if ((params.diann_light_models || params.diann_export_quant || params.diann_site_ms1_quant) && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
+    if ((params.light_models || params.export_quant || params.site_ms1_quant) && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
         def enabled = []
-        if (params.diann_light_models) enabled << '--light-models'
-        if (params.diann_export_quant) enabled << '--export-quant'
-        if (params.diann_site_ms1_quant) enabled << '--site-ms1-quant'
+        if (params.light_models) enabled << '--light-models'
+        if (params.export_quant) enabled << '--export-quant'
+        if (params.site_ms1_quant) enabled << '--site-ms1-quant'
         error("${enabled.join(', ')} require DIA-NN >= 2.0. Current version: ${params.diann_version}. Use -profile diann_v2_1_0 or later")
     }
 
@@ -70,7 +75,7 @@ workflow DIA {
 
     // Determine DDA mode: true if explicitly set via param OR auto-detected from SDRF
     ch_is_dda = ch_experiment_meta.map { meta ->
-        def dda = params.diann_dda || meta.acquisition_method == 'dda'
+        def dda = params.dda || meta.acquisition_method == 'dda'
         if (dda && VersionUtils.versionLessThan(params.diann_version, '2.3.2')) {
             error("DDA mode (detected from SDRF) requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
         }
@@ -84,8 +89,8 @@ workflow DIA {
     //
     // MODULE: SILICOLIBRARYGENERATION
     //
-    if (params.diann_speclib != null && params.diann_speclib.toString() != "") {
-        speclib = channel.from(file(params.diann_speclib, checkIfExists: true))
+    if (params.speclib != null && params.speclib.toString() != "") {
+        speclib = channel.from(file(params.speclib, checkIfExists: true))
     } else {
         INSILICO_LIBRARY_GENERATION(ch_searchdb, ch_diann_cfg_val, ch_is_dda)
         speclib = INSILICO_LIBRARY_GENERATION.out.predict_speclib

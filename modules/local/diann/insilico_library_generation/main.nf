@@ -32,7 +32,7 @@ process INSILICO_LIBRARY_GENERATION {
          '--min-pr-charge', '--max-pr-charge', '--var-mods',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
          '--met-excision', '--monitor-mod', '--dda', '--light-models',
-         '--infin-dia', '--pre-select']
+         '--infin-dia', '--pre-select', '--proteoforms', '--peptidoforms', '--no-peptidoforms']
     // Sort by length descending so longer flags (e.g. --fasta-search) are matched before shorter prefixes (--fasta, --f)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -47,11 +47,12 @@ process INSILICO_LIBRARY_GENERATION {
     min_fr_mz = params.min_fr_mz ? "--min-fr-mz $params.min_fr_mz":""
     max_fr_mz = params.max_fr_mz ? "--max-fr-mz $params.max_fr_mz":""
     met_excision = params.met_excision ? "--met-excision" : ""
-    diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     diann_dda_flag = is_dda ? "--dda" : ""
-    diann_light_models = params.diann_light_models ? "--light-models" : ""
+    diann_light_models = params.light_models ? "--light-models" : ""
     infin_dia_flag = params.enable_infin_dia ? "--infin-dia" : ""
-    pre_select_flag = (params.enable_infin_dia && params.diann_pre_select) ? "--pre-select $params.diann_pre_select" : ""
+    pre_select_flag = (params.enable_infin_dia && params.pre_select) ? "--pre-select $params.pre_select" : ""
 
     """
     diann `cat ${diann_config}` \\
@@ -70,9 +71,9 @@ process INSILICO_LIBRARY_GENERATION {
             --var-mods $params.max_mods \\
             --threads ${task.cpus} \\
             --predictor \\
-            --verbose $params.diann_debug \\
+            --verbose $params.debug_level \\
             --gen-spec-lib \\
-            ${diann_no_peptidoforms} \\
+            ${scoring_mode} \\
             ${diann_light_models} \\
             ${infin_dia_flag} \\
             ${pre_select_flag} \\

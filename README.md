@@ -26,7 +26,7 @@ The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard
 
 1. **Input validation** — SDRF parsing and validation via [sdrf-pipelines](https://github.com/bigbio/sdrf-pipelines)
 2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing
-3. **In-silico spectral library generation** — deep learning-based prediction, or use a user-provided library (`--diann_speclib`)
+3. **In-silico spectral library generation** — deep learning-based prediction, or use a user-provided library (`--speclib`)
 4. **Preliminary analysis** — per-file calibration and mass accuracy estimation (parallelized)
 5. **Empirical library assembly** — consensus library from preliminary results with RT profiling
 6. **Individual analysis** — per-file search with the empirical library (parallelized)

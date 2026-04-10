@@ -71,14 +71,14 @@ def create_meta_channel_grouped(String filestr, List rows, Map wrapper) {
         exit(1, "ERROR: Please check input file -> File Uri does not exist!\n${filestr}")
     }
 
-    // Detect acquisition method from SDRF or fallback to --diann_dda param
+    // Detect acquisition method from SDRF or fallback to --dda param
     def acqMethod = base_row.AcquisitionMethod?.toString()?.trim() ?: ""
     if (acqMethod.toLowerCase().contains("data-independent acquisition") || acqMethod.toLowerCase().contains("dia")) {
         meta.acquisition_method = "dia"
     } else if (acqMethod.toLowerCase().contains("data-dependent acquisition") || acqMethod.toLowerCase().contains("dda")) {
         meta.acquisition_method = "dda"
     } else if (acqMethod.isEmpty()) {
-        meta.acquisition_method = params.diann_dda ? "dda" : "dia"
+        meta.acquisition_method = params.dda ? "dda" : "dia"
     } else {
         log.error("Unsupported acquisition method: '${acqMethod}'. This pipeline supports DIA and DDA. Found in file: ${filestr}")
         exit(1)

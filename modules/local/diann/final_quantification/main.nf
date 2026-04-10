@@ -52,7 +52,8 @@ process FINAL_QUANTIFICATION {
          '--qvalue', '--matrix-qvalue', '--matrix-spec-q', '--window', '--individual-windows',
          '--species-genes', '--report-decoys', '--xic', '--no-norm',
          '--monitor-mod', '--var-mod', '--fixed-mod', '--dda', '--export-quant', '--site-ms1-quant',
-         '--channels', '--lib-fixed-mod', '--original-mods']
+         '--channels', '--lib-fixed-mod', '--original-mods',
+         '--proteoforms', '--peptidoforms', '--no-peptidoforms']
     // Sort by length descending so longer flags (e.g. --individual-windows) are matched before shorter prefixes (--window)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -64,21 +65,22 @@ process FINAL_QUANTIFICATION {
 
     scan_window = params.scan_window_automatic ? "--individual-windows" : "--window $params.scan_window"
     species_genes = params.species_genes ? "--species-genes": ""
-    no_norm = params.diann_normalize ? "" : "--no-norm"
-    report_decoys = params.diann_report_decoys ? "--report-decoys": ""
-    diann_export_xic = params.diann_export_xic ? "--xic": ""
+    no_norm = params.normalize ? "" : "--no-norm"
+    report_decoys = params.report_decoys ? "--report-decoys": ""
+    diann_export_xic = params.export_xic ? "--xic": ""
     // --direct-quant exists in DIA-NN >= 1.9.2 (QuantUMS counterpart); skip for older versions
     quantums = params.quantums ? "" : (VersionUtils.versionAtLeast(params.diann_version, '1.9.2') ? "--direct-quant" : "")
     quantums_train_runs = params.quantums_train_runs ? "--quant-train-runs $params.quantums_train_runs": ""
     quantums_sel_runs = params.quantums_sel_runs ? "--quant-sel-runs $params.quantums_sel_runs": ""
     quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
-    diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
-    diann_use_quant = params.diann_use_quant ? "--use-quant" : ""
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    diann_use_quant = params.use_quant ? "--use-quant" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
-    diann_export_quant = params.diann_export_quant ? "--export-quant" : ""
-    diann_site_ms1_quant = params.diann_site_ms1_quant ? "--site-ms1-quant" : ""
-    diann_channel_run_norm = params.diann_channel_run_norm ? "--channel-run-norm" : ""
-    diann_channel_spec_norm = params.diann_channel_spec_norm ? "--channel-spec-norm" : ""
+    diann_export_quant = params.export_quant ? "--export-quant" : ""
+    diann_site_ms1_quant = params.site_ms1_quant ? "--site-ms1-quant" : ""
+    diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
     """
     # Notes: if .quant files are passed, mzml/.d files are not accessed, so the name needs to be passed but files
@@ -91,7 +93,7 @@ process FINAL_QUANTIFICATION {
             --fasta ${fasta} \\
             --f ${(ms_files as List).join(' --f ')} \\
             --threads ${task.cpus} \\
-            --verbose $params.diann_debug \\
+            --verbose $params.debug_level \\
             --temp ./quant/ \\
             --relaxed-prot-inf \\
             --pg-level $params.pg_level \\
@@ -108,7 +110,7 @@ process FINAL_QUANTIFICATION {
             ${quantums_train_runs} \\
             ${quantums_sel_runs} \\
             ${quantums_params} \\
-            ${diann_no_peptidoforms} \\
+            ${scoring_mode} \\
             ${diann_use_quant} \\
             ${diann_dda_flag} \\
             ${diann_export_quant} \\
