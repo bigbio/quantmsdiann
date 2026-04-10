@@ -45,6 +45,11 @@ workflow DIA {
         error("InfinDIA requires DIA-NN >= 2.3.0. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
     }
 
+    // Version guard for scoring mode
+    if (params.diann_scoring_mode == 'proteoforms' && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
+        error("--proteoforms scoring mode requires DIA-NN >= 2.0. Current version: ${params.diann_version}. Use -profile diann_v2_1_0 or later")
+    }
+
     // Version guard for DIA-NN 2.0+ features
     if ((params.diann_light_models || params.diann_export_quant || params.diann_site_ms1_quant) && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
         def enabled = []

@@ -50,7 +50,8 @@ process FINAL_QUANTIFICATION {
          '--qvalue', '--window', '--individual-windows',
          '--species-genes', '--report-decoys', '--xic', '--no-norm',
          '--monitor-mod', '--var-mod', '--fixed-mod', '--dda', '--export-quant', '--site-ms1-quant',
-         '--channels', '--lib-fixed-mod', '--original-mods']
+         '--channels', '--lib-fixed-mod', '--original-mods',
+         '--proteoforms', '--peptidoforms']
     // Sort by length descending so longer flags (e.g. --individual-windows) are matched before shorter prefixes (--window)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -71,6 +72,8 @@ process FINAL_QUANTIFICATION {
     quantums_sel_runs = params.quantums_sel_runs ? "--quant-sel-runs $params.quantums_sel_runs": ""
     quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     diann_use_quant = params.diann_use_quant ? "--use-quant" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
     diann_export_quant = params.diann_export_quant ? "--export-quant" : ""
@@ -105,6 +108,7 @@ process FINAL_QUANTIFICATION {
             ${quantums_sel_runs} \\
             ${quantums_params} \\
             ${diann_no_peptidoforms} \\
+            ${diann_scoring_mode} \\
             ${diann_use_quant} \\
             ${diann_dda_flag} \\
             ${diann_export_quant} \\

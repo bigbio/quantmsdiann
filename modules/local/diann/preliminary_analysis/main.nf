@@ -29,7 +29,8 @@ process PRELIMINARY_ANALYSIS {
          '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
          '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf', '--dda',
-         '--channels', '--lib-fixed-mod', '--original-mods']
+         '--channels', '--lib-fixed-mod', '--original-mods',
+         '--proteoforms', '--peptidoforms']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -43,6 +44,8 @@ process PRELIMINARY_ANALYSIS {
     quick_mass_acc = params.quick_mass_acc ? "--quick-mass-acc" : ""
     performance_flags = params.performance_mode ? "--min-corr 2 --corr-diff 1 --time-corr-only" : ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
 
     // I am using here the ["key"] syntax, since the preprocessed meta makes
     // was evaluating to null when using the dot notation.
@@ -101,6 +104,7 @@ process PRELIMINARY_ANALYSIS {
             ${min_fr_mz} \\
             ${max_fr_mz} \\
             ${diann_no_peptidoforms} \\
+            ${diann_scoring_mode} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             --no-prot-inf \\

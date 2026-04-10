@@ -29,7 +29,8 @@ process INDIVIDUAL_ANALYSIS {
          '--no-ifs-removal', '--no-main-report', '--relaxed-prot-inf', '--pg-level',
          '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
          '--monitor-mod', '--var-mod', '--fixed-mod', '--dda',
-         '--channels', '--lib-fixed-mod', '--original-mods']
+         '--channels', '--lib-fixed-mod', '--original-mods',
+         '--proteoforms', '--peptidoforms']
     // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
     blocked.sort { a -> -a.length() }.each { flag ->
         def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
@@ -81,6 +82,8 @@ process INDIVIDUAL_ANALYSIS {
     }
 
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
     diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
@@ -117,6 +120,7 @@ process INDIVIDUAL_ANALYSIS {
             ${min_fr_mz} \\
             ${max_fr_mz} \\
             ${diann_no_peptidoforms} \\
+            ${diann_scoring_mode} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\

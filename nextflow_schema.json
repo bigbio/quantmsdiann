@@ -388,6 +388,14 @@
                     "help_text": "Sets the DIA-NN parameter --quant-params. Provide previously obtained QuantUMS parameters to use instead of training new ones.",
                     "hidden": false
                 },
+                "diann_scoring_mode": {
+                    "type": "string",
+                    "default": "generic",
+                    "enum": ["generic", "proteoforms", "peptidoforms"],
+                    "description": "DIA-NN scoring mode. 'generic' maximizes IDs (default). 'proteoforms' validates single-residue differences — recommended for proteogenomics/variant detection (requires DIA-NN >= 2.0). 'peptidoforms' provides extra peptidoform q-values for PTM analysis.",
+                    "fa_icon": "fas fa-bullseye",
+                    "help_text": "Controls DIA-NN's decoy generation strategy. In 'generic' mode, decoys are fully shuffled sequences. In 'proteoforms' mode, decoys differ by a single residue — directly modelling the confusion between canonical and variant peptides (e.g., COSMIC missense mutations). In 'peptidoforms' mode, generic q-values are calculated plus extra peptidoform-level q-values for PTM localization."
+                },
                 "diann_no_peptidoforms": {
                     "type": "boolean",
                     "description": "Set no-peptidoforms mode: disables automatic peptidoform scoring when variable modifications are declared (DIA-NN: not recommended).",
