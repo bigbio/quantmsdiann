@@ -82,8 +82,8 @@ process INDIVIDUAL_ANALYSIS {
     }
 
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
-    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
-                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
     diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
@@ -120,7 +120,7 @@ process INDIVIDUAL_ANALYSIS {
             ${min_fr_mz} \\
             ${max_fr_mz} \\
             ${diann_no_peptidoforms} \\
-            ${diann_scoring_mode} \\
+            ${scoring_mode} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\

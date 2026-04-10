@@ -46,7 +46,7 @@ workflow DIA {
     }
 
     // Version guard for scoring mode
-    if (params.diann_scoring_mode == 'proteoforms' && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
+    if (params.scoring_mode == 'proteoforms' && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
         error("--proteoforms scoring mode requires DIA-NN >= 2.0. Current version: ${params.diann_version}. Use -profile diann_v2_1_0 or later")
     }
 

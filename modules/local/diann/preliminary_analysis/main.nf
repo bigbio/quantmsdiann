@@ -44,8 +44,8 @@ process PRELIMINARY_ANALYSIS {
     quick_mass_acc = params.quick_mass_acc ? "--quick-mass-acc" : ""
     performance_flags = params.performance_mode ? "--min-corr 2 --corr-diff 1 --time-corr-only" : ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
-    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
-                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
 
     // I am using here the ["key"] syntax, since the preprocessed meta makes
     // was evaluating to null when using the dot notation.
@@ -104,7 +104,7 @@ process PRELIMINARY_ANALYSIS {
             ${min_fr_mz} \\
             ${max_fr_mz} \\
             ${diann_no_peptidoforms} \\
-            ${diann_scoring_mode} \\
+            ${scoring_mode} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             --no-prot-inf \\

@@ -48,8 +48,8 @@ process INSILICO_LIBRARY_GENERATION {
     max_fr_mz = params.max_fr_mz ? "--max-fr-mz $params.max_fr_mz":""
     met_excision = params.met_excision ? "--met-excision" : ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
-    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
-                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     diann_dda_flag = is_dda ? "--dda" : ""
     diann_light_models = params.diann_light_models ? "--light-models" : ""
     infin_dia_flag = params.enable_infin_dia ? "--infin-dia" : ""
@@ -74,7 +74,7 @@ process INSILICO_LIBRARY_GENERATION {
             --verbose $params.diann_debug \\
             --gen-spec-lib \\
             ${diann_no_peptidoforms} \\
-            ${diann_scoring_mode} \\
+            ${scoring_mode} \\
             ${diann_light_models} \\
             ${infin_dia_flag} \\
             ${pre_select_flag} \\

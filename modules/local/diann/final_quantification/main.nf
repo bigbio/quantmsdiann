@@ -72,8 +72,8 @@ process FINAL_QUANTIFICATION {
     quantums_sel_runs = params.quantums_sel_runs ? "--quant-sel-runs $params.quantums_sel_runs": ""
     quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
     diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
-    diann_scoring_mode = params.diann_scoring_mode == 'proteoforms' ? '--proteoforms' :
-                         params.diann_scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     diann_use_quant = params.diann_use_quant ? "--use-quant" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
     diann_export_quant = params.diann_export_quant ? "--export-quant" : ""
@@ -108,7 +108,7 @@ process FINAL_QUANTIFICATION {
             ${quantums_sel_runs} \\
             ${quantums_params} \\
             ${diann_no_peptidoforms} \\
-            ${diann_scoring_mode} \\
+            ${scoring_mode} \\
             ${diann_use_quant} \\
             ${diann_dda_flag} \\
             ${diann_export_quant} \\

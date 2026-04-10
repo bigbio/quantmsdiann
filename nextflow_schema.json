@@ -388,7 +388,7 @@
                     "help_text": "Sets the DIA-NN parameter --quant-params. Provide previously obtained QuantUMS parameters to use instead of training new ones.",
                     "hidden": false
                 },
-                "diann_scoring_mode": {
+                "scoring_mode": {
                     "type": "string",
                     "default": "generic",
                     "enum": ["generic", "proteoforms", "peptidoforms"],
