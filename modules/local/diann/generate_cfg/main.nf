@@ -3,8 +3,8 @@ process GENERATE_CFG {
     label 'process_tiny'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.28--pyh106432d_0' :
-        'biocontainers/quantms-utils:0.0.28--pyh106432d_0' }"
+        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.29--pyhdfd78af_0' :
+        'biocontainers/quantms-utils:0.0.29--pyhdfd78af_0' }"
 
     input:
     val(meta)
