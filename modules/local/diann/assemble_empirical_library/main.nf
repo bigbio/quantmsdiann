@@ -26,23 +26,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
 
     script:
     def args = task.ext.args ?: ''
-    // Strip flags that are managed by the pipeline to prevent silent conflicts
-    def blocked = ['--no-main-report', '--no-ifs-removal', '--matrices', '--out',
-         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
-         '--mass-acc', '--mass-acc-ms1', '--window',
-         '--individual-mass-acc', '--individual-windows',
-         '--out-lib', '--use-quant', '--gen-spec-lib', '--rt-profiling',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda',
-         '--channels', '--lib-fixed-mod', '--original-mods',
-         '--proteoforms', '--peptidoforms', '--no-peptidoforms']
-    // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
-    blocked.sort { a -> -a.length() }.each { flag ->
-        def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
-        if (args =~ flagPattern) {
-            log.warn "DIA-NN: '${flag}' is managed by the pipeline for ASSEMBLE_EMPIRICAL_LIBRARY and will be stripped."
-            args = args.replaceAll(flagPattern, '').trim()
-        }
-    }
+    args = BlockedFlags.strip('ASSEMBLE_EMPIRICAL_LIBRARY', args, log)
 
     if (params.mass_acc_automatic) {
         mass_acc = '--individual-mass-acc'

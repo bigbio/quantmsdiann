@@ -45,23 +45,7 @@ process FINAL_QUANTIFICATION {
 
     script:
     def args = task.ext.args ?: ''
-    // Strip flags that are managed by the pipeline to prevent silent conflicts
-    def blocked = ['--no-main-report', '--gen-spec-lib', '--out-lib', '--no-ifs-removal',
-         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
-         '--use-quant', '--matrices', '--out', '--relaxed-prot-inf', '--pg-level',
-         '--qvalue', '--matrix-qvalue', '--matrix-spec-q', '--window', '--individual-windows',
-         '--species-genes', '--report-decoys', '--xic', '--no-norm',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda', '--export-quant', '--site-ms1-quant',
-         '--channels', '--lib-fixed-mod', '--original-mods',
-         '--proteoforms', '--peptidoforms', '--no-peptidoforms']
-    // Sort by length descending so longer flags (e.g. --individual-windows) are matched before shorter prefixes (--window)
-    blocked.sort { a -> -a.length() }.each { flag ->
-        def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
-        if (args =~ flagPattern) {
-            log.warn "DIA-NN: '${flag}' is managed by the pipeline for FINAL_QUANTIFICATION and will be stripped."
-            args = args.replaceAll(flagPattern, '').trim()
-        }
-    }
+    args = BlockedFlags.strip('FINAL_QUANTIFICATION', args, log)
 
     scan_window = params.scan_window_automatic ? "--individual-windows" : "--window $params.scan_window"
     species_genes = params.species_genes ? "--species-genes": ""

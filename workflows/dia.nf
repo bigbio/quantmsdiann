@@ -51,12 +51,20 @@ workflow DIA {
     }
 
     // Version guard for DIA-NN 2.0+ features
-    if ((params.light_models || params.export_quant || params.site_ms1_quant) && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
+    if ((params.light_models || params.export_quant || params.site_ms1_quant || params.channel_run_norm || params.channel_spec_norm) && VersionUtils.versionLessThan(params.diann_version, '2.0')) {
         def enabled = []
         if (params.light_models) enabled << '--light-models'
         if (params.export_quant) enabled << '--export-quant'
         if (params.site_ms1_quant) enabled << '--site-ms1-quant'
+        if (params.channel_run_norm) enabled << '--channel-run-norm'
+        if (params.channel_spec_norm) enabled << '--channel-spec-norm'
         error("${enabled.join(', ')} require DIA-NN >= 2.0. Current version: ${params.diann_version}. Use -profile diann_v2_1_0 or later")
+    }
+
+    // Warn about contradictory normalization flags
+    if (!params.normalize && (params.channel_run_norm || params.channel_spec_norm)) {
+        log.warn "Both --normalize false (adds --no-norm) and channel normalization flags are set. " +
+            "These may conflict — --no-norm disables cross-run normalization while channel normalization requires it."
     }
 
     ch_searchdb = channel.fromPath(params.database, checkIfExists: true)
