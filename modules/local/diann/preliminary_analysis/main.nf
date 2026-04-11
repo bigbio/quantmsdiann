@@ -22,23 +22,9 @@ process PRELIMINARY_ANALYSIS {
 
     script:
     def args = task.ext.args ?: ''
-    // Strip flags that are managed by the pipeline to prevent silent conflicts
-    def blocked = ['--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out',
-         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
-         '--mass-acc', '--mass-acc-ms1', '--window',
-         '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
-         '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf', '--dda',
-         '--channels', '--lib-fixed-mod', '--original-mods',
-         '--proteoforms', '--peptidoforms', '--no-peptidoforms']
-    // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
-    blocked.sort { a -> -a.length() }.each { flag ->
-        def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
-        if (args =~ flagPattern) {
-            log.warn "DIA-NN: '${flag}' is managed by the pipeline for PRELIMINARY_ANALYSIS and will be stripped."
-            args = args.replaceAll(flagPattern, '').trim()
-        }
-    }
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
+    args = BlockedFlags.strip('PRELIMINARY_ANALYSIS', args, log)
 
     // Performance flags for preliminary analysis calibration step
     quick_mass_acc = params.quick_mass_acc ? "--quick-mass-acc" : ""
