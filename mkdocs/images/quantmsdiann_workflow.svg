@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 830" width="880" height="830">
+  <defs>
+    <style>
+      .station-label { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 500; fill: #333333; }
+      .station-sublabel { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; fill: #777777; }
+      .legend-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; fill: #555555; }
+      .legend-title { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; fill: #333333; }
+      .title-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; fill: #999999; }
+      .tool-badge { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 8.5px; font-weight: 700; fill: #ffffff; letter-spacing: 0.3px; }
+      .skip-label { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; fill: #999999; font-style: italic; }
+      .parallel-label { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 9px; font-weight: 600; fill: #E53935; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="880" height="830" fill="#ffffff"/>
+
+  <!-- ===== LEGEND (top right) ===== -->
+  <g transform="translate(610, 30)">
+    <text x="0" y="0" class="legend-title">LEGEND</text>
+    <line x1="0" y1="18" x2="30" y2="18" stroke="#999999" stroke-width="3" stroke-dasharray="6,4"/>
+    <text x="38" y="22" class="legend-text">Optional / skippable</text>
+    <line x1="0" y1="38" x2="30" y2="38" stroke="#1565C0" stroke-width="5"/>
+    <text x="38" y="42" class="legend-text">Input handling</text>
+    <line x1="0" y1="58" x2="30" y2="58" stroke="#00897B" stroke-width="5"/>
+    <text x="38" y="62" class="legend-text">Preprocessing</text>
+    <line x1="0" y1="78" x2="30" y2="78" stroke="#43A047" stroke-width="5"/>
+    <text x="38" y="82" class="legend-text">DIA-NN analysis</text>
+    <line x1="0" y1="98" x2="30" y2="98" stroke="#F57C00" stroke-width="5"/>
+    <text x="38" y="102" class="legend-text">Statistics &amp; export</text>
+    <line x1="0" y1="118" x2="30" y2="118" stroke="#8E24AA" stroke-width="5"/>
+    <text x="38" y="122" class="legend-text">Quality control</text>
+    <line x1="0" y1="137" x2="200" y2="137" stroke="#eeeeee" stroke-width="1"/>
+    <circle cx="8" cy="152" r="8" fill="#333333" stroke="#333333" stroke-width="2"/>
+    <text x="38" y="156" class="legend-text">Process / module</text>
+    <circle cx="8" cy="174" r="7" fill="#ffffff" stroke="#333333" stroke-width="2.5"/>
+    <text x="38" y="178" class="legend-text">Output file</text>
+    <line x1="0" y1="193" x2="200" y2="193" stroke="#eeeeee" stroke-width="1"/>
+    <g transform="translate(0, 206)">
+      <line x1="0" y1="0" x2="12" y2="0" stroke="#43A047" stroke-width="4"/>
+      <line x1="18" y1="0" x2="30" y2="0" stroke="#E53935" stroke-width="4"/>
+      <text x="38" y="4" class="legend-text">Per-file (parallel)</text>
+    </g>
+    <g transform="translate(0, 226)">
+      <line x1="0" y1="0" x2="30" y2="0" stroke="#43A047" stroke-width="5"/>
+      <text x="38" y="4" class="legend-text">Collective (all files)</text>
+    </g>
+  </g>
+
+  <!-- ===== METRO LINES ===== -->
+
+  <!-- === INPUT LINE (Blue) === -->
+  <path d="M 140,55 L 140,140" stroke="#1565C0" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 380,55 L 380,100 Q 380,120 350,120 L 220,120 Q 190,120 190,140" stroke="#1565C0" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- === PREPROCESSING LINE (Teal) === -->
+  <path d="M 140,140 L 140,175" stroke="#00897B" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 190,140 L 190,160 Q 190,172 175,172 L 155,172 Q 140,172 140,182" stroke="#00897B" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- File Preparation — PARALLEL: fork into dual rails -->
+  <path d="M 140,175 L 134,190" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 140,175 L 146,190" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 134,190 L 134,250" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 146,190 L 146,250" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 134,250 L 140,265" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 146,250 L 140,265" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- === DIA-NN LINE (Green) — curve to column === -->
+  <path d="M 140,265 L 140,290 Q 140,310 170,310 L 280,310 Q 310,310 310,330 L 310,430" stroke="#43A047" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- Optional branch: skip spectral library -->
+  <path d="M 310,390 Q 310,375 340,375 L 420,375 Q 445,375 445,395 L 445,420 Q 445,440 420,440 L 340,440 Q 310,440 310,455" stroke="#999999" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="6,4"/>
+
+  <!-- === Preliminary Analysis — PARALLEL === -->
+  <path d="M 310,430 L 304,445" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 310,430 L 316,445" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 304,445 L 304,490" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 316,445 L 316,490" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 304,490 L 310,505" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 316,490 L 310,505" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- === Empirical Library — single === -->
+  <path d="M 310,505 L 310,540" stroke="#43A047" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- Optional branch: skip preliminary + empirical -->
+  <path d="M 310,430 Q 310,418 280,418 L 120,418 Q 90,418 90,445 L 90,545 Q 90,570 120,570 L 280,570 Q 310,570 310,580" stroke="#999999" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="6,4"/>
+
+  <!-- === Individual Analysis — PARALLEL === -->
+  <path d="M 310,540 L 310,570" stroke="#43A047" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 310,570 L 304,585" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 310,570 L 316,585" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 304,585 L 304,625" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 316,585 L 316,625" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 304,625 L 310,640" stroke="#43A047" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 316,625 L 310,640" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- === Final Quantification — single === -->
+  <path d="M 310,640 L 310,665" stroke="#43A047" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- === STATISTICS LINE (Orange) === -->
+  <path d="M 310,665 L 310,720" stroke="#F57C00" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- === QC LINE (Purple) — branch from Final Quant === -->
+  <path d="M 310,665 Q 310,685 340,685 L 480,685 Q 510,685 510,705 L 510,745" stroke="#8E24AA" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- === OUTPUT LINES === -->
+  <path d="M 310,720 L 310,775" stroke="#F57C00" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 310,665 Q 310,685 280,685 L 150,685 Q 120,685 120,705 L 120,775" stroke="#43A047" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 510,745 L 510,775" stroke="#8E24AA" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- ===== STATIONS ===== -->
+
+  <!-- == INPUT STATIONS == -->
+  <circle cx="140" cy="55" r="9" fill="#1565C0" stroke="#ffffff" stroke-width="2"/>
+  <text x="160" y="51" class="station-label">SDRF + Raw Files</text>
+  <text x="160" y="66" class="station-sublabel">.raw / .mzML / .d / .dia</text>
+
+  <circle cx="380" cy="55" r="9" fill="#1565C0" stroke="#ffffff" stroke-width="2"/>
+  <text x="400" y="51" class="station-label">FASTA Database</text>
+  <text x="400" y="66" class="station-sublabel">Protein sequences</text>
+
+  <!-- == PREPROCESSING STATIONS == -->
+  <circle cx="140" cy="140" r="9" fill="#00897B" stroke="#ffffff" stroke-width="2"/>
+  <rect x="158" y="130" width="78" height="17" rx="3" fill="#00897B"/>
+  <text x="197" y="142" class="tool-badge" text-anchor="middle">INPUT_CHECK</text>
+  <text x="248" y="142" class="station-label">Input Validation</text>
+  <text x="248" y="157" class="station-sublabel">SDRF parsing &amp; validation</text>
+
+  <circle cx="140" cy="175" r="6" fill="#00897B" stroke="#ffffff" stroke-width="2"/>
+  <text x="160" y="187" class="station-sublabel">Create Input Channel</text>
+
+  <!-- File Preparation — PER-FILE -->
+  <circle cx="140" cy="220" r="9" fill="#00897B" stroke="#ffffff" stroke-width="2"/>
+  <rect x="158" y="210" width="105" height="17" rx="3" fill="#00897B"/>
+  <text x="210" y="222" class="tool-badge" text-anchor="middle">FILE_PREPARATION</text>
+  <text x="275" y="222" class="station-label">File Preparation</text>
+  <text x="275" y="237" class="station-sublabel">RAW → mzML conversion, indexing</text>
+  <text x="275" y="251" class="parallel-label">⫽ per-file parallel</text>
+
+  <!-- == DIA-NN STATIONS == -->
+  <circle cx="310" cy="350" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="340" width="96" height="17" rx="3" fill="#43A047"/>
+  <text x="376" y="352" class="tool-badge" text-anchor="middle">GENERATE_CFG</text>
+  <text x="436" y="352" class="station-label">Generate Config</text>
+  <text x="436" y="367" class="station-sublabel">enzyme + mods → diann.cfg</text>
+
+  <circle cx="310" cy="390" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="380" width="178" height="17" rx="3" fill="#43A047"/>
+  <text x="417" y="392" class="tool-badge" text-anchor="middle">INSILICO_LIBRARY_GENERATION</text>
+  <text x="518" y="392" class="station-label">Spectral Library</text>
+  <text x="518" y="407" class="station-sublabel">in-silico prediction from FASTA</text>
+  <text x="518" y="421" class="skip-label">skip if --diann_speclib</text>
+
+  <!-- Preliminary Analysis — PER-FILE -->
+  <circle cx="310" cy="467" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="457" width="130" height="17" rx="3" fill="#43A047"/>
+  <text x="393" y="469" class="tool-badge" text-anchor="middle">PRELIMINARY_ANALYSIS</text>
+  <text x="470" y="469" class="station-label">Preliminary Analysis</text>
+  <text x="470" y="484" class="station-sublabel">per-file calibration &amp; mass accuracy</text>
+  <text x="470" y="498" class="parallel-label">⫽ per-file parallel</text>
+
+  <!-- Assemble Empirical Library — collective -->
+  <circle cx="310" cy="540" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="530" width="155" height="17" rx="3" fill="#43A047"/>
+  <text x="405" y="542" class="tool-badge" text-anchor="middle">ASSEMBLE_EMPIRICAL_LIBRARY</text>
+  <text x="495" y="542" class="station-label">Empirical Library</text>
+  <text x="495" y="557" class="station-sublabel">consensus from .quant files</text>
+
+  <!-- Skip annotation for preliminary + empirical -->
+  <text x="75" y="480" class="skip-label" text-anchor="end">skip if</text>
+  <text x="75" y="492" class="skip-label" text-anchor="end">--skip_preliminary</text>
+  <text x="75" y="504" class="skip-label" text-anchor="end">_analysis</text>
+
+  <!-- Individual Analysis — PER-FILE -->
+  <circle cx="310" cy="605" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="595" width="126" height="17" rx="3" fill="#43A047"/>
+  <text x="391" y="607" class="tool-badge" text-anchor="middle">INDIVIDUAL_ANALYSIS</text>
+  <text x="466" y="607" class="station-label">Individual Analysis</text>
+  <text x="466" y="622" class="station-sublabel">per-file search with empirical library</text>
+  <text x="466" y="636" class="parallel-label">⫽ per-file parallel</text>
+
+  <!-- Final Quantification — collective -->
+  <circle cx="310" cy="665" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="655" width="132" height="17" rx="3" fill="#43A047"/>
+  <text x="394" y="667" class="tool-badge" text-anchor="middle">FINAL_QUANTIFICATION</text>
+  <text x="472" y="667" class="station-label">Final Quantification</text>
+  <text x="472" y="682" class="station-sublabel">summary report + matrices</text>
+
+  <!-- == STATISTICS STATION == -->
+  <circle cx="310" cy="720" r="9" fill="#F57C00" stroke="#ffffff" stroke-width="2"/>
+  <rect x="328" y="710" width="96" height="17" rx="3" fill="#F57C00"/>
+  <text x="376" y="722" class="tool-badge" text-anchor="middle">DIANN_MSSTATS</text>
+  <text x="325" y="742" class="station-label">MSstats Conversion</text>
+  <text x="325" y="756" class="station-sublabel">DIA-NN report → MSstats CSV</text>
+
+  <!-- == QC STATION == -->
+  <circle cx="510" cy="745" r="9" fill="#8E24AA" stroke="#ffffff" stroke-width="2"/>
+  <rect x="528" y="735" width="66" height="17" rx="3" fill="#8E24AA"/>
+  <text x="561" y="747" class="tool-badge" text-anchor="middle">PMULTIQC</text>
+  <text x="606" y="747" class="station-label">pMultiQC</text>
+  <text x="606" y="762" class="station-sublabel">Quality control report</text>
+
+  <!-- == OUTPUT STATIONS (open circles) == -->
+  <circle cx="120" cy="785" r="8" fill="#ffffff" stroke="#43A047" stroke-width="2.5"/>
+  <text x="120" y="805" class="station-label" text-anchor="middle">Quant Tables</text>
+  <text x="120" y="819" class="station-sublabel" text-anchor="middle">pg / pr / gg matrices</text>
+
+  <circle cx="310" cy="785" r="8" fill="#ffffff" stroke="#F57C00" stroke-width="2.5"/>
+  <text x="310" y="805" class="station-label" text-anchor="middle">MSstats CSV</text>
+  <text x="310" y="819" class="station-sublabel" text-anchor="middle">msstats_in.csv</text>
+
+  <circle cx="510" cy="785" r="8" fill="#ffffff" stroke="#8E24AA" stroke-width="2.5"/>
+  <text x="510" y="805" class="station-label" text-anchor="middle">QC Report</text>
+  <text x="510" y="819" class="station-sublabel" text-anchor="middle">HTML interactive</text>
+
+</svg>
