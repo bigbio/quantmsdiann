@@ -1,0 +1,34 @@
+site_name: quantmsdiann
+site_description: DIA proteomics Nextflow pipeline powered by DIA-NN
+site_author: BigBio Team
+site_url: https://quantmsdiann.quantms.org/
+repo_name: bigbio/quantmsdiann
+repo_url: https://github.com/bigbio/quantmsdiann
+theme:
+  name: material
+  font: false
+  palette:
+    - scheme: default
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+extra_css:
+  - stylesheets/quantms-theme.css
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Parameters: parameters.md
+  - Output: output.md
