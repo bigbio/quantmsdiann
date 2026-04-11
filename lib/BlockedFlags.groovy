@@ -1,9 +1,25 @@
 /**
  * Centralised registry of DIA-NN flags managed by the pipeline.
  *
- * Each DIA-NN module has a set of flags that the pipeline controls directly.
- * If a user passes any of these via --extra_args, they are stripped with a warning
- * to prevent silent conflicts.
+ * WHY THIS EXISTS:
+ * The pipeline controls certain DIA-NN flags directly (e.g. --threads, --out, --qvalue)
+ * based on pipeline parameters, SDRF metadata, or step-specific logic. If a user also
+ * passes these via --extra_args, the flag would appear twice in the DIA-NN command —
+ * causing silent conflicts or undefined behaviour. This registry strips managed flags
+ * from extra_args with a warning, so the pipeline's values always take precedence.
+ *
+ * WHY A GROOVY CLASS AND NOT CONFIG FILES:
+ * Blocked flags are a safety mechanism. Defining them in Nextflow config (e.g. via
+ * ext.blocked_flags) would allow users to accidentally override or disable them in
+ * custom configs. A compiled Groovy class in lib/ cannot be overridden by user configs,
+ * ensuring the safety net is always active. It also provides a single file to audit
+ * and edit when adding new managed flags.
+ *
+ * HOW TO ADD A NEW BLOCKED FLAG:
+ * - If the flag applies to ALL DIA-NN steps, add it to the COMMON list below.
+ * - If it applies to specific steps only, add it to the relevant MODULE_FLAGS entry.
+ * - No changes needed in the module .nf files — they call BlockedFlags.strip() which
+ *   reads from this registry automatically.
  *
  * Nextflow auto-loads all classes in lib/, so this is available in all modules.
  */

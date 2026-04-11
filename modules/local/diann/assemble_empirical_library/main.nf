@@ -26,6 +26,8 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
 
     script:
     def args = task.ext.args ?: ''
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('ASSEMBLE_EMPIRICAL_LIBRARY', args, log)
 
     if (params.mass_acc_automatic) {

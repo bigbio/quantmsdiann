@@ -22,6 +22,8 @@ process PRELIMINARY_ANALYSIS {
 
     script:
     def args = task.ext.args ?: ''
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('PRELIMINARY_ANALYSIS', args, log)
 
     // Performance flags for preliminary analysis calibration step

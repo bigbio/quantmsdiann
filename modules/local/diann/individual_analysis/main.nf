@@ -22,6 +22,8 @@ process INDIVIDUAL_ANALYSIS {
 
     script:
     def args = task.ext.args ?: ''
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('INDIVIDUAL_ANALYSIS', args, log)
 
     // Warn about flags that override pipeline-computed calibration values (not blocked, but may change behaviour)

@@ -24,6 +24,8 @@ process INSILICO_LIBRARY_GENERATION {
 
     script:
     def args = task.ext.args ?: ''
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('INSILICO_LIBRARY_GENERATION', args, log)
 
     min_pr_mz = params.min_pr_mz ? "--min-pr-mz $params.min_pr_mz":""

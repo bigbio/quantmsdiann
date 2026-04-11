@@ -45,6 +45,8 @@ process FINAL_QUANTIFICATION {
 
     script:
     def args = task.ext.args ?: ''
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('FINAL_QUANTIFICATION', args, log)
 
     scan_window = params.scan_window_automatic ? "--individual-windows" : "--window $params.scan_window"
