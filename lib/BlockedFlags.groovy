@@ -56,7 +56,6 @@ class BlockedFlags {
             '--mass-acc', '--mass-acc-ms1', '--window',
             '--individual-mass-acc', '--individual-windows',
             '--out-lib', '--use-quant', '--gen-spec-lib', '--rt-profiling',
-            '--no-prot-inf', '--relaxed-prot-inf', '--pg-level',
         ],
         INDIVIDUAL_ANALYSIS: [
             '--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out', '--rt-profiling',
