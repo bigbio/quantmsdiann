@@ -25,7 +25,13 @@
  */
 class BlockedFlags {
 
-    // Flags common to ALL DIA-NN steps
+    // Flags common to ALL DIA-NN steps.
+    // These are always set by the pipeline from config/SDRF, so user overrides would conflict.
+    //   --temp/--threads/--verbose: controlled by Nextflow task resources and debug_level param
+    //   --lib/--f/--fasta: set from workflow inputs (speclib, ms_files, database)
+    //   --var-mod/--fixed-mod/--monitor-mod/--channels/--lib-fixed-mod/--original-mods: injected from diann_config.cfg
+    //   --dda: auto-detected from SDRF or set via --dda param
+    //   --proteoforms/--peptidoforms/--no-peptidoforms: controlled by scoring_mode param
     private static final List<String> COMMON = [
         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
         '--monitor-mod', '--var-mod', '--fixed-mod', '--dda',
@@ -33,9 +39,19 @@ class BlockedFlags {
         '--proteoforms', '--peptidoforms', '--no-peptidoforms',
     ]
 
-    // Per-module additional blocked flags (on top of COMMON)
+    // Per-module additional blocked flags (on top of COMMON).
+    //
+    // Flags are blocked for two reasons:
+    //   1. "Pipeline-managed": the pipeline sets them explicitly from params/SDRF/metadata.
+    //      Allowing user overrides would create duplicate/conflicting flags.
+    //   2. "No-effect guard": the flag has no effect in this step (e.g., protein inference
+    //      during library assembly). Blocking prevents users from passing them and wrongly
+    //      believing they had an effect.
+    //
+    // When reason is non-obvious, a comment explains why the flag is blocked.
     private static final Map<String, List<String>> MODULE_FLAGS = [
         INSILICO_LIBRARY_GENERATION: [
+            // Pipeline-managed: set from params (library generation settings)
             '--use-quant', '--no-main-report', '--matrices', '--out',
             '--fasta-search', '--predictor', '--gen-spec-lib',
             '--missed-cleavages', '--min-pep-len', '--max-pep-len',
@@ -45,29 +61,44 @@ class BlockedFlags {
             '--infin-dia', '--pre-select',
         ],
         PRELIMINARY_ANALYSIS: [
+            // Pipeline-managed: set from params and SDRF calibration metadata
             '--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out',
             '--mass-acc', '--mass-acc-ms1', '--window',
             '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
             '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
+            // Pipeline-managed: preliminary step disables protein inference (--no-prot-inf)
             '--no-prot-inf',
         ],
         ASSEMBLE_EMPIRICAL_LIBRARY: [
+            // Pipeline-managed: set from params and calibration results
             '--no-main-report', '--no-ifs-removal', '--matrices', '--out',
             '--mass-acc', '--mass-acc-ms1', '--window',
             '--individual-mass-acc', '--individual-windows',
             '--out-lib', '--use-quant', '--gen-spec-lib', '--rt-profiling',
+            // No-effect guard: protein inference flags have no effect during library assembly
+            // (--gen-spec-lib produces a spectral library, not a quantified report).
+            // Blocked to prevent users from thinking they affect this step.
+            '--no-prot-inf', '--relaxed-prot-inf', '--pg-level',
         ],
         INDIVIDUAL_ANALYSIS: [
+            // Pipeline-managed: set from params and calibrated values from assembly step
             '--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out', '--rt-profiling',
             '--mass-acc', '--mass-acc-ms1', '--window',
-            '--no-ifs-removal', '--no-main-report', '--relaxed-prot-inf', '--pg-level',
+            '--no-ifs-removal', '--no-main-report',
+            // Pipeline-managed: protein inference set by pipeline (--relaxed-prot-inf --pg-level)
+            '--relaxed-prot-inf', '--pg-level',
             '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
             '--no-prot-inf',
         ],
         FINAL_QUANTIFICATION: [
+            // Pipeline-managed: set from params for final report generation
             '--no-main-report', '--gen-spec-lib', '--out-lib', '--no-ifs-removal',
-            '--use-quant', '--matrices', '--out', '--relaxed-prot-inf', '--pg-level',
-            '--qvalue', '--matrix-qvalue', '--matrix-spec-q', '--window', '--individual-windows',
+            '--use-quant', '--matrices', '--out',
+            // Pipeline-managed: protein inference (--relaxed-prot-inf --pg-level)
+            '--relaxed-prot-inf', '--pg-level',
+            // Pipeline-managed: FDR controls (precursor_qvalue, matrix_qvalue, matrix_spec_q)
+            '--qvalue', '--matrix-qvalue', '--matrix-spec-q',
+            '--window', '--individual-windows',
             '--species-genes', '--report-decoys', '--xic', '--no-norm',
             '--export-quant', '--site-ms1-quant',
             '--channel-run-norm', '--channel-spec-norm',
