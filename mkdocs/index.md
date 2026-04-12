@@ -1,5 +1,9 @@
 # quantmsdiann
 
+[![GitHub release](https://img.shields.io/github/v/release/bigbio/quantmsdiann)](https://github.com/bigbio/quantmsdiann/releases)
+[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A523.04.0-brightgreen.svg)](https://www.nextflow.io/)
+[![CI](https://github.com/bigbio/quantmsdiann/actions/workflows/ci.yml/badge.svg)](https://github.com/bigbio/quantmsdiann/actions/workflows/ci.yml)
+
 **DIA proteomics Nextflow pipeline powered by DIA-NN.**
 
 quantmsdiann is a cloud-ready Nextflow pipeline for Data-Independent Acquisition (DIA) proteomics. It leverages [DIA-NN](https://github.com/vdemichev/DiaNN) as the core engine for peptide identification and quantification, with full integration into the quantms ecosystem.
