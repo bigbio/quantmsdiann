@@ -1,5 +1,33 @@
 {% extends "base.html" %}
 
+{% block extrahead %}
+<meta property="og:image" content="https://quantmsdiann.quantms.org/images/social-card.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "quantmsdiann",
+  "description": "Nextflow pipeline for DIA quantitative proteomics powered by DIA-NN. Supports library-free and library-based DIA workflows.",
+  "applicationCategory": "Scientific Software",
+  "applicationSubCategory": "Proteomics",
+  "operatingSystem": "Linux, macOS, Windows",
+  "url": "https://quantmsdiann.quantms.org",
+  "downloadUrl": "https://github.com/bigbio/quantmsdiann",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": {
+    "@type": "Organization",
+    "name": "BigBio",
+    "url": "https://quantms.org"
+  },
+  "citation": {
+    "@type": "ScholarlyArticle",
+    "name": "quantms: a cloud-based pipeline for quantitative proteomics enables the reanalysis of public proteomics data",
+    "url": "https://doi.org/10.1038/s41592-024-02343-1"
+  }
+}
+</script>
+{% endblock %}
+
 {% block footer %}
 <footer class="md-footer">
   {% if page.previous_page or page.next_page %}
