@@ -1,0 +1,116 @@
+# quantmsdiann — Full Reference
+
+> Nextflow pipeline for DIA quantitative proteomics powered by DIA-NN.
+
+## Overview
+
+quantmsdiann processes DIA (Data-Independent Acquisition) mass spectrometry data using DIA-NN as the core engine. It supports two modes:
+
+1. Library-free: Raw DIA files + FASTA → in-silico spectral library generation (DIA-NN predict) → DIA-NN analysis → protein quantification
+2. Library-based: Raw DIA files + empirical spectral library → DIA-NN analysis → protein quantification
+
+## Installation
+
+### Prerequisites
+- Nextflow >= 21.10.3
+- Container runtime: Docker (recommended), Singularity, or Conda
+
+### Run with Docker
+nextflow run bigbio/quantmsdiann -r main -profile docker \
+  --input samplesheet.csv \
+  --database proteins.fasta \
+  --outdir results/
+
+### Run with Singularity (HPC)
+nextflow run bigbio/quantmsdiann -r main -profile singularity \
+  --input samplesheet.csv \
+  --database proteins.fasta \
+  --outdir results/
+
+## Input Files
+
+### Samplesheet (CSV)
+spectra_file,sdrf_file
+/path/to/sample1.raw,/path/to/sdrf.tsv
+/path/to/sample2.raw,/path/to/sdrf.tsv
+
+### SDRF File
+Tab-separated file following the SDRF-Proteomics standard. Key columns:
+- source name: sample identifier
+- characteristics[organism]: species
+- comment[instrument]: mass spectrometer
+- comment[precursor mass tolerance]: search tolerance
+- comment[fragment mass tolerance]: fragment tolerance
+
+### FASTA Database
+Standard UniProt FASTA. Used for in-silico library generation in library-free mode.
+
+## Key Parameters
+
+### DIA-NN Settings
+- --diann_normalize true (default: normalize across runs)
+- --diann_library_generation true (library-free mode)
+- --diann_speclib /path/to/library.tsv (library-based mode)
+- --mass_acc_ms1 10 (MS1 mass accuracy ppm)
+- --mass_acc_ms2 20 (MS2 mass accuracy ppm)
+
+### FDR
+- --fdr_cutoff 0.01 (1% FDR at precursor and protein level)
+
+### Performance
+- --diann_threads 8 (threads per DIA-NN process)
+- --max_memory 32.GB
+
+## Output Files
+
+results/
+├── diann_report/
+│   ├── report.tsv              # Main DIA-NN report
+│   ├── report.pr_matrix.tsv    # Precursor-level matrix
+│   ├── report.pg_matrix.tsv    # Protein group matrix
+│   └── report.gg_matrix.tsv    # Gene group matrix
+├── msstats/
+│   └── msstats_input.csv       # MSstats-compatible CSV
+├── pmultiqc/
+│   └── multiqc_report.html     # Interactive QC report
+└── pipeline_info/
+
+## Common Workflows
+
+### Library-free DIA analysis
+nextflow run bigbio/quantmsdiann -r main -profile docker \
+  --input samplesheet.csv \
+  --database uniprot_human.fasta \
+  --diann_library_generation true \
+  --outdir results/
+
+### Library-based DIA analysis
+nextflow run bigbio/quantmsdiann -r main -profile docker \
+  --input samplesheet.csv \
+  --diann_speclib spectral_library.tsv \
+  --outdir results/
+
+## Integration with Ecosystem
+
+- QC reports: pmultiqc generates reports from quantmsdiann output
+- Downstream quantification: mokume can process DIA-NN protein matrices
+- Data format: qpx converts output to QPX Parquet format
+- Reanalyzed data: quantms Portal hosts DIA datasets processed with quantmsdiann
+
+## Troubleshooting
+
+- Out of memory during library generation: increase --max_memory
+- Low protein identifications: check SDRF organism matches FASTA species
+- Slow on large cohorts: increase --diann_threads and --max_cpus
+
+## Related Tools
+
+- quantms: DDA proteomics pipeline (https://docs.quantms.org)
+- pmultiqc: QC reports (https://pmultiqc.quantms.org)
+- mokume: protein quantification library (https://mokume.quantms.org)
+- qpx: data format toolkit (https://qpx.quantms.org)
+
+## Citation
+
+Dai C et al. Nature Methods. 2024;21:1603-1607. DOI: 10.1038/s41592-024-02343-1
+Demichev V et al. Nature Methods. 2020;17:41-44. DOI: 10.1038/s41592-019-0638-x
