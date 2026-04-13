@@ -61,6 +61,7 @@ process FINAL_QUANTIFICATION {
     quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    aa_eq = params.aa_eq ? '--aa-eq' : ''
     diann_use_quant = params.use_quant ? "--use-quant" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
     diann_export_quant = params.export_quant ? "--export-quant" : ""
@@ -97,6 +98,7 @@ process FINAL_QUANTIFICATION {
             ${quantums_sel_runs} \\
             ${quantums_params} \\
             ${scoring_mode} \\
+            ${aa_eq} \\
             ${diann_use_quant} \\
             ${diann_dda_flag} \\
             ${diann_export_quant} \\

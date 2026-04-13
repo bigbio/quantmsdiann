@@ -35,6 +35,7 @@ process INSILICO_LIBRARY_GENERATION {
     met_excision = params.met_excision ? "--met-excision" : ""
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    aa_eq = params.aa_eq ? '--aa-eq' : ''
     diann_dda_flag = is_dda ? "--dda" : ""
     diann_light_models = params.light_models ? "--light-models" : ""
     infin_dia_flag = params.enable_infin_dia ? "--infin-dia" : ""
@@ -60,6 +61,7 @@ process INSILICO_LIBRARY_GENERATION {
             --verbose $params.debug_level \\
             --gen-spec-lib \\
             ${scoring_mode} \\
+            ${aa_eq} \\
             ${diann_light_models} \\
             ${infin_dia_flag} \\
             ${pre_select_flag} \\
