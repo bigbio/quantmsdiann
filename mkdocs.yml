@@ -29,6 +29,12 @@ theme:
     - content.code.copy
 extra_css:
   - https://quantms.org/css/quantms-theme.css
+
+extra:
+  analytics:
+    provider: google
+    property: G-6PL70G5VC1
+
 nav:
   - Home: index.md
   - Installation: installation.md
