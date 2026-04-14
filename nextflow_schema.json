@@ -401,6 +401,13 @@
                     "fa_icon": "fas fa-bullseye",
                     "help_text": "Controls DIA-NN's decoy generation strategy. In 'generic' mode, decoys are fully shuffled sequences. In 'proteoforms' mode, decoys differ by a single residue — directly modelling the confusion between canonical and variant peptides (e.g., COSMIC missense mutations). In 'peptidoforms' mode, generic q-values are calculated plus extra peptidoform-level q-values for PTM localization."
                 },
+                "aa_eq": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Treat I&L, Q&E, N&D as equivalent amino acids during reannotation. Essential for entrapment FDR benchmarks.",
+                    "fa_icon": "fas fa-equals",
+                    "help_text": "Maps to DIA-NN's --aa-eq flag. When enabled, peptides are matched to proteins considering isoleucine/leucine, glutamine/glutamic acid, and asparagine/aspartic acid as equivalent. This is essential when benchmarking FDR using entrapment databases, as without it the assessment measures the ability to distinguish deamidated peptides rather than true FDR."
+                },
                 "tims_sum": {
                     "type": "boolean",
                     "description": "Enable '--quant-tims-sum' for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF).",
