@@ -420,6 +420,7 @@ The `--tokens`, `--rt-model`, and `--im-model` flags are passed to all DIA-NN st
 > Use **absolute paths** for model files. The `--parent` flag is blocked by the pipeline (it controls the container's DIA-NN installation path).
 
 ### Integrated fine-tuning step
+
 The pipeline now includes an optional integrated fine-tuning phase, which eliminates the need for two separate runs. You can enable this feature by using the `--enable_fine_tuning` flag. The integrated workflow is:
 
 ```
