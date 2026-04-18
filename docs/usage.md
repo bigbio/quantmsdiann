@@ -367,9 +367,9 @@ DIA-NN's neural networks encode each amino acid and modification as a "token" â€
 The fine-tuned models are then used in place of the defaults when generating predicted spectral libraries.
 
 > [!NOTE]
-> **`--tune-lib` cannot be combined with `--gen-spec-lib` in a single DIA-NN invocation** ([confirmed in DIA-NN #1499](https://github.com/vdemichev/DiaNN/issues/1499)). Fine-tuning and library generation are separate DIA-NN commands. This means the workflow currently requires two pipeline runs.
+> **`--tune-lib` cannot be combined with `--gen-spec-lib` in a single DIA-NN invocation** ([confirmed in DIA-NN #1499](https://github.com/vdemichev/DiaNN/issues/1499)). Fine-tuning and library generation are still separate DIA-NN commands, but quantmsdiann can now orchestrate them within a single pipeline run when `--enable_fine_tuning` is used. Integrated fine-tuning requires DIA-NN v2.5.0 or later. The two-run/manual approach below is only needed when integrated fine-tuning is not enabled, or when using an older DIA-NN version that does not support this workflow.
 
-### Current workflow (manual fine-tuning)
+### Manual fallback workflow (two-run fine-tuning)
 
 **Run 1 â€” Generate the tuning library:**
 
