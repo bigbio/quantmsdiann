@@ -509,7 +509,7 @@
                 },
                 "enable_fine_tuning": {
                     "type": "boolean",
-                    "description": "Enable DL model fine-tuning before the main analysis. Runs a tuning search on a file subset, fine-tunes RT/IM models, then runs the full pipeline with tuned models. Requires DIA-NN >= 2.0.",
+                    "description": "Enable DL model fine-tuning before the main analysis. Runs a tuning search on a file subset, fine-tunes RT/IM models, then runs the full pipeline with tuned models. Requires DIA-NN >= 2.3.2.",
                     "fa_icon": "fas fa-brain",
                     "default": false,
                     "help_text": "When enabled, Phase 0 runs before the main pipeline: (1) in-silico library generation with default models, (2) preliminary analysis + assembly on a subset of files (controlled by --tune_n_files), (3) fine-tuning RT/IM models on the resulting empirical library, (4) re-generation of the in-silico library with tuned models. The main pipeline then runs from preliminary analysis using the tuned library."

@@ -21,7 +21,7 @@ input:
       pattern: "*.cfg"
   - is_dda:
       type: boolean
-      description: Whether DDA mode is enabled (auto-detected from SDRF or set via --diann_dda)
+      description: Whether DDA mode is enabled (auto-detected from SDRF or set via --dda)
 output:
   - predict_speclib:
       type: file

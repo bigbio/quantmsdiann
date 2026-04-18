@@ -119,7 +119,7 @@ workflow DIA {
 
     if (params.enable_fine_tuning) {
         // Step 0a: Generate a tuning library via InfinDIA on a subset of files
-        // Use a random subset (or all files if small dataset) for the tuning search
+        // Use a deterministic subset (or all files if small dataset) for the tuning search
         tuning_files = ch_file_preparation_results
             .toSortedList{ a, b -> file(a[1]).getName() <=> file(b[1]).getName() }
             .flatMap()

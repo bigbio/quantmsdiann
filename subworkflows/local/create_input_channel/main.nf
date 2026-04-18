@@ -18,8 +18,6 @@ workflow CREATE_INPUT_CHANNEL {
     ch_expdesign = SDRF_PARSING.out.ch_expdesign
     ch_diann_cfg = SDRF_PARSING.out.ch_diann_cfg
 
-    def enzymes = new HashSet()
-    def files = new HashSet()
 
     // Extract experiment_id from the SDRF filename
     ch_experiment_id = ch_sdrf.map { sdrf_file -> file(sdrf_file).baseName }
@@ -101,6 +99,9 @@ def create_meta_channel_grouped(String filestr, List rows, Map wrapper) {
     meta.enzyme = enzymes ? enzymes[0] : null
 
     def fixedMods = rows.collect { it.FixedModifications?.toString()?.trim() }.findAll { it }.unique()
+    if (fixedMods.size() > 1) {
+        log.error("SDRF conflict: Multiple FixedModifications (${fixedMods.join(',')}) found for file ${meta.id}. Please fix the SDRF.")
+    }
     meta.fixedmodifications = fixedMods ? fixedMods[0] : null
 
     // Validate required SDRF columns
