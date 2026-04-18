@@ -8,19 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 - DDA analysis mode support (requires DIA-NN >= 2.3.2), auto-detected from SDRF or set via `--dda`
-- DIA-NN 2.3.2 version profile (`-profile diann_v2_3_2`) with InfinDIA and DDA support
+- DIA-NN 2.3.2 and 2.5.0 version profiles (`-profile diann_v2_3_2`, `-profile diann_v2_5_0`)
+- DIA-NN 2.5.0 support: up to 70% more protein IDs, deep learning model fine-tuning and selection
+- Optional integrated fine-tuning step (`--enable_fine_tuning`): trains RT/IM/fragment models on a file subset before the main analysis, then regenerates the in-silico library with tuned models — no need for two separate pipeline runs
+- Fine-tuning parameters: `--tune_n_files`, `--tune_fr`, `--tune_lr`
+- Support for user-provided fine-tuned models via `--extra_args` (`--tokens`, `--rt-model`, `--fr-model`, `--im-model`)
 - Scoring mode parameter (`--scoring_mode`): `generic` (default), `proteoforms` (proteogenomics/variant detection, >= 2.0), `peptidoforms` (PTM analysis)
+- Amino acid equivalence parameter (`--aa_eq`) for entrapment FDR benchmarks (maps to `--aa-eq`)
 - FDR controls: `--precursor_qvalue`, `--matrix_qvalue`, `--matrix_spec_q` replacing the misleadingly named `protein_level_fdr_cutoff`
 - Channel normalization flags: `--channel_run_norm`, `--channel_spec_norm` for multiplexing workflows (plexDIA/SILAC)
 - InfinDIA support: `--enable_infin_dia`, `--pre_select` for ultra-large search spaces (DIA-NN >= 2.3.0)
 - Fragment-level export: `--export_quant` for parquet fragment data (DIA-NN >= 2.0)
 - MS1 PTM quantification: `--site_ms1_quant` (DIA-NN >= 2.0)
 - Skip preliminary analysis: `--skip_preliminary_analysis` to use a provided spectral library directly
-- Centralized blocked-flags registry (`lib/BlockedFlags.groovy`) replacing duplicated per-module logic
+- Centralized blocked-flags registry (`lib/BlockedFlags.groovy`) with documented rationale for each blocked flag
 - Version guards for all DIA-NN version-dependent features with clear error messages
 - `VersionUtils.groovy` for semantic version comparison (replaces fragile string comparisons)
 - Log capture via `tee` fallback in all DIA-NN modules for robust log handling across versions
 - CI: `test_dda` and `test_dia_skip_preanalysis` test profiles
+- `CITATION.cff` for standardized citation metadata
 
 ### `Changed`
 
@@ -30,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Matrix/stats outputs in FINAL_QUANTIFICATION now `optional: true` for DIA-NN 2.x compatibility
 - Decoupled container engine from DIA-NN version configs (engine selected via `-profile`, not version config)
 - Removed hardcoded DIA-NN container from `pride_codon_slurm.config`
+- `--parent` flag blocked in all DIA-NN modules (container-managed model path)
 - Updated Zenodo DOI to 10.5281/zenodo.19437128
 
 ### `Removed`
@@ -45,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missing blocked flags: `--no-prot-inf` in ASSEMBLE/INDIVIDUAL/FINAL, `--channel-run-norm`/`--channel-spec-norm` in FINAL, `--var-mod`/`--fixed-mod`/`--channels` in INSILICO
 - Unnecessary `.first()` warning on `ch_sdrf` value channel
 - `--out` added to in-silico library generation to produce a log file with DIA-NN 2.3.2
+- Calibration log parsing updated for DIA-NN 2.5.0 format changes
 
 ### `Dependencies`
 
