@@ -24,7 +24,7 @@ This is **non-negotiable**. All code must pass formatting and style checks befor
 
 - Built with Nextflow DSL2
 - DIA-NN for peptide/protein identification and quantification
-- Supports DIA-NN v1.8.1, v2.1.0, and v2.2.0 (latest)
+- Supports DIA-NN v1.8.1, v2.1.0, v2.2.0, v2.3.2, and v2.5.0 (latest)
 - QuantUMS quantification method (DIA-NN >= 1.9.2)
 - Parquet-native output with decoy reporting (DIA-NN >= 2.0)
 - MSstats-compatible output generation (via quantms-utils conversion, no MSstats analysis)
@@ -44,7 +44,7 @@ This is **non-negotiable**. All code must pass formatting and style checks befor
 - **nf-test**: Testing framework (config: `nf-test.config`)
 - **nf-core tools**: Pipeline standards and linting
 - **Containers**: Docker/Singularity/Apptainer/Podman (Conda deprecated)
-- **DIA-NN**: Primary search engine (versions 1.8.1 through 2.2.0)
+- **DIA-NN**: Primary search engine (versions 1.8.1 through 2.5.0)
 
 ### Key Configuration Files
 
@@ -80,7 +80,7 @@ quantmsdiann/
 │   ├── pmultiqc/              # QC reporting
 │   ├── sdrf_parsing/          # SDRF parsing
 │   ├── samplesheet_check/     # Input validation
-│   └── utils/                 # tdf2mzml, decompress, mzml stats
+│   └── utils/                 # decompress, mzml stats
 ├── conf/
 │   ├── base.config            # Resource definitions
 │   ├── modules/               # Module-specific configs
@@ -97,7 +97,7 @@ quantmsdiann/
 The pipeline executes the following steps:
 
 1. **SDRF Validation & Parsing** - Validates input SDRF and extracts metadata
-2. **File Preparation** - Converts RAW/mzML/.d/.dia files (ThermoRawFileParser, tdf2mzml)
+2. **File Preparation** - Converts RAW/mzML/.d/.dia files (ThermoRawFileParser)
 3. **Generate Config** - Creates DIA-NN config from enzyme/modifications (`quantmsutilsc dianncfg`)
 4. **In-Silico Library Generation** - Predicts spectral library from FASTA (or uses provided library)
 5. **Preliminary Analysis** - Per-file calibration and mass accuracy determination
@@ -109,13 +109,16 @@ The pipeline executes the following steps:
 
 ### DIA-NN Version-Specific Features
 
-| Feature                                     | Min Version | Parameter                    |
-| ------------------------------------------- | ----------- | ---------------------------- |
-| Core workflow, library-free, .quant caching | 1.8.1       | (default)                    |
-| QuantUMS quantification                     | 1.9.2       | `--quantums true`            |
-| Parquet output format                       | 2.0         | (automatic in 2.0+)          |
-| Decoy reporting                             | 2.0         | `--diann_report_decoys true` |
-| Native .raw on Linux                        | 2.1.0       | (automatic)                  |
+| Feature                                     | Min Version | Parameter              |
+| ------------------------------------------- | ----------- | ---------------------- |
+| Core workflow, library-free, .quant caching | 1.8.1       | (default)              |
+| QuantUMS quantification                     | 1.9.2       | `--quantums true`      |
+| Parquet output format                       | 2.0         | (automatic in 2.0+)    |
+| Decoy reporting                             | 2.0         | `--report_decoys true` |
+| Native .raw on Linux                        | 2.1.0       | (automatic)            |
+| DDA support                                 | 2.3.2       | `--dda true`           |
+| InfinDIA                                    | 2.3.0       | `--enable_infin_dia`   |
+| DL model fine-tuning & selection            | 2.5.0       | `--extra_args`         |
 
 ---
 
@@ -194,6 +197,8 @@ These apply on top of test profiles to override the DIA-NN container version:
 | `diann_v1_8_1` | `biocontainers/diann:v1.8.1_cv1` | none |
 | `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0`     | GHCR |
 | `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0`     | GHCR |
+| `diann_v2_3_2` | `ghcr.io/bigbio/diann:2.3.2`     | GHCR |
+| `diann_v2_5_0` | `ghcr.io/bigbio/diann:2.5.0`     | GHCR |
 
 ### CI Workflows
 

@@ -3,8 +3,8 @@ process DIANN_MSSTATS {
     label 'process_medium'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.28--pyh106432d_0' :
-        'biocontainers/quantms-utils:0.0.28--pyh106432d_0' }"
+        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.29--pyhdfd78af_0' :
+        'biocontainers/quantms-utils:0.0.29--pyhdfd78af_0' }"
 
     input:
     path(report)
@@ -18,10 +18,11 @@ process DIANN_MSSTATS {
     script:
     def args = task.ext.args ?: ''
     """
+    set -o pipefail
     quantmsutilsc diann2msstats \\
         --report ${report} \\
         --exp_design ${exp_design} \\
-        --qvalue_threshold $params.protein_level_fdr_cutoff \\
+        --qvalue_threshold $params.precursor_qvalue \\
         $args \\
         2>&1 | tee convert_report.log
 

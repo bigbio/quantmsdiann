@@ -59,10 +59,81 @@ nextflow run bigbio/quantmsdiann \
   -profile docker
 ```
 
-For Synchro-PASEF data, enable `--diann_tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
+For Synchro-PASEF data, enable `--tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
 
 > [!NOTE]
 > The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled, recommending to set tolerances via SDRF or pipeline parameters.
+
+### DDA Analysis Mode (Beta)
+
+DIA-NN 2.3.2+ supports DDA data analysis via the `--dda` flag. The pipeline **auto-detects DDA mode** from the SDRF `comment[proteomics data acquisition method]` column — no extra flags needed if your SDRF contains `data-dependent acquisition`:
+
+```bash
+nextflow run bigbio/quantmsdiann \
+  --input dda_sdrf.tsv \
+  --database proteins.fasta \
+  -profile diann_v2_3_2,docker
+```
+
+If your SDRF does not include the acquisition method column, you can explicitly enable DDA mode with `--dda true`:
+
+```bash
+nextflow run bigbio/quantmsdiann \
+  --input sdrf.tsv \
+  --database proteins.fasta \
+  --dda true \
+  -profile diann_v2_3_2,docker
+```
+
+**Limitations (beta feature):**
+
+- Only trust: q-values, PEP values, RT/IM values, Ms1.Apex.Area, Normalisation.Factor
+- PTM localization probabilities are **unreliable** with DDA data
+- MBR requires MS2-level evidence (DIA-like, not classical DDA MBR)
+- No isobaric labeling or reporter-tag quantification
+- Primary use cases: legacy DDA reanalysis, spectral library creation, immunopeptidomics
+
+The pipeline uses the same workflow for DDA as DIA — the `--dda` flag is passed to all DIA-NN steps automatically when DDA is detected from the SDRF or enabled via `--dda`.
+
+### Preprocessing Options
+
+- `--reindex_mzml` (default: true) — Re-index mzML files before processing. Disable with `--reindex_mzml false` if files are already indexed.
+- `--mzml_statistics` (default: false) — Generate mzML statistics (parquet format) for QC.
+- `--mzml_features` (default: false) — Enable feature detection in mzML statistics.
+
+Bruker `.d` files are supported natively by the current workflow and are passed directly to DIA-NN; there is no `--convert_dotd` preprocessing option.
+
+### Passing Extra Arguments to DIA-NN
+
+Use `--extra_args` to pass additional flags to all DIA-NN steps. The pipeline validates and strips flags it manages internally to prevent conflicts.
+
+Managed flags (stripped with a warning if passed via extra_args): `--lib`, `--f`, `--fasta`, `--threads`, `--verbose`, `--temp`, `--out`, `--matrices`, `--use-quant`, `--gen-spec-lib`, `--mass-acc`, `--mass-acc-ms1`, `--window`, `--var-mod`, `--fixed-mod`, `--monitor-mod`, and others.
+
+To enable this, add `includeConfig 'conf/modules/dia.config'` to your configuration (already included by default).
+
+### DIA-NN Version Selection
+
+The default DIA-NN version is 1.8.1. To use a different version:
+
+| Version | Profile                 | Features                            |
+| ------- | ----------------------- | ----------------------------------- |
+| 1.8.1   | (default)               | Core DIA analysis                   |
+| 2.1.0   | `-profile diann_v2_1_0` | Native .raw support, reduced memory |
+| 2.2.0   | `-profile diann_v2_2_0` | Speed optimizations                 |
+| 2.3.2   | `-profile diann_v2_3_2` | DDA support, InfinDIA               |
+| 2.5.0   | `-profile diann_v2_5_0` | +70% protein IDs, model fine-tuning |
+
+Example: `nextflow run bigbio/quantmsdiann -profile test_dia,docker,diann_v2_2_0`
+
+### Verbose Module Output
+
+Use `-profile verbose_modules` to publish intermediate files from all pipeline steps:
+
+```bash
+nextflow run bigbio/quantmsdiann -profile test_dia,docker,verbose_modules --outdir results
+```
+
+This publishes ThermoRawFileParser conversions, mzML indexing results, per-file DIA-NN logs, and spectral library intermediates.
 
 ### Pipeline settings via params file
 
@@ -86,7 +157,7 @@ outdir: "./results"
 Specify the pipeline version when running on your data:
 
 ```bash
-nextflow run bigbio/quantmsdiann -r 1.0.0 -profile docker --input sdrf.tsv --database db.fasta --outdir results
+nextflow run bigbio/quantmsdiann -r 2.0.0 -profile docker --input sdrf.tsv --database db.fasta --outdir results
 ```
 
 ## Core Nextflow arguments
@@ -119,7 +190,7 @@ nextflow run . -profile test_dia,docker --outdir results
 # DIA with Bruker .d files
 nextflow run . -profile test_dia_dotd,docker --outdir results
 
-# Latest DIA-NN version (2.1.0)
+# Latest DIA-NN version (2.5.0)
 nextflow run . -profile test_latest_dia,docker --outdir results
 ```
 
@@ -173,7 +244,7 @@ These parameters apply globally across all files. They are set in `diann_config.
 | `--min-corr 2 --corr-diff 1 --time-corr-only` | `--performance_mode`                               | `true`                                          | PRELIMINARY                              | High-speed, low-RAM mode                                        |
 | `--pg-level`                                  | `--pg_level`                                       | `2`                                             | INDIVIDUAL, FINAL                        | Protein grouping level                                          |
 | `--species-genes`                             | `--species_genes`                                  | `false`                                         | FINAL                                    | Use species-specific gene names                                 |
-| `--no-norm`                                   | `--diann_normalize`                                | `true`                                          | FINAL                                    | Disable normalization when `false`                              |
+| `--no-norm`                                   | `--normalize`                                      | `true`                                          | FINAL                                    | Disable normalization when `false`                              |
 
 ### PTM site localization (`--monitor-mod`)
 
@@ -214,11 +285,11 @@ Supported modification name mappings:
 
 ## Passing Extra Arguments to DIA-NN
 
-The `--diann_extra_args` parameter appends additional DIA-NN command-line flags to **all** DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION).
+The `--extra_args` parameter appends additional DIA-NN command-line flags to **all** DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION).
 
 ```bash
 nextflow run bigbio/quantmsdiann \
-    --diann_extra_args '--smart-profiling --peak-center' \
+    --extra_args '--smart-profiling --peak-center' \
     ...
 ```
 
@@ -249,17 +320,18 @@ process {
 
 The pipeline supports multiple DIA-NN versions via built-in Nextflow profiles. Each profile sets `params.diann_version` and overrides the container image for all `diann`-labelled processes.
 
-| Profile        | DIA-NN Version | Container                                  | Key features                                                   |
-| -------------- | -------------- | ------------------------------------------ | -------------------------------------------------------------- |
-| `diann_v1_8_1` | 1.8.1          | `docker.io/biocontainers/diann:v1.8.1_cv1` | Default. Public BioContainers image. TSV output.               |
-| `diann_v2_1_0` | 2.1.0          | `ghcr.io/bigbio/diann:2.1.0`               | Parquet output. Native .raw on Linux. QuantUMS (`--quantums`). |
-| `diann_v2_2_0` | 2.2.0          | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC). Parquet output.       |
-| `diann_v2_3_2` | 2.3.2          | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (`--diann_dda`), InfinDIA, up to 9 variable mods.  |
+| Profile        | DIA-NN Version | Container                                  | Key features                                                    |
+| -------------- | -------------- | ------------------------------------------ | --------------------------------------------------------------- |
+| `diann_v1_8_1` | 1.8.1          | `docker.io/biocontainers/diann:v1.8.1_cv1` | Default. Public BioContainers image. TSV output.                |
+| `diann_v2_1_0` | 2.1.0          | `ghcr.io/bigbio/diann:2.1.0`               | Parquet output. Native .raw on Linux. QuantUMS (`--quantums`).  |
+| `diann_v2_2_0` | 2.2.0          | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC). Parquet output.        |
+| `diann_v2_3_2` | 2.3.2          | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (`--dda`), InfinDIA, up to 9 variable mods.         |
+| `diann_v2_5_0` | 2.5.0          | `ghcr.io/bigbio/diann:2.5.0`               | Up to 70% more protein IDs. DL model fine-tuning and selection. |
 
 **Version-dependent features:** Some parameters are only available with newer DIA-NN versions. The pipeline handles version compatibility automatically:
 
 - **QuantUMS** (`--quantums`): Requires >= 1.9.2. The `--direct-quant` flag is automatically skipped for DIA-NN 1.8.x where direct quantification is the only mode.
-- **DDA mode** (`--diann_dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
+- **DDA mode** (`--dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
 - **InfinDIA** (`--enable_infin_dia`): Requires >= 2.3.0.
 
 Usage:
@@ -278,6 +350,86 @@ nextflow run bigbio/quantmsdiann \
 
 > [!NOTE]
 > DIA-NN 2.x images are hosted on `ghcr.io/bigbio` and may require authentication for private registries. The `diann_v2_1_0` and `diann_v2_2_0` profiles force Docker mode by default; for Singularity, override with your own config.
+
+## Fine-Tuning Deep Learning Models (DIA-NN 2.0+)
+
+DIA-NN uses deep learning models to predict retention time (RT), ion mobility (IM), and fragment ion intensities. For non-standard modifications, fine-tuning these models on real data can substantially improve detection.
+
+**When to fine-tune:** Fine-tuning is beneficial for custom chemical labels (e.g., mTRAQ, dimethyl), exotic PTMs, or unmodified cysteines. Standard modifications (Phospho, Oxidation, Acetylation, Deamidation, diGlycine) do not require fine-tuning — DIA-NN's built-in models already handle them well.
+
+### How fine-tuning works
+
+DIA-NN's neural networks encode each amino acid and modification as a "token" — an integer ID (0-255) mapped in a dictionary file (`dict.txt`). The default dictionary ships with DIA-NN and covers common modifications. When you fine-tune, DIA-NN:
+
+1. Reads a spectral library containing empirically observed peptides with the modifications of interest
+2. Learns how those modifications affect RT, IM, and fragmentation patterns
+3. Outputs new model files (`.pt` PyTorch format) and an expanded dictionary (`dict.txt`) that includes tokens for the new modifications
+
+The fine-tuned models are then used in place of the defaults when generating predicted spectral libraries.
+
+> [!NOTE]
+> **`--tune-lib` cannot be combined with `--gen-spec-lib` in a single DIA-NN invocation** ([confirmed in DIA-NN #1499](https://github.com/vdemichev/DiaNN/issues/1499)). Fine-tuning and library generation are still separate DIA-NN commands, but quantmsdiann can now orchestrate them within a single pipeline run when `--enable_fine_tuning` is used. Integrated fine-tuning requires DIA-NN v2.5.0 or later. The two-run/manual approach below is only needed when integrated fine-tuning is not enabled, or when using an older DIA-NN version that does not support this workflow.
+
+### Manual fallback workflow (two-run fine-tuning)
+
+**Run 1 — Generate the tuning library:**
+
+Run quantmsdiann normally. The empirical library produced by the ASSEMBLE_EMPIRICAL_LIBRARY step (after preliminary analysis) serves as the tuning library. This library contains empirically observed RT, IM, and fragment intensities for peptides bearing the modifications of interest.
+
+```bash
+# First run: standard pipeline to produce empirical library
+nextflow run bigbio/quantmsdiann \
+    -profile diann_v2_5_0,docker \
+    --input sdrf.tsv --database db.fasta --outdir results_run1
+# Output: results_run1/library_generation/assemble_empirical_library/empirical_library.parquet
+```
+
+**Fine-tune models (outside the pipeline):**
+
+```bash
+# Fine-tune RT and IM models using the empirical library
+diann --tune-lib /abs/path/to/empirical_library.parquet --tune-rt --tune-im
+
+# Optionally also fine-tune the fragmentation model (quality-sensitive — verify vs base model)
+diann --tune-lib /abs/path/to/empirical_library.parquet --tune-rt --tune-im --tune-fr
+```
+
+DIA-NN will output (named after the input library):
+
+- `empirical_library.dict.txt` — expanded tokenizer dictionary with new modification tokens
+- `empirical_library.rt.d0.pt` (+ `.d1.pt`, `.d2.pt`) — fine-tuned RT models (3 distillation levels)
+- `empirical_library.im.d0.pt` (+ `.d1.pt`, `.d2.pt`) — fine-tuned IM models
+- `empirical_library.fr.d0.pt` (+ `.d1.pt`, `.d2.pt`) — fine-tuned fragment models (if `--tune-fr`)
+
+Additional tuning parameters: `--tune-lr` (learning rate, default 0.0005), `--tune-restrict-layers` (fix RNN weights), `--tune-level` (limit to a specific distillation level 0/1/2).
+
+**Run 2 — Re-run the pipeline with fine-tuned models:**
+
+```bash
+# Second run: use tuned models for in-silico library generation and all downstream steps
+nextflow run bigbio/quantmsdiann \
+    -profile diann_v2_5_0,docker \
+    --input sdrf.tsv --database db.fasta \
+    --extra_args "--tokens /abs/path/to/empirical_library.dict.txt --rt-model /abs/path/to/empirical_library.rt.d0.pt --im-model /abs/path/to/empirical_library.im.d0.pt" \
+    --outdir results_run2
+```
+
+The `--tokens`, `--rt-model`, and `--im-model` flags are passed to all DIA-NN steps via `--extra_args`, so the in-silico library generation uses the fine-tuned models to produce better-predicted spectra for the non-standard modifications.
+
+> [!IMPORTANT]
+> Use **absolute paths** for model files. The `--parent` flag is blocked by the pipeline (it controls the container's DIA-NN installation path).
+
+### Integrated fine-tuning step
+
+The pipeline now includes an optional integrated fine-tuning phase, which eliminates the need for two separate runs. You can enable this feature by using the `--enable_fine_tuning` flag. The integrated workflow is:
+
+```
+INSILICO_LIBRARY → PRELIMINARY_ANALYSIS → ASSEMBLE_EMPIRICAL_LIBRARY
+    → [FINE_TUNE_MODELS] → INSILICO_LIBRARY (with tuned models)
+    → INDIVIDUAL_ANALYSIS → FINAL_QUANTIFICATION
+```
+
+This would be gated by a `--enable_fine_tuning` parameter. [@vdemichev](https://github.com/vdemichev): would this approach work correctly — using the empirical library from assembly as `--tune-lib`, then regenerating the in-silico library with the tuned models before proceeding to individual analysis? Or would you recommend a different integration point?
 
 ## Verbose Module Output
 

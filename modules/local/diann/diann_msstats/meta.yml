@@ -17,7 +17,7 @@ input:
       pattern: "*.tsv"
   - exp_design:
       type: file
-      description: An experimental design file including Sample and replicates column et al.
+      description: An experimental design file including Sample and replicates column etc.
       pattern: "*.tsv"
   - report_pr:
       type: file

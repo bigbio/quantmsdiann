@@ -114,7 +114,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_profile: ["test_latest_dia", "test_dia_quantums", "test_dia_parquet"]
+        test_profile:
+          ["test_latest_dia", "test_dia_quantums", "test_dia_parquet", "test_dda", "test_dia_skip_preanalysis"]
     env:
       NXF_ANSI_LOG: false
       CAPSULE_LOG: none

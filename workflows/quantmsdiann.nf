@@ -60,7 +60,7 @@ workflow QUANTMSDIANN {
 
     FILE_PREPARATION.out.results
         .branch { item ->
-            dia: item[0].acquisition_method.toLowerCase().contains("dia")
+            dia: item[0].acquisition_method.toLowerCase().contains("dia") || item[0].acquisition_method.toLowerCase().contains("dda")
         }
         .set { ch_fileprep_result }
     //

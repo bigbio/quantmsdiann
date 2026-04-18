@@ -8,7 +8,6 @@ keywords:
   - proteomics
 components:
   - thermorawfileparser
-  - tdf2mzml
   - decompress
   - mzml/indexing
   - mzml/statistics

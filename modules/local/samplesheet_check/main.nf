@@ -4,8 +4,8 @@ process SAMPLESHEET_CHECK {
     label 'process_tiny'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.28--pyh106432d_0' :
-        'biocontainers/quantms-utils:0.0.28--pyh106432d_0' }"
+        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.29--pyhdfd78af_0' :
+        'biocontainers/quantms-utils:0.0.29--pyhdfd78af_0' }"
 
     input:
     path input_file
@@ -23,6 +23,7 @@ process SAMPLESHEET_CHECK {
     def string_use_ols_cache_only = params.use_ols_cache_only == true ? "--use_ols_cache_only" : ""
 
     """
+    set -o pipefail
     # Get basename and create output filename
     BASENAME=\$(basename "${input_file}")
     # Remove .sdrf.tsv, .sdrf.csv, or .sdrf extension (in that order to match longest first)

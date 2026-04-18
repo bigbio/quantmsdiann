@@ -2,6 +2,7 @@ process PRELIMINARY_ANALYSIS {
     tag "$ms_file.baseName"
     label 'process_high'
     label 'diann'
+    label 'error_retry'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
@@ -21,27 +22,16 @@ process PRELIMINARY_ANALYSIS {
 
     script:
     def args = task.ext.args ?: ''
-    // Strip flags that are managed by the pipeline to prevent silent conflicts
-    def blocked = ['--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out',
-         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
-         '--mass-acc', '--mass-acc-ms1', '--window',
-         '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
-         '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
-         '--monitor-mod', '--var-mod', '--fixed-mod', '--no-prot-inf',
-         '--channels', '--lib-fixed-mod', '--original-mods']
-    // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
-    blocked.sort { a -> -a.length() }.each { flag ->
-        def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
-        if (args =~ flagPattern) {
-            log.warn "DIA-NN: '${flag}' is managed by the pipeline for PRELIMINARY_ANALYSIS and will be stripped."
-            args = args.replaceAll(flagPattern, '').trim()
-        }
-    }
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
+    args = BlockedFlags.strip('PRELIMINARY_ANALYSIS', args, log)
 
     // Performance flags for preliminary analysis calibration step
     quick_mass_acc = params.quick_mass_acc ? "--quick-mass-acc" : ""
     performance_flags = params.performance_mode ? "--min-corr 2 --corr-diff 1 --time-corr-only" : ""
-    diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    aa_eq = params.aa_eq ? '--aa-eq' : ''
 
     // I am using here the ["key"] syntax, since the preprocessed meta makes
     // was evaluating to null when using the dot notation.
@@ -65,8 +55,9 @@ process PRELIMINARY_ANALYSIS {
 
     // Notes: Use double quotes for params, so that it is escaped in the shell.
     scan_window = params.scan_window_automatic ? '' : "--window $params.scan_window"
-    diann_tims_sum = params.diann_tims_sum ? "--quant-tims-sum" : ""
-    diann_im_window = params.diann_im_window ? "--im-window $params.diann_im_window" : ""
+    diann_tims_sum = params.tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
+    diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
 
     // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
     min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
@@ -88,7 +79,7 @@ process PRELIMINARY_ANALYSIS {
     diann   --lib ${predict_library} \\
             --f ${ms_file} \\
             --threads ${task.cpus} \\
-            --verbose $params.diann_debug \\
+            --verbose $params.debug_level \\
             ${scan_window} \\
             --temp ./ \\
             ${mass_acc} \\
@@ -98,14 +89,19 @@ process PRELIMINARY_ANALYSIS {
             ${max_pr_mz} \\
             ${min_fr_mz} \\
             ${max_fr_mz} \\
-            ${diann_no_peptidoforms} \\
+            ${scoring_mode} \\
+            ${aa_eq} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             --no-prot-inf \\
+            ${diann_dda_flag} \\
             \${mod_flags} \\
-            $args
+            $args \\
+            2>&1 | tee ${ms_file.baseName}_diann.log
 
-    cp report.log.txt ${ms_file.baseName}_diann.log
+    if [ -f report.log.txt ]; then
+        cp report.log.txt ${ms_file.baseName}_diann.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

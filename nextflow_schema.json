@@ -248,22 +248,6 @@
             },
             "fa_icon": "fas fa-star-half-alt"
         },
-        "protein_inference": {
-            "title": "Protein inference",
-            "type": "object",
-            "description": "To group proteins, calculate scores on the protein (group) level and to potentially modify associations from peptides to proteins.",
-            "default": "",
-            "properties": {
-                "protein_level_fdr_cutoff": {
-                    "type": "number",
-                    "description": "The experiment-wide protein (group)-level FDR cutoff. Default: 0.01",
-                    "default": 0.01,
-                    "fa_icon": "fas fa-filter",
-                    "help_text": "This can be protein level if 'strictly_unique_peptides' are used for protein quantification. See [`--protein_quant`](#protein_quant)"
-                }
-            },
-            "fa_icon": "fab fa-hubspot"
-        },
         "DIA-NN": {
             "title": "DIA-NN",
             "type": "object",
@@ -337,25 +321,46 @@
                     "enum": [0, 1, 2],
                     "default": 2
                 },
+                "precursor_qvalue": {
+                    "type": "number",
+                    "description": "Precursor-level q-value filtering threshold for the DIA-NN main report. Maps to --qvalue.",
+                    "default": 0.01,
+                    "fa_icon": "fas fa-filter",
+                    "help_text": "Controls how strictly precursor identifications are filtered in the DIA-NN main report. For proteogenomics with variant databases, the standard 0.01 (1%) is recommended."
+                },
+                "matrix_qvalue": {
+                    "type": "number",
+                    "description": "Q-value threshold for DIA-NN output matrices (pr_matrix, pg_matrix, etc.). Maps to --matrix-qvalue.",
+                    "default": 0.01,
+                    "fa_icon": "fas fa-filter",
+                    "help_text": "Controls the global q-value filtering applied when generating the quantification matrices. Default matches DIA-NN's built-in default of 1%."
+                },
+                "matrix_spec_q": {
+                    "type": "number",
+                    "description": "Run-specific protein q-value filter for protein/gene matrices. Maps to --matrix-spec-q.",
+                    "default": 0.05,
+                    "fa_icon": "fas fa-filter",
+                    "help_text": "An additional run-specific protein-level FDR filter applied to the protein and gene matrices. Default matches DIA-NN's built-in default of 5%. For proteogenomics/variant detection, consider setting to 1.0 to retain variant proteins that lack sufficient unique peptides for protein-level confidence."
+                },
                 "species_genes": {
                     "type": "boolean",
                     "description": "Instructs DIA-NN to add the organism identifier to the gene names",
                     "fa_icon": "far fa-check-square"
                 },
-                "diann_speclib": {
+                "speclib": {
                     "type": "string",
                     "description": "The spectral library to use for DIA-NN",
                     "fa_icon": "fas fa-file",
                     "help_text": "If passed, will use that spectral library to carry out the DIA-NN search, instead of predicting one from the fasta file.",
                     "hidden": false
                 },
-                "diann_report_decoys": {
+                "report_decoys": {
                     "type": "boolean",
                     "description": "Save decoy PSMs to the main .parquet report for DIA-NN 2.0.*",
                     "fa_icon": "far fa-check-square",
                     "hidden": false
                 },
-                "diann_export_xic": {
+                "export_xic": {
                     "type": "boolean",
                     "description": "instructs DIA-NN to extract MS1/fragment chromatograms for identified precursors within X seconds from the elution apex, with X set to 10s if not provided;equivalent to the 'XICs' option in the GUI",
                     "fa_icon": "far fa-check-square",
@@ -388,28 +393,50 @@
                     "help_text": "Sets the DIA-NN parameter --quant-params. Provide previously obtained QuantUMS parameters to use instead of training new ones.",
                     "hidden": false
                 },
-                "diann_no_peptidoforms": {
-                    "type": "boolean",
-                    "description": "Set no-peptidoforms mode: disables automatic peptidoform scoring when variable modifications are declared (DIA-NN: not recommended).",
-                    "fa_icon": "far fa-check-square",
-                    "default": false
+                "scoring_mode": {
+                    "type": "string",
+                    "default": "generic",
+                    "enum": ["generic", "proteoforms", "peptidoforms"],
+                    "description": "DIA-NN scoring mode. 'generic' maximizes IDs (default). 'proteoforms' validates single-residue differences — recommended for proteogenomics/variant detection (requires DIA-NN >= 2.0). 'peptidoforms' provides extra peptidoform q-values for PTM analysis.",
+                    "fa_icon": "fas fa-bullseye",
+                    "help_text": "Controls DIA-NN's decoy generation strategy. In 'generic' mode, decoys are fully shuffled sequences. In 'proteoforms' mode, decoys differ by a single residue — directly modelling the confusion between canonical and variant peptides (e.g., COSMIC missense mutations). In 'peptidoforms' mode, generic q-values are calculated plus extra peptidoform-level q-values for PTM localization."
                 },
-                "diann_tims_sum": {
+                "aa_eq": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Treat I&L, Q&E, N&D as equivalent amino acids during reannotation. Essential for entrapment FDR benchmarks.",
+                    "fa_icon": "fas fa-equals",
+                    "help_text": "Maps to DIA-NN's --aa-eq flag. When enabled, peptides are matched to proteins considering isoleucine/leucine, glutamine/glutamic acid, and asparagine/aspartic acid as equivalent. This is essential when benchmarking FDR using entrapment databases, as without it the assessment measures the ability to distinguish deamidated peptides rather than true FDR."
+                },
+                "tims_sum": {
                     "type": "boolean",
                     "description": "Enable '--quant-tims-sum' for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF).",
                     "fa_icon": "far fa-check-square",
                     "default": false
                 },
-                "diann_im_window": {
+                "im_window": {
                     "type": "number",
                     "description": "Set '--im-window' to ensure the IM extraction window is not smaller than the specified value.",
                     "fa_icon": "fas fa-filter"
                 },
-                "diann_use_quant": {
+                "use_quant": {
                     "type": "boolean",
                     "description": "Set '--use-quant' to reuse existing .quant files if available.",
                     "fa_icon": "far fa-check-square",
                     "default": true
+                },
+
+                "channel_run_norm": {
+                    "type": "boolean",
+                    "description": "Set '--channel-run-norm'. Run-specific normalisation for multiplexing (e.g., Protein Turnover SILAC)",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
+                "channel_spec_norm": {
+                    "type": "boolean",
+                    "description": "Set '--channel-spec-norm'. Channel-specific normalisation for multiplexing (Independent Samples)",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
                 },
                 "skip_preliminary_analysis": {
                     "type": "boolean",
@@ -417,7 +444,7 @@
                     "fa_icon": "fas fa-forward",
                     "hidden": false
                 },
-                "diann_debug": {
+                "debug_level": {
                     "type": "integer",
                     "description": "Debug level",
                     "default": 3,
@@ -425,7 +452,7 @@
                     "enum": [0, 1, 2, 3, 4],
                     "hidden": true
                 },
-                "diann_normalize": {
+                "normalize": {
                     "type": "boolean",
                     "description": "Enable cross-run normalization between runs by diann.",
                     "default": true,
@@ -449,12 +476,71 @@
                     "fa_icon": "fas fa-filter",
                     "hidden": true
                 },
-                "diann_extra_args": {
+                "extra_args": {
                     "type": "string",
                     "description": "Extra arguments appended to all DIA-NN steps. Flags incompatible with specific steps are automatically stripped with a warning.",
                     "fa_icon": "fas fa-terminal",
                     "hidden": false,
                     "help_text": "Pass additional DIA-NN command-line arguments that will be appended to all DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION). Flags that conflict with a specific step are automatically stripped with a warning. For step-specific overrides, use custom Nextflow config files with ext.args."
+                },
+                "dda": {
+                    "type": "boolean",
+                    "description": "Explicitly enable DDA mode. Normally auto-detected from the SDRF acquisition method column. Use only when SDRF lacks this column. Requires DIA-NN >= 2.3.2.",
+                    "fa_icon": "fas fa-flask",
+                    "default": false
+                },
+                "light_models": {
+                    "type": "boolean",
+                    "description": "Enable --light-models for 10x faster in-silico library generation (DIA-NN >= 2.0).",
+                    "fa_icon": "fas fa-bolt",
+                    "default": false
+                },
+                "export_quant": {
+                    "type": "boolean",
+                    "description": "Enable --export-quant for fragment-level parquet data export (DIA-NN >= 2.0).",
+                    "fa_icon": "fas fa-file-export",
+                    "default": false
+                },
+                "site_ms1_quant": {
+                    "type": "boolean",
+                    "description": "Enable --site-ms1-quant to use MS1 apex intensities for PTM site quantification (DIA-NN >= 2.0).",
+                    "fa_icon": "fas fa-crosshairs",
+                    "default": false
+                },
+                "enable_fine_tuning": {
+                    "type": "boolean",
+                    "description": "Enable DL model fine-tuning before the main analysis. Runs a tuning search on a file subset, fine-tunes RT/IM models, then runs the full pipeline with tuned models. Requires DIA-NN >= 2.3.2.",
+                    "fa_icon": "fas fa-brain",
+                    "default": false,
+                    "help_text": "When enabled, Phase 0 runs before the main pipeline: (1) in-silico library generation with default models, (2) preliminary analysis + assembly on a subset of files (controlled by --tune_n_files), (3) fine-tuning RT/IM models on the resulting empirical library, (4) re-generation of the in-silico library with tuned models. The main pipeline then runs from preliminary analysis using the tuned library."
+                },
+                "tune_n_files": {
+                    "type": "integer",
+                    "description": "Number of files to use for the fine-tuning search. Use the largest/best-quality files.",
+                    "fa_icon": "fas fa-layer-group",
+                    "default": 3
+                },
+                "tune_fr": {
+                    "type": "boolean",
+                    "description": "Also fine-tune the fragmentation model (quality-sensitive — verify results vs base model).",
+                    "fa_icon": "fas fa-flask",
+                    "default": false
+                },
+                "tune_lr": {
+                    "type": "number",
+                    "description": "Fine-tuning learning rate (default in DIA-NN: 0.0005). Maps to --tune-lr.",
+                    "fa_icon": "fas fa-sliders-h"
+                },
+                "enable_infin_dia": {
+                    "type": "boolean",
+                    "description": "Enable InfinDIA for ultra-large search spaces (DIA-NN >= 2.3.0). Experimental.",
+                    "fa_icon": "fas fa-infinity",
+                    "default": false
+                },
+                "pre_select": {
+                    "type": "integer",
+                    "description": "Set --pre-select N precursor limit for InfinDIA pre-search.",
+                    "fa_icon": "fas fa-filter"
                 },
                 "save_speclib_tsv": {
                     "type": "boolean",
@@ -673,9 +759,6 @@
         },
         {
             "$ref": "#/$defs/psm_re_scoring_general"
-        },
-        {
-            "$ref": "#/$defs/protein_inference"
         },
         {
             "$ref": "#/$defs/DIA-NN"

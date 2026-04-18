@@ -27,7 +27,7 @@ jobs:
       TEST_PROFILE: ${{ matrix.test_profile }}
       EXEC_PROFILE: ${{ matrix.exec_profile }}
 
-    name: "CI [${{ matrix.test_profile }}] DIA-NN=1.8.1 NXF=${{ matrix.NXF_VER }}"
+    name: "CI [${{ matrix.test_profile }}] NXF=${{ matrix.NXF_VER }}"
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
     runs-on: ubuntu-latest
     strategy:
@@ -35,7 +35,7 @@ jobs:
       matrix:
         NXF_VER:
           - "25.04.0"
-        test_profile: ["test_dia", "test_dia_dotd"]
+        test_profile: ["test_dia", "test_dia_dotd", "test_dda"]
         exec_profile: ["docker"] # extended ci tests singularity.
 
     steps:
@@ -60,11 +60,24 @@ jobs:
           mkdir -p $NXF_SINGULARITY_CACHEDIR
           mkdir -p $NXF_SINGULARITY_LIBRARYDIR
 
+      - name: Log in to GitHub Container Registry
+        if: matrix.test_profile == 'test_dda'
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+        run: |
+          if [ -z "$GHCR_TOKEN" ] || [ -z "$GHCR_USERNAME" ]; then
+            echo "::warning::Skipping test_dda: GHCR credentials not available (expected for fork PRs)"
+            echo "SKIP_DDA=true" >> $GITHUB_ENV
+            exit 0
+          fi
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+
       - name: Disk space cleanup
         uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Run pipeline with test data in docker/singularity profile
-        if: github.event.pull_request.base.ref != 'master'
+        if: github.event.pull_request.base.ref != 'master' && env.SKIP_DDA != 'true'
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile $TEST_PROFILE,$EXEC_PROFILE,dev --outdir ${TEST_PROFILE}_${EXEC_PROFILE}_results
 

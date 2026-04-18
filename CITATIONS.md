@@ -1,6 +1,6 @@
 # bigbio/quantmsdiann: Citations
 
-## [Pipeline](https://www.researchsquare.com/article/rs-3002027/v1)
+## [Pipeline](https://doi.org/10.1038/s41592-024-02343-1)
 
 > Dai C, Pfeuffer J, Wang H, Zheng P, Käll L, Sachsenberg T, Demichev V, Bai M, Kohlbacher O, Perez-Riverol Y. quantms: a cloud-based pipeline for quantitative proteomics enables the reanalysis of public proteomics data. Nat Methods. 2024 Jul 4. doi: 10.1038/s41592-024-02343-1. Epub ahead of print. PMID: 38965444.
 
