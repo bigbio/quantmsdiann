@@ -40,6 +40,7 @@ nav:
   - Installation: installation.md
   - Input Files: input.md
   - Usage: usage.md
+  - Containers: containers.md
   - Parameters: parameters.md
   - Output: output.md
   - Publications: publications.md
