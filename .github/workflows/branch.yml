@@ -6,15 +6,21 @@ on:
     branches:
       - main
       - master
+      - dev
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       # PRs to the nf-core repo main/master branch are only ok if coming from the nf-core repo `dev` or any `patch` branches
+      # PRs from `gh-pages-source` are always blocked — that branch has a different file structure (docs site only)
       - name: Check PRs
         if: github.repository == 'bigbio/quantmsdiann'
         run: |
+          if [[ "$GITHUB_HEAD_REF" == "gh-pages-source" ]]; then
+            echo "::error::PRs from gh-pages-source are not allowed against pipeline branches. That branch contains the documentation site only."
+            exit 1
+          fi
           { [[ ${{github.event.pull_request.head.repo.full_name }} == bigbio/quantmsdiann ]] && [[ $GITHUB_HEAD_REF == "dev" ]]; } || [[ $GITHUB_HEAD_REF == "patch" ]]
 
       # If the above check failed, post a comment on the PR explaining the failure
