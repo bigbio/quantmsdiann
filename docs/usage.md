@@ -349,7 +349,32 @@ nextflow run bigbio/quantmsdiann \
 ```
 
 > [!NOTE]
-> DIA-NN 2.x images are hosted on `ghcr.io/bigbio` and may require authentication for private registries. The `diann_v2_1_0` and `diann_v2_2_0` profiles force Docker mode by default; for Singularity, override with your own config.
+> DIA-NN 1.8.1 uses a public BioContainers image (no auth). DIA-NN 2.x images are on `ghcr.io/bigbio` and require GHCR authentication. You can also build containers yourself from [quantms-containers](https://github.com/bigbio/quantms-containers).
+
+### Using custom containers on HPC
+
+For HPC/Singularity deployments with local `.sif` files, create a config that overrides the container:
+
+```groovy
+// hpc_diann.config
+process {
+    withLabel: diann {
+        container = '/path/to/sif/diann-2.5.0.sif'
+    }
+}
+```
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    -profile singularity -c hpc_diann.config \
+    --diann_version '2.5.0' \
+    --input sdrf.tsv --database db.fasta --outdir results
+```
+
+> [!IMPORTANT]
+> Set `--diann_version` to match your container. Do **not** combine with `-profile diann_v2_5_0` (it would override your local path).
+
+For the full guide on building containers, GHCR authentication, version switching, and SLURM deployment, see the [Containers documentation](https://quantmsdiann.quantms.org/containers/).
 
 ## Fine-Tuning Deep Learning Models (DIA-NN 2.0+)
 
