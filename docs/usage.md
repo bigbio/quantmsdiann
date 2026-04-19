@@ -349,7 +349,109 @@ nextflow run bigbio/quantmsdiann \
 ```
 
 > [!NOTE]
-> DIA-NN 2.x images are hosted on `ghcr.io/bigbio` and may require authentication for private registries. The `diann_v2_1_0` and `diann_v2_2_0` profiles force Docker mode by default; for Singularity, override with your own config.
+> DIA-NN 2.x images are hosted on `ghcr.io/bigbio` and may require authentication for private registries.
+
+## Building and Using DIA-NN Containers
+
+### Pre-built containers
+
+DIA-NN 1.8.1 is available from the public BioContainers registry — no authentication required:
+
+```bash
+# Docker
+docker pull biocontainers/diann:v1.8.1_cv1
+
+# Singularity
+singularity pull docker://biocontainers/diann:v1.8.1_cv1
+```
+
+DIA-NN 2.x containers are hosted on GitHub Container Registry (`ghcr.io/bigbio`). If you have access, pull them directly:
+
+```bash
+# Docker (requires GHCR authentication)
+echo $GHCR_TOKEN | docker login ghcr.io -u $GHCR_USERNAME --password-stdin
+docker pull ghcr.io/bigbio/diann:2.5.0
+
+# Singularity (requires GHCR authentication)
+export SINGULARITY_DOCKER_USERNAME=$GHCR_USERNAME
+export SINGULARITY_DOCKER_PASSWORD=$GHCR_TOKEN
+singularity pull docker://ghcr.io/bigbio/diann:2.5.0
+```
+
+### Building containers yourself
+
+If you don't have access to the `ghcr.io/bigbio` registry, you can build DIA-NN containers from the [quantms-containers](https://github.com/bigbio/quantms-containers) repository:
+
+**Option 1: Fork and use GitHub Actions (recommended)**
+
+1. Fork [bigbio/quantms-containers](https://github.com/bigbio/quantms-containers) to your GitHub account
+2. The CI workflow will automatically build and push containers to your fork's GHCR (`ghcr.io/<your-username>/diann:2.5.0`)
+3. No code changes needed — the workflow uses `github.actor` for authentication
+
+**Option 2: Build locally**
+
+```bash
+# Clone the containers repo
+git clone https://github.com/bigbio/quantms-containers.git
+cd quantms-containers
+
+# Build for a specific version (e.g., 2.5.0)
+docker buildx build --platform linux/amd64 -t diann:2.5.0 diann-2.5.0/
+
+# Convert to Singularity SIF for HPC
+singularity build diann-2.5.0.sif docker-daemon://diann:2.5.0
+```
+
+The Dockerfiles download the DIA-NN Academia Linux binary from the [official GitHub releases](https://github.com/vdemichev/DiaNN/releases/tag/2.0) and install it on Ubuntu 22.04 with the required dependencies (`libgomp1`, locale support).
+
+### Using containers on HPC (Singularity/Apptainer)
+
+Once you have `.sif` files on your HPC, create a custom config file to point the pipeline to them:
+
+```groovy
+// hpc_diann.config
+singularity {
+    enabled    = true
+    autoMounts = true
+    cacheDir   = '/path/to/singularity/cache'
+}
+
+process {
+    withLabel: diann {
+        container = '/path/to/sif/diann-2.5.0.sif'
+    }
+}
+```
+
+Then run the pipeline with your config:
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    -r 2.0.0 \
+    -profile singularity \
+    -c /path/to/hpc_diann.config \
+    --input sdrf.tsv \
+    --database db.fasta \
+    --diann_version '2.5.0' \
+    --outdir results
+```
+
+> [!IMPORTANT]
+> When using a local SIF file, set `--diann_version` to match the DIA-NN version in your container. The pipeline uses this value for version-dependent feature guards (e.g., DDA requires >= 2.3.2). Do **not** use `-profile diann_v2_5_0` together with a custom config — the profile would try to pull from `ghcr.io/bigbio` and override your local path.
+
+### Container architecture reference
+
+Each version's Dockerfile is in [quantms-containers](https://github.com/bigbio/quantms-containers):
+
+| Version | Directory      | Base image   | Download source                                                                  |
+| ------- | -------------- | ------------ | -------------------------------------------------------------------------------- |
+| 1.8.1   | `diann-1.8.1/` | Ubuntu 22.04 | [BioContainers](https://biocontainers.pro/) (public)                             |
+| 2.1.0   | `diann-2.1.0/` | Ubuntu 22.04 | [GitHub release](https://github.com/vdemichev/DiaNN/releases/tag/2.0) (Academia) |
+| 2.2.0   | `diann-2.2.0/` | Ubuntu 22.04 | Same release tag                                                                 |
+| 2.3.2   | `diann-2.3.2/` | Ubuntu 22.04 | Same release tag                                                                 |
+| 2.5.0   | `diann-2.5.0/` | Ubuntu 22.04 | Same release tag                                                                 |
+
+All containers install the DIA-NN binary to `/usr/diann-<version>/` and add it to `PATH`. The `diann` command is available directly.
 
 ## Fine-Tuning Deep Learning Models (DIA-NN 2.0+)
 
