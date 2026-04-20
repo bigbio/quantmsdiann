@@ -32,7 +32,7 @@ curl -s https://get.nextflow.io | bash
 
 # Run test profile
 nextflow run bigbio/quantmsdiann \
-    -profile test,docker \
+    -profile test_dia,docker \
     --outdir results/
 
 # Run with your data
