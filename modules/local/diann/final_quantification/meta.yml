@@ -27,10 +27,14 @@ input:
       description: Identification and Quantification file from DIA-NN.
       pattern: "*.quant"
 output:
-  - main_report:
+  - main_report_parquet:
       type: file
-      description: A text table containing precursor and protein IDs, as well as plenty of associated information.
-      pattern: "*.tsv"
+      description: DIA-NN main report in parquet format (DIA-NN >= 1.9)
+      pattern: "diann_report.parquet"
+  - main_report_tsv:
+      type: file
+      description: DIA-NN main report in TSV format (DIA-NN < 1.9)
+      pattern: "diann_report.tsv"
   - pr_matrix:
       type: file
       description: A text table containing normalized quantities for precursors. They are filtered at 1% FDR, using both global and run-specific q-values for precursors
@@ -45,7 +49,7 @@ output:
       pattern: "*.tsv"
   - log:
       type: file
-      description: DIA-NN log file
+      description: DIA-NN log file (captured via tee, overwritten with native log if available)
       pattern: "diannsummary.log"
   - versions:
       type: file

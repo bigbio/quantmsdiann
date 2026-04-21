@@ -5,7 +5,7 @@
             "contentType": "application/vnd.microsoft.card.adaptive",
             "contentUrl": null,
             "content": {
-                "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "\$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
                 "msteams": {
                     "width": "Full"
                 },
@@ -17,7 +17,7 @@
                         "size": "Large",
                         "weight": "Bolder",
                         "color": "<% if (success) { %>Good<% } else { %>Attention<%} %>",
-                        "text": "bigbio/quantms v${version} - ${runName}",
+                        "text": "bigbio/quantmsdiann v${version} - ${runName}",
                         "wrap": true
                     },
                     {
@@ -50,7 +50,7 @@
                         "title": "Pipeline Configuration",
                         "card": {
                             "type": "AdaptiveCard",
-                            "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                            "\$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
                             "body": [
                                 {
                                     "type": "FactSet",

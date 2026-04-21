@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the bigbio/quantms pipeline
+// Subworkflow with functionality specific to the bigbio/quantmsdiann pipeline
 //
 
 /*

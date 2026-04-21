@@ -3,9 +3,12 @@ work/
 data/
 results/
 .DS_Store
-testing/
+.env
+.env.*
+!.env.example
 testing*
 *.pyc
+__pycache__/
 null/
 .idea/
 .vscode/
@@ -17,3 +20,5 @@ null/
 .cursor/rules/codacy.mdc
 .codacy/
 .github/instructions/codacy.instructions.md
+docs/superpowers/
+docs/plans/

@@ -8,8 +8,8 @@ tools:
   - custom:
       description: |
         A custom module for DIA-NN report to MSstats conversion.
-      homepage: https://github.com/bigbio/quantms
-      documentation: https://github.com/bigbio/quantms/tree/readthedocs
+      homepage: https://github.com/bigbio/quantmsdiann
+      documentation: https://github.com/bigbio/quantmsdiann
 input:
   - report:
       type: file
@@ -17,7 +17,7 @@ input:
       pattern: "*.tsv"
   - exp_design:
       type: file
-      description: An experimental design file including Sample and replicates column et al.
+      description: An experimental design file including Sample and replicates column etc.
       pattern: "*.tsv"
   - report_pr:
       type: file
@@ -39,7 +39,7 @@ output:
       type: file
       description: MSstats input file
       pattern: "*msstats_in.csv"
-  - version:
+  - versions:
       type: file
       description: File containing software version
       pattern: "versions.yml"

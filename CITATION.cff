@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+title: "quantmsdiann"
+message: "If you use quantmsdiann, please cite the quantms paper."
+type: software
+license: MIT
+repository-code: https://github.com/bigbio/quantmsdiann
+url: https://quantmsdiann.quantms.org
+keywords:
+  - proteomics
+  - mass-spectrometry
+  - dia
+  - data-independent-acquisition
+  - dia-nn
+  - nextflow
+preferred-citation:
+  type: article
+  title: "quantms: a cloud-based pipeline for quantitative proteomics enables the reanalysis of public proteomics data"
+  journal: "Nature Methods"
+  year: 2024
+  volume: "21"
+  start: 1603
+  end: 1607
+  doi: "10.1038/s41592-024-02343-1"
+  authors:
+    - family-names: Dai
+      given-names: Chengxin
+    - family-names: Pfeuffer
+      given-names: Julianus
+    - family-names: Wang
+      given-names: Hong
+    - family-names: Zheng
+      given-names: Ping
+    - family-names: Kall
+      given-names: Lukas
+    - family-names: Sachsenberg
+      given-names: Timo
+    - family-names: Demichev
+      given-names: Vadim
+    - family-names: Bai
+      given-names: Mingze
+    - family-names: Kohlbacher
+      given-names: Oliver
+    - family-names: Perez-Riverol
+      given-names: Yasset

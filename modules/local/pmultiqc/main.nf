@@ -2,12 +2,11 @@ process PMULTIQC {
     label 'process_high'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pmultiqc:0.0.39--pyhdfd78af_0' :
-        'biocontainers/pmultiqc:0.0.39--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/pmultiqc:0.0.44--pyhdfd78af_0' :
+        'biocontainers/pmultiqc:0.0.44--pyhdfd78af_0' }"
 
     input:
-    path 'results/*'
-    path quantms_log
+    path multiqc_inputs, stageAs: 'results/*'
 
     output:
     path "*.html", emit: ch_pmultiqc_report
@@ -17,10 +16,10 @@ process PMULTIQC {
 
     script:
     def args = task.ext.args ?: ''
-    def disable_pmultiqc = (params.enable_pmultiqc) ? "--quantms_plugin" : ""
-    def disable_table_plots = (params.enable_pmultiqc) && (params.skip_table_plots) ? "--disable_table" : ""
-    def disable_idxml_index = (params.enable_pmultiqc) && (params.pmultiqc_idxml_skip) ? "--ignored_idxml" : ""
-    def contaminant_affix = params.contaminant_string ? "--contaminant_affix ${params.contaminant_string}" : ""
+    def disable_pmultiqc = (params.enable_pmultiqc) ? "--quantms-plugin" : ""
+    def disable_table_plots = (params.enable_pmultiqc) && (params.skip_table_plots) ? "--disable-table" : ""
+    def disable_idxml_index = (params.enable_pmultiqc) && (params.pmultiqc_idxml_skip) ? "--ignored-idxml" : ""
+    def contaminant_affix = params.contaminant_string ? "--contaminant-affix ${params.contaminant_string}" : ""
 
     """
     set -x

@@ -1,26 +1,83 @@
 {
-  "versions": {
-    "content": [
-      [
-        "versions.yml:md5,dc9625538c025d615109ef8cac3a86ab"
-      ]
-    ],
-    "meta": {
-      "nf-test": "0.9.3",
-      "nextflow": "25.04.8"
+    "versions_stub": {
+        "content": [
+            [
+                [
+                    "THERMORAWFILEPARSER",
+                    "thermorawfileparser",
+                    "2.0.0.0"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2026-03-23T22:31:25.789483"
     },
-    "timestamp": "2025-12-11T06:27:00.000000"
-  },
-  "versions_stub": {
-    "content": [
-      [
-        "versions.yml:md5,dc9625538c025d615109ef8cac3a86ab"
-      ]
-    ],
-    "meta": {
-      "nf-test": "0.9.3",
-      "nextflow": "25.04.8"
+    "versions": {
+        "content": [
+            [
+                [
+                    "THERMORAWFILEPARSER",
+                    "thermorawfileparser",
+                    "2.0.0.0"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2026-03-23T22:29:04.754961"
     },
-    "timestamp": "2025-12-11T06:27:00.000000"
-  }
+    "Should run stub mode": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test_sample",
+                            "mzml_id": "test_sample"
+                        },
+                        "test_sample.mzML:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "THERMORAWFILEPARSER",
+                        "thermorawfileparser",
+                        "2.0.0.0"
+                    ]
+                ],
+                "2": [
+                    "test_sample_conversion.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "log": [
+                    "test_sample_conversion.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "spectra": [
+                    [
+                        {
+                            "id": "test_sample",
+                            "mzml_id": "test_sample"
+                        },
+                        "test_sample.mzML:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_thermorawfileparser": [
+                    [
+                        "THERMORAWFILEPARSER",
+                        "thermorawfileparser",
+                        "2.0.0.0"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.04.6"
+        },
+        "timestamp": "2026-03-23T22:31:25.88765"
+    }
 }

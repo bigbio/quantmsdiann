@@ -1,11 +1,11 @@
 process MZML_STATISTICS {
-    tag "$meta.mzml_id"
+    tag "$meta.id"
     label 'process_very_low'
     label 'process_single'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.25--pyh106432d_0' :
-        'biocontainers/quantms-utils:0.0.25--pyh106432d_0' }"
+        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.29--pyhdfd78af_0' :
+        'biocontainers/quantms-utils:0.0.29--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(ms_file)
@@ -19,8 +19,8 @@ process MZML_STATISTICS {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.mzml_id}"
-    def string_ms2_file = params.id_only == true || params.mzml_features == true ? "--ms2_file" : ""
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def string_ms2_file = params.mzml_features == true ? "--ms2_file" : ""
     def string_features_file = params.mzml_features == true ? "--feature_detection" : ""
 
     """

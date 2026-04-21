@@ -3,7 +3,6 @@
 //
 
 include { THERMORAWFILEPARSER } from '../../../modules/bigbio/thermorawfileparser/main'
-include { TDF2MZML            } from '../../../modules/local/utils/tdf2mzml/main'
 include { DECOMPRESS          } from '../../../modules/local/utils/decompress_dotd/main'
 include { MZML_INDEXING       } from '../../../modules/local/openms/mzml_indexing/main'
 include { MZML_STATISTICS     } from '../../../modules/local/utils/mzml_statistics/main'
@@ -78,30 +77,22 @@ workflow FILE_PREPARATION {
     }
 
     THERMORAWFILEPARSER( ch_branched_input.raw )
-    // Output is
-    // {'convert_files': Tuple[val(meta), path(mzml)],
-    //  'version': Path(versions.yml),
-    //  'log': Path(*.txt)}
-
-    // Where meta is the same as the input meta
-    ch_versions = ch_versions.mix(THERMORAWFILEPARSER.out.versions)
-    ch_results  = ch_results.mix(THERMORAWFILEPARSER.out.convert_files)
+    // Output: spectra (tuple val(meta), path(mzML/mgf/parquet)), log, versions via topic channel
+    ch_results  = ch_results.mix(THERMORAWFILEPARSER.out.spectra)
 
     ch_results.map{ it -> [it[0], it[1]] }.set{ indexed_mzml_bundle }
 
-    // Convert .d files to mzML
-    if (params.convert_dotd) {
-        TDF2MZML( ch_branched_input.dotd )
-        ch_versions = ch_versions.mix(TDF2MZML.out.versions)
-        ch_results = indexed_mzml_bundle.mix(TDF2MZML.out.mzmls_converted)
-    } else {
-        ch_results = indexed_mzml_bundle
-    }
+    // Pass through .d files without conversion
+    // DIA-NN handles .d files natively; they bypass mzML statistics
+    ch_results = indexed_mzml_bundle.mix(ch_branched_input.dotd)
+
+    // Pass through .dia files without conversion (DIA-NN handles them natively)
+    ch_results = ch_results.mix(ch_branched_input.dia)
 
     if (params.mzml_statistics) {
-        // Only run on mzML files, skip .d directories
+        // Only run on mzML files — exclude .d, .dia, .mgf, .parquet, etc.
         ch_mzml_for_stats = ch_results.filter { _meta, file ->
-            !file.toString().toLowerCase().endsWith('.d')
+            hasExtension(file, '.mzML')
         }
         MZML_STATISTICS(ch_mzml_for_stats)
         ch_statistics = ch_statistics.mix(MZML_STATISTICS.out.ms_statistics.collect())
@@ -109,16 +100,6 @@ workflow FILE_PREPARATION {
         ch_feature_statistics = ch_feature_statistics.mix(MZML_STATISTICS.out.feature_statistics.collect())
         ch_versions = ch_versions.mix(MZML_STATISTICS.out.versions)
     }
-
-    // Pass through .d files without conversion when convert_dotd=false
-    // (DIA-NN handles them natively; they bypass mzML statistics as they are not mzML)
-    if (!params.convert_dotd) {
-        ch_results = ch_results.mix(ch_branched_input.dotd)
-    }
-
-    // Pass through .dia files without conversion (DIA-NN handles them natively)
-    // Note: .dia files bypass peak picking and mzML statistics (when enabled) as they are only used with DIA-NN
-    ch_results = ch_results.mix(ch_branched_input.dia)
 
     emit:
     results         = ch_results        // channel: [val(mzml_id), indexedmzml|.d.tar]

@@ -4,7 +4,7 @@
     bigbio/quantmsdiann
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/bigbio/quantmsdiann
-    Website: https://nf-co.re/quantms
+    Website: https://nf-co.re/quantmsdiann
     Slack  : https://nfcore.slack.com/channels/quantms
 ----------------------------------------------------------------------------------------
 */

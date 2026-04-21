@@ -8,7 +8,6 @@ keywords:
   - proteomics
 components:
   - thermorawfileparser
-  - tdf2mzml
   - decompress
   - mzml/indexing
   - mzml/statistics
@@ -27,6 +26,14 @@ output:
       type: file
       description: |
         Channel containing file statistics
+  - ms2_statistics:
+      type: file
+      description: |
+        Channel containing MS2 spectrum statistics
+  - feature_statistics:
+      type: file
+      description: |
+        Channel containing feature statistics
   - versions:
       type: file
       description: |

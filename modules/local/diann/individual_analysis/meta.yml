@@ -10,10 +10,6 @@ tools:
       homepage: https://github.com/vdemichev/DiaNN
       documentation: https://github.com/vdemichev/DiaNN
 input:
-  - diann_log:
-      type: file
-      description: DIA-NN log file
-      pattern: "assemble_empirical_library.log"
   - empirical_library:
       type: file
       description: An empirical spectral library from the .quant files.
@@ -37,9 +33,9 @@ output:
       pattern: "*.tsv"
   - log:
       type: file
-      description: DIA-NN log file
-      pattern: "*_diann.log"
-  - version:
+      description: DIA-NN log file (captured via tee, overwritten with native log if available)
+      pattern: "*_final_diann.log"
+  - versions:
       type: file
       description: File containing software version
       pattern: "versions.yml"

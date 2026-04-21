@@ -2,6 +2,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     tag "$meta.experiment_id"
     label 'process_low'
     label 'diann'
+    label 'error_retry'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
@@ -25,20 +26,9 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
 
     script:
     def args = task.ext.args ?: ''
-    // Strip flags that are managed by the pipeline to prevent silent conflicts
-    def blocked = ['--no-main-report', '--no-ifs-removal', '--matrices', '--out',
-         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
-         '--mass-acc', '--mass-acc-ms1', '--window',
-         '--individual-mass-acc', '--individual-windows',
-         '--out-lib', '--use-quant', '--gen-spec-lib', '--rt-profiling']
-    // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
-    blocked.sort { a -> -a.length() }.each { flag ->
-        def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
-        if (args =~ flagPattern) {
-            log.warn "DIA-NN: '${flag}' is managed by the pipeline for ASSEMBLE_EMPIRICAL_LIBRARY and will be stripped."
-            args = args.replaceAll(flagPattern, '').trim()
-        }
-    }
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
+    args = BlockedFlags.strip('ASSEMBLE_EMPIRICAL_LIBRARY', args, log)
 
     if (params.mass_acc_automatic) {
         mass_acc = '--individual-mass-acc'
@@ -48,7 +38,12 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
         mass_acc = '--individual-mass-acc'
     }
     scan_window = params.scan_window_automatic ? '--individual-windows' : "--window $params.scan_window"
-    diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    aa_eq = params.aa_eq ? '--aa-eq' : ''
+    diann_tims_sum = params.tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
+    diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
 
     """
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
@@ -58,25 +53,32 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
 
     ls -lcth
 
-    # Extract --var-mod and --fixed-mod flags from diann_config.cfg (DIA-NN best practice)
-    mod_flags=\$(cat ${diann_config} | grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+)' | tr '\\n' ' ')
+    # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
+    mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
 
     diann   --f ${(ms_files as List).join(' --f ')} \\
             --lib ${lib} \\
             --threads ${task.cpus} \\
             --out-lib empirical_library \\
-            --verbose $params.diann_debug \\
+            --verbose $params.debug_level \\
             --rt-profiling \\
             --temp ./quant/ \\
             --use-quant \\
             ${mass_acc} \\
             ${scan_window} \\
             --gen-spec-lib \\
-            ${diann_no_peptidoforms} \\
+            ${scoring_mode} \\
+            ${aa_eq} \\
+            ${diann_tims_sum} \\
+            ${diann_im_window} \\
+            ${diann_dda_flag} \\
             \${mod_flags} \\
-            $args
+            $args \\
+            2>&1 | tee assemble_empirical_library.log
 
-    cp report.log.txt assemble_empirical_library.log
+    if [ -f report.log.txt ]; then
+        cp report.log.txt assemble_empirical_library.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

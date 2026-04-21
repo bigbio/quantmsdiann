@@ -4,8 +4,8 @@ process SAMPLESHEET_CHECK {
     label 'process_tiny'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.25--pyh106432d_0' :
-        'biocontainers/quantms-utils:0.0.25--pyh106432d_0' }"
+        'https://depot.galaxyproject.org/singularity/quantms-utils:0.0.29--pyhdfd78af_0' :
+        'biocontainers/quantms-utils:0.0.29--pyhdfd78af_0' }"
 
     input:
     path input_file
@@ -20,13 +20,10 @@ process SAMPLESHEET_CHECK {
 
     script:
     def args = task.ext.args ?: ''
-    def string_skip_sdrf_validation = params.validate_ontologies == false ? "--skip_sdrf_validation" : ""
-    def string_skip_ms_validation = params.skip_ms_validation == true ? "--skip_ms_validation" : ""
-    def string_skip_factor_validation = params.skip_factor_validation == true ? "--skip_factor_validation" : ""
-    def string_skip_experimental_design_validation = params.skip_experimental_design_validation == true ? "--skip_experimental_design_validation" : ""
     def string_use_ols_cache_only = params.use_ols_cache_only == true ? "--use_ols_cache_only" : ""
 
     """
+    set -o pipefail
     # Get basename and create output filename
     BASENAME=\$(basename "${input_file}")
     # Remove .sdrf.tsv, .sdrf.csv, or .sdrf extension (in that order to match longest first)
@@ -40,11 +37,8 @@ process SAMPLESHEET_CHECK {
         cp "${input_file}" "\$OUTPUT_FILE"
     fi
 
-    quantmsutilsc checksamplesheet --exp_design "\$OUTPUT_FILE" --is_sdrf \\
-    ${string_skip_sdrf_validation} \\
-    ${string_skip_ms_validation} \\
-    ${string_skip_factor_validation} \\
-    ${string_skip_experimental_design_validation} \\
+    quantmsutilsc checksamplesheet --exp_design "\$OUTPUT_FILE" \\
+    --minimal \\
     ${string_use_ols_cache_only} \\
     $args \\
     2>&1 | tee input_check.log

@@ -1,0 +1,53 @@
+name: fine_tune_models
+description: Fine-tune DIA-NN deep learning prediction models (RT, IM, fragmentation) using an empirical spectral library.
+keywords:
+  - DIA-NN
+  - fine-tuning
+  - deep learning
+  - prediction models
+tools:
+  - DIA-NN:
+      description: |
+        DIA-NN - a universal software for data-independent acquisition (DIA) proteomics data processing by Demichev.
+      homepage: https://github.com/vdemichev/DiaNN
+      documentation: https://github.com/vdemichev/DiaNN
+input:
+  - tune_lib:
+      type: file
+      description: Empirical spectral library to use for fine-tuning (typically from ASSEMBLE_EMPIRICAL_LIBRARY)
+      pattern: "*.{parquet,tsv}"
+  - fasta:
+      type: file
+      description: Protein sequence database (needed to resolve modification declarations)
+      pattern: "*.{fasta,fa}"
+  - diann_config:
+      type: file
+      description: DIA-NN config file with modification declarations
+      pattern: "*.cfg"
+output:
+  - tokens:
+      type: file
+      description: Expanded tokenizer dictionary mapping modifications to neural network token IDs
+      pattern: "*.dict.txt"
+  - rt_model:
+      type: file
+      description: Fine-tuned retention time prediction model (distillation level 0)
+      pattern: "*.rt.d0.pt"
+  - im_model:
+      type: file
+      description: Fine-tuned ion mobility prediction model (optional, distillation level 0)
+      pattern: "*.im.d0.pt"
+  - fr_model:
+      type: file
+      description: Fine-tuned fragment ion prediction model (optional, distillation level 0)
+      pattern: "*.fr.d0.pt"
+  - log:
+      type: file
+      description: DIA-NN fine-tuning log
+      pattern: "fine_tune.log"
+  - versions:
+      type: file
+      description: File containing software version
+      pattern: "versions.yml"
+authors:
+  - "@ypriverol"

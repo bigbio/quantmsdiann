@@ -4,7 +4,7 @@ description: Create a sample-to-data-relationship format (SDRF) file (usually fr
 ---
 
 Create a sample-to-data-relationship format file based on the specification document. By default
-generate a csv. Quote where necessary. If required columns are missing, let the user know and provide help
+generate a tsv. Quote where necessary. If required columns are missing, let the user know and provide help
 in further filling by asking questions. In the end, self-validate the file by doing:
 
 ```bash
@@ -286,7 +286,7 @@ For each modification, different properties are captured using a key=value pair 
 |===
 |Property |Key |Example | Mandatory(:white_check_mark:)/Optional(:zero:) |comment
 
-|Name of the Modification| NT | NT=Acetylation | :white*check_mark: | \* Name of the Term in this particular case Modification, for custom modifications can be a name defined by the user.
+|Name of the Modification| NT | NT=Acetylation | :white_check_mark: | \* Name of the Term in this particular case Modification, for custom modifications can be a name defined by the user.
 |Modification Accession | AC |AC=UNIMOD:1 | :zero: | Accession in an external database UNIMOD or PSI-MOD supported.
 |Chemical Formula | CF | CF=H(2)C(2)O | :zero: | This is the chemical formula of the added or removed atoms. For the formula composition please follow the guidelines from http://www.unimod.org/names.html[UNIMOD]
 |Modification Type | MT | MT=Fixed | :zero: | This specifies which modification group the modification should be included with. Choose from the following options: [Fixed, Variable, Annotated]. \_Annotated* is used to search for all the occurrences of the modification into an annotated protein database file like UNIPROT XML or PEFF.

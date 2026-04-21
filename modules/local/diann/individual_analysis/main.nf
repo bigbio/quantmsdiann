@@ -2,13 +2,14 @@ process INDIVIDUAL_ANALYSIS {
     tag "$ms_file.baseName"
     label 'process_high'
     label 'diann'
+    label 'error_retry'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
         'docker.io/biocontainers/diann:v1.8.1_cv1' }"
 
     input:
-    tuple val(meta), path(ms_file), path(fasta), path(diann_log), path(library)
+    tuple val(meta), path(ms_file), path(fasta), path(library)
     path(diann_config)
 
     output:
@@ -21,19 +22,9 @@ process INDIVIDUAL_ANALYSIS {
 
     script:
     def args = task.ext.args ?: ''
-    // Strip flags that are managed by the pipeline to prevent silent conflicts
-    def blocked = ['--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out', '--rt-profiling',
-         '--temp', '--threads', '--verbose', '--lib', '--f', '--fasta',
-         '--mass-acc', '--mass-acc-ms1', '--window',
-         '--no-ifs-removal', '--no-main-report', '--relaxed-prot-inf', '--pg-level']
-    // Sort by length descending so longer flags (e.g. --mass-acc-ms1) are matched before shorter prefixes (--mass-acc)
-    blocked.sort { a -> -a.length() }.each { flag ->
-        def flagPattern = '(?<=^|\\s)' + java.util.regex.Pattern.quote(flag) + '(?=\\s|\$)(\\s+(?!-{1,2}[a-zA-Z])\\S+)*'
-        if (args =~ flagPattern) {
-            log.warn "DIA-NN: '${flag}' is managed by the pipeline for INDIVIDUAL_ANALYSIS and will be stripped."
-            args = args.replaceAll(flagPattern, '').trim()
-        }
-    }
+    // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
+    // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
+    args = BlockedFlags.strip('INDIVIDUAL_ANALYSIS', args, log)
 
     // Warn about flags that override pipeline-computed calibration values (not blocked, but may change behaviour)
     ['--individual-windows', '--individual-mass-acc'].each { flag ->
@@ -42,45 +33,90 @@ process INDIVIDUAL_ANALYSIS {
         }
     }
 
-    scan_window = params.scan_window
-
-    if (params.mass_acc_automatic | params.scan_window_automatic) {
-        mass_acc_ms2 = "\$(cat ${diann_log} | grep \"Averaged recommended settings\" | cut -d ' ' -f 11 | tr -cd \"[0-9]\")"
-        scan_window = "\$(cat ${diann_log} | grep \"Averaged recommended settings\" | cut -d ' ' -f 19 | tr -cd \"[0-9]\")"
-        mass_acc_ms1 = "\$(cat ${diann_log} | grep \"Averaged recommended settings\" | cut -d ' ' -f 15 | tr -cd \"[0-9]\")"
-    } else if (meta['precursormasstoleranceunit'].toLowerCase().endsWith('ppm') && meta['fragmentmasstoleranceunit'].toLowerCase().endsWith('ppm')) {
-        mass_acc_ms1 = meta["precursormasstolerance"]
-        mass_acc_ms2 = meta["fragmentmasstolerance"]
+    if (params.mass_acc_automatic || params.scan_window_automatic) {
+        if (meta.mass_acc_ms2 != "0" && meta.mass_acc_ms2 != null) {
+            mass_acc_ms2 = meta.mass_acc_ms2
+            mass_acc_ms1 = meta.mass_acc_ms1
+            scan_window  = meta.scan_window
+        }
+        else if (meta['precursormasstoleranceunit']?.toLowerCase()?.endsWith('ppm') && meta['fragmentmasstoleranceunit']?.toLowerCase()?.endsWith('ppm')) {
+            mass_acc_ms2 = meta['fragmentmasstolerance']
+            mass_acc_ms1 = meta['precursormasstolerance']
+            scan_window  = params.scan_window
+        }
+        else {
+            mass_acc_ms2 = params.mass_acc_ms2
+            mass_acc_ms1 = params.mass_acc_ms1
+            scan_window  = params.scan_window
+        }
     } else {
-        mass_acc_ms2 = "\$(cat ${diann_log} | grep \"Averaged recommended settings\" | cut -d ' ' -f 11 | tr -cd \"[0-9]\")"
-        scan_window = "\$(cat ${diann_log} | grep \"Averaged recommended settings\" | cut -d ' ' -f 19 | tr -cd \"[0-9]\")"
-        mass_acc_ms1 = "\$(cat ${diann_log} | grep \"Averaged recommended settings\" | cut -d ' ' -f 15 | tr -cd \"[0-9]\")"
+        if (meta['precursormasstoleranceunit']?.toLowerCase()?.endsWith('ppm') && meta['fragmentmasstoleranceunit']?.toLowerCase()?.endsWith('ppm')) {
+            mass_acc_ms1 = meta["precursormasstolerance"]
+            mass_acc_ms2 = meta["fragmentmasstolerance"]
+            scan_window  = params.scan_window
+        }
+        else if (meta.mass_acc_ms2 != "0" && meta.mass_acc_ms2 != null) {
+            mass_acc_ms2 = meta.mass_acc_ms2
+            mass_acc_ms1 = meta.mass_acc_ms1
+            scan_window  = meta.scan_window
+        }
+        else {
+            mass_acc_ms2 = params.mass_acc_ms2
+            mass_acc_ms1 = params.mass_acc_ms1
+            scan_window  = params.scan_window
+        }
     }
 
-    diann_no_peptidoforms = params.diann_no_peptidoforms ? "--no-peptidoforms" : ""
+    scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
+                         params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
+    aa_eq = params.aa_eq ? '--aa-eq' : ''
+    diann_tims_sum = params.tims_sum ? "--quant-tims-sum" : ""
+    diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
+    diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
+
+    // Flags removed in DIA-NN 2.3.x — only pass for older versions
+    no_ifs_removal = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-ifs-removal" : ""
+    no_main_report = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-main-report" : ""
+
+    // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
+    min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
+    max_pr_mz = meta['ms1maxmz'] ? "--max-pr-mz ${meta['ms1maxmz']}" : ""
+    min_fr_mz = meta['ms2minmz'] ? "--min-fr-mz ${meta['ms2minmz']}" : ""
+    max_fr_mz = meta['ms2maxmz'] ? "--max-fr-mz ${meta['ms2maxmz']}" : ""
 
     """
-    # Extract --var-mod and --fixed-mod flags from diann_config.cfg (DIA-NN best practice)
-    mod_flags=\$(cat ${diann_config} | grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+)' | tr '\\n' ' ')
+    # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
+    mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
 
     diann   --lib ${library} \\
             --f ${ms_file} \\
             --fasta ${fasta} \\
             --threads ${task.cpus} \\
-            --verbose $params.diann_debug \\
+            --verbose $params.debug_level \\
             --temp ./ \\
             --mass-acc ${mass_acc_ms2} \\
             --mass-acc-ms1 ${mass_acc_ms1} \\
             --window ${scan_window} \\
-            --no-ifs-removal \\
-            --no-main-report \\
+            ${no_ifs_removal} \\
+            ${no_main_report} \\
             --relaxed-prot-inf \\
             --pg-level $params.pg_level \\
-            ${diann_no_peptidoforms} \\
+            ${min_pr_mz} \\
+            ${max_pr_mz} \\
+            ${min_fr_mz} \\
+            ${max_fr_mz} \\
+            ${scoring_mode} \\
+            ${aa_eq} \\
+            ${diann_tims_sum} \\
+            ${diann_im_window} \\
+            ${diann_dda_flag} \\
             \${mod_flags} \\
-            $args
+            $args \\
+            2>&1 | tee ${ms_file.baseName}_final_diann.log
 
-    cp report.log.txt ${ms_file.baseName}_final_diann.log
+    if [ -f report.log.txt ]; then
+        cp report.log.txt ${ms_file.baseName}_final_diann.log
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

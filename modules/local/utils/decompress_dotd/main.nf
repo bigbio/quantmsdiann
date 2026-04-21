@@ -1,6 +1,6 @@
 
 process DECOMPRESS {
-    tag "$meta.mzml_id"
+    tag "$meta.id"
     label 'process_low'
     label 'error_retry'
 
@@ -35,12 +35,12 @@ process DECOMPRESS {
     path '*.log',   emit: log
 
     script:
-    String prefix = task.ext.prefix ?: "${meta.mzml_id}"
+    String prefix = task.ext.prefix ?: "${meta.id}"
 
     """
     function verify_tar {
         exit_code=0
-        error=\$(tar df \$1 2>&1) || exit_code=\$?
+        error=\$(tar df "\$1" 2>&1) || exit_code=\$?
         if [ \$exit_code -eq 2 ]; then
             echo "\${error}"
             exit 2
@@ -63,17 +63,18 @@ process DECOMPRESS {
     function extract {
         if [ -z "\$1" ]; then
             echo "Usage: extract <path/file_name>.<gz|tar|tar.bz2>"
+            exit 1
         else
-            if [ -f \$1 ]; then
-                case \$1 in
-                    *.tar.gz)    tar xvzf \$1 && verify_tar \$1               ;;
-                    *.gz)        gunzip \$1                                     ;;
-                    *.tar)       tar xvf \$1 && verify_tar \$1                ;;
-                    *.zip)       unzip \$1                                      ;;
-                    *)           echo "extract: '\$1' - unknown archive method" ;;
+            if [ -f "\$1" ]; then
+                case "\$1" in
+                    *.tar.gz)    tar xvzf "\$1" && verify_tar "\$1"               ;;
+                    *.gz)        gunzip "\$1"                                     ;;
+                    *.tar)       tar xvf "\$1" && verify_tar "\$1"                ;;
+                    *.zip)       unzip "\$1"                                      ;;
+                    *)           echo "extract: '\$1' - unknown archive method"; exit 1 ;;
                 esac
             else
-                echo "\$1 - file does not exist"
+                echo "\$1 - file does not exist"; exit 1
             fi
         fi
     }
@@ -81,9 +82,9 @@ process DECOMPRESS {
     tar --help 2>&1 | tee -a ${prefix}_decompression.log
     gunzip --help 2>&1 | tee -a ${prefix}_decompression.log
     (unzip --help 2>&1 || zip --help 2>&1) | tee -a ${prefix}_decompression.log
-    echo "Unpacking..." | tee -a ${compressed_file.baseName}_decompression.log
+    echo "Unpacking..." | tee -a ${prefix}_decompression.log
 
-    extract ${compressed_file} 2>&1 | tee -a ${compressed_file.baseName}_conversion.log
+    extract ${compressed_file} 2>&1 | tee -a ${prefix}_decompression.log
 
     # Fix read-only permissions from Bruker/Windows zip archives (dirs extracted as dr-xr-xr-x)
     chmod -R u+w . 2>/dev/null || true

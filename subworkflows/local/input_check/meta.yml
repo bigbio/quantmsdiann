@@ -14,7 +14,7 @@ input:
       description: |
         Input file to be validated
 output:
-  - ch_input_file:
+  - input_file:
       type: file
       description: |
         Channel containing validated input files
