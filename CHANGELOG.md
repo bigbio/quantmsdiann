@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### `Added`
+
+- `--mzml_convert` parameter to control Thermo `.raw` conversion. Default (unset) auto-selects based on `--diann_version`: converts via ThermoRawFileParser for DIA-NN < 2.1.0, passes `.raw` natively to DIA-NN for >= 2.1.0. Explicit `true` forces conversion (useful for `--mzml_statistics` or to work around DIA-NN Thermo reader issues like [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)); explicit `false` requires DIA-NN >= 2.1.0 and skips TRFP entirely (closes [#66](https://github.com/bigbio/quantmsdiann/issues/66)).
+
 ## [2.0.0] bigbio/quantmsdiann — Rome - 2026-04-18
 
 ### `Added`

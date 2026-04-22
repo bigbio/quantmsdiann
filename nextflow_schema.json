@@ -115,6 +115,12 @@
                     "description": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
                     "help_text": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
                     "fa_icon": "far fa-check-square"
+                },
+                "mzml_convert": {
+                    "type": "boolean",
+                    "description": "Convert Thermo .raw to .mzML via ThermoRawFileParser before feeding DIA-NN. If unset, the pipeline converts when DIA-NN < 2.1.0 and passes .raw files natively when DIA-NN >= 2.1.0.",
+                    "help_text": "DIA-NN 2.1.0 added native Thermo .raw support on Linux, so conversion via ThermoRawFileParser is no longer strictly required. Set `--mzml_convert false` to feed .raw files directly to DIA-NN (saves one container invocation and an I/O pass per file). Set `--mzml_convert true` to force conversion (e.g. for QC / mzML statistics, or to work around DIA-NN Thermo reader issues such as [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)). The parameter has no effect when inputs are already mzML / .d / .dia or when `--local_input_type mzML` is used with `--root_folder`.",
+                    "fa_icon": "far fa-check-square"
                 }
             },
             "fa_icon": "far fa-chart-bar"
