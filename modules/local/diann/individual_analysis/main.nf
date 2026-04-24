@@ -4,6 +4,10 @@ process INDIVIDUAL_ANALYSIS {
     label 'diann'
     label 'error_retry'
 
+    // DIA-NN's native Thermo .raw reader fails on symlinked files (Thermo SDK limitation).
+    // Use 'copy' when .raw files are passed directly to DIA-NN (DIA-NN >= 2.1.0 without TRFP conversion).
+    stageInMode { VersionUtils.isNativeRawMode(params) ? 'copy' : 'symlink' }
+
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
         'docker.io/biocontainers/diann:v1.8.1_cv1' }"
