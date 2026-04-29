@@ -49,6 +49,9 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
 
+    diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
+
     """
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
     # Fragment Tolerance value was: ${meta['fragmentmasstolerance']}
@@ -76,6 +79,8 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\
+            ${diann_channel_run_norm} \\
+            ${diann_channel_spec_norm} \\
             \${mod_flags} \\
             $args \\
             2>&1 | tee assemble_empirical_library.log

@@ -88,6 +88,9 @@ process INDIVIDUAL_ANALYSIS {
     min_fr_mz = meta['ms2minmz'] ? "--min-fr-mz ${meta['ms2minmz']}" : ""
     max_fr_mz = meta['ms2maxmz'] ? "--max-fr-mz ${meta['ms2maxmz']}" : ""
 
+    diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
+
     """
     # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
     mod_flags=\$(grep -oP '(--var-mod\\s+\\S+|--fixed-mod\\s+\\S+|--monitor-mod\\s+\\S+|--lib-fixed-mod\\s+\\S+|--original-mods|--channels\\s+.+)' ${diann_config} | tr '\\n' ' ')
@@ -114,6 +117,8 @@ process INDIVIDUAL_ANALYSIS {
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\
+            ${diann_channel_run_norm} \\
+            ${diann_channel_spec_norm} \\
             \${mod_flags} \\
             $args \\
             2>&1 | tee ${ms_file.baseName}_final_diann.log
