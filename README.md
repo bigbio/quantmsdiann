@@ -34,6 +34,8 @@ The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard
 8. **MSstats conversion** — DIA-NN report to [MSstats](https://msstats.org/)-compatible format
 9. **Quality control** — interactive QC report via [pmultiqc](https://github.com/bigbio/pmultiqc)
 
+At present, the pipeline accepts SDRF inputs only when they use the `.sdrf.tsv` extension.
+
 ## Supported DIA-NN Versions
 
 | Version         | Profile        | Container                                  | Key features                                   |

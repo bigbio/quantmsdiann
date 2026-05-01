@@ -10,8 +10,8 @@ tools:
 input:
   - meta: input_file
     type: file
-    description: Input samplesheet or experimental design file
-    pattern: "*.{tsv,csv,sdrf}"
+    description: Input SDRF file with .sdrf.tsv extension
+    pattern: "*.sdrf.tsv"
 output:
   - meta: log
     type: file

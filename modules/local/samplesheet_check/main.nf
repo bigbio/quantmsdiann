@@ -24,20 +24,12 @@ process SAMPLESHEET_CHECK {
 
     """
     set -o pipefail
-    # Get basename and create output filename
-    BASENAME=\$(basename "${input_file}")
-    # Remove .sdrf.tsv, .sdrf.csv, or .sdrf extension (in that order to match longest first)
-    BASENAME=\$(echo "\$BASENAME" | sed -E 's/\\.sdrf\\.(tsv|csv)\$//' | sed -E 's/\\.sdrf\$//')
-    OUTPUT_FILE="\${BASENAME}.sdrf.tsv"
-
-    # Convert CSV to TSV if needed using pandas
-    if [[ "${input_file}" == *.csv ]]; then
-        python -c "import pandas as pd; df = pd.read_csv('${input_file}'); df.to_csv('\$OUTPUT_FILE', sep='\\t', index=False)"
-    elif [[ "${input_file}" != "\$OUTPUT_FILE" ]]; then
-        cp "${input_file}" "\$OUTPUT_FILE"
+    if [[ "${input_file}" != *.sdrf.tsv ]]; then
+        echo "ERROR: quantmsdiann currently supports only SDRF inputs with the .sdrf.tsv extension. Received: ${input_file}" >&2
+        exit 1
     fi
 
-    quantmsutilsc checksamplesheet --exp_design "\$OUTPUT_FILE" \\
+    quantmsutilsc checksamplesheet --exp_design "${input_file}" \\
     --minimal \\
     ${string_use_ols_cache_only} \\
     $args \\
