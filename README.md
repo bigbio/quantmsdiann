@@ -26,38 +26,7 @@
      workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
-<<<<<<< HEAD
-<p align="center">
-  <img src="docs/images/quantmsdiann_workflow.svg" alt="quantmsdiann workflow" width="800">
-</p>
-
-The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:
-
-1. **Input validation** — SDRF parsing and validation via [sdrf-pipelines](https://github.com/bigbio/sdrf-pipelines)
-2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing
-3. **In-silico spectral library generation** — deep learning-based prediction, or use a user-provided library (`--speclib`)
-4. **Preliminary analysis** — per-file calibration and mass accuracy estimation (parallelized)
-5. **Empirical library assembly** — consensus library from preliminary results with RT profiling
-6. **Individual analysis** — per-file search with the empirical library (parallelized)
-7. **Final quantification** — protein/peptide/gene group matrices with cross-run normalization
-8. **MSstats conversion** — DIA-NN report to [MSstats](https://msstats.org/)-compatible format
-9. **Quality control** — interactive QC report via [pmultiqc](https://github.com/bigbio/pmultiqc)
-
-## Supported DIA-NN Versions
-
-| Version         | Profile        | Container                                  | Key features                                   |
-| --------------- | -------------- | ------------------------------------------ | ---------------------------------------------- |
-| 1.8.1 (default) | `diann_v1_8_1` | `docker.io/biocontainers/diann:v1.8.1_cv1` | Core DIA analysis, TSV output                  |
-| 2.1.0           | `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0`               | Native .raw support, Parquet output            |
-| 2.2.0           | `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC)        |
-| 2.3.2           | `diann_v2_3_2` | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (beta), InfinDIA, up to 9 var mods |
-
-Switch versions with e.g. `-profile diann_v2_2_0,docker`. See the [DIA-NN Version Selection](docs/usage.md#dia-nn-version-selection) guide and [full parameter reference](docs/parameters.md) for details.
-
-## Quick start
-=======
 ## Usage
->>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/get_started/environment_setup/overview) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/get_started/run-your-first-pipeline) with `-profile test` before running the workflow on actual data.
