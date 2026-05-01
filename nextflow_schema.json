@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/bigbio/quantmsdiann/main/nextflow_schema.json",
     "title": "bigbio/quantmsdiann pipeline parameters",
-    "description": "DIA-NN quantitative mass spectrometry workflow built following nf-core guidelines",
+    "description": "Quantitative Mass Spectrometry nf-core workflow",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -16,18 +16,24 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
+                    "schema": "assets/schema_input.json",
                     "mimetype": "text/csv",
+<<<<<<< HEAD
                     "pattern": "^\\S+\\.(?:csv|tsv|sdrf)$",
                     "description": "URI/path to an SDRF file in SDRF format with .sdrf, .tsv, or .csv extension. For more info see help text or docs.",
                     "help_text": "Input is specified by using a path or URI to a PRIDE Sample to Data Relation Format file (SDRF), e.g. as part of a submitted and annotated PRIDE experiment (see [here](https://github.com/bigbio/proteomics-metadata-standard/tree/master/annotated-projects) for examples). Input files will be downloaded and cached from the URIs specified in the SDRF file.\n\nThe SDRF file can have .sdrf, .tsv, or .csv extensions. An OpenMS-style experimental design will be generated based on the factor columns of the SDRF.\n\nThe following parameters are read **exclusively** from the SDRF file (required columns):\n\n    * `acquisition_method` (from 'Proteomics Data Acquisition Method' column),\n    * `labelling_type` (from 'Label' column),\n    * `enzyme` (from 'Enzyme' column),\n    * `fixed_mods` (from 'FixedModifications' column)\n\nThe following parameters are read from SDRF but can be **overridden via command line**:\n\n    * `precursor_mass_tolerance` (from 'PrecursorMassTolerance' column),\n    * `precursor_mass_tolerance_unit` (from 'PrecursorMassToleranceUnit' column),\n    * `fragment_mass_tolerance` (from 'FragmentMassTolerance' column),\n    * `fragment_mass_tolerance_unit` (from 'FragmentMassToleranceUnit' column),\n    * `variable_mods` (from 'VariableModifications' column)",
+=======
+                    "pattern": "^\\S+\\.csv$",
+                    "description": "Path to comma-separated file containing information about the samples in the experiment.",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
                     "type": "string",
-                    "description": "The output directory where the results will be saved.",
-                    "default": "./results",
-                    "fa_icon": "fas fa-folder-open",
-                    "format": "directory-path"
+                    "format": "directory-path",
+                    "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
+                    "fa_icon": "fas fa-folder-open"
                 },
                 "email": {
                     "type": "string",
@@ -40,543 +46,46 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
-                },
-                "root_folder": {
-                    "type": "string",
-                    "description": "Root folder in which the spectrum files specified in the SDRF are searched",
-                    "fa_icon": "fas fa-folder",
-                    "help_text": "This optional parameter can be used to specify a root folder in which the spectrum files specified in the SDRF are searched.\nIt is usually used if you have a local version of the experiment already. Note that this option does not support recursive\nsearching yet."
-                },
-                "local_input_type": {
-                    "type": "string",
-                    "description": "Overwrite the file type/extension of the filename as specified in the SDRF",
-                    "fa_icon": "fas fa-file-invoice",
-                    "default": "mzML",
-                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', or 'dia' (the letter cases should match your files exactly). Compressed variants (.gz, .tar, .tar.gz, .zip) are supported for 'mzML', 'raw', and 'd' formats."
                 }
             }
         },
-        "sdrf_validation": {
-            "title": "SDRF validation",
+        "reference_genome_options": {
+            "title": "Reference genome options",
             "type": "object",
-            "description": "Settings for validating the input SDRF file.",
-            "default": "",
+            "fa_icon": "fas fa-dna",
+            "description": "Reference genome related files and options required for the workflow.",
             "properties": {
-                "use_ols_cache_only": {
-                    "type": "boolean",
-                    "description": "Use cached version of the Ontology Lookup Service (OLS).",
-                    "fa_icon": "far fa-check-square",
-                    "help_text": "Use only the cached version of the Ontology Lookup Service (OLS) for ontology term validation. This is useful if you don't want the pipeline to query internet services.",
-                    "default": true
-                }
-            }
-        },
-        "protein_database": {
-            "title": "Protein database",
-            "type": "object",
-            "description": "Settings that relate to the mandatory protein database and the optional generation of decoy entries. Note: Decoys for DIA will be created internally.",
-            "default": "",
-            "properties": {
-                "database": {
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                },
+                "fasta": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "mimetype": "text/fasta",
-                    "pattern": "^\\S+\\.(?:fasta|fa)$",
-                    "description": "The `fasta` protein database used during database search. *Note:* For DIA data, it must not contain decoys.",
-                    "fa_icon": "fas fa-file",
-                    "help_text": "Since the database is not included in an SDRF, this parameter always needs to be given to specify the input protein database\nwhen you run the pipeline. Remember to include contaminants (and decoys if not in DIA mode and if not added in the pipeline with [`--add_decoys`](#add_decoys))\n\n```bash\n--database '[path to fasta protein database]'\n```"
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to FASTA genome file.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "igenomes_ignore": {
+                    "type": "boolean",
+                    "description": "Do not load the iGenomes reference config.",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                },
+                "igenomes_base": {
+                    "type": "string",
+                    "description": "The base path to the igenomes reference files",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "default": "s3://ngi-igenomes/igenomes/"
                 }
-            },
-            "fa_icon": "fas fa-database",
-            "required": ["database"]
-        },
-        "spectrum_preprocessing": {
-            "title": "Spectrum preprocessing",
-            "type": "object",
-            "description": "Configure file conversion and preprocessing options.",
-            "default": "",
-            "properties": {
-                "reindex_mzml": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Force initial re-indexing of input mzML files. Also fixes some common mistakes in slightly incomplete/outdated mzMLs. (Default: true for safety)",
-                    "fa_icon": "far fa-check-square",
-                    "help_text": "Force re-indexing in the beginning of the pipeline to make sure that indices are up-to-date."
-                },
-                "mzml_statistics": {
-                    "type": "boolean",
-                    "description": "Compute MS1/MS2 statistics from mzML files. Only runs on mzML files, .d files are always skipped.",
-                    "help_text": "Enable to generate *_ms_info.parquet statistics for QC reporting. Only available for mzML files, Bruker .d files are always excluded.",
-                    "fa_icon": "far fa-check-square"
-                },
-                "mzml_features": {
-                    "type": "boolean",
-                    "description": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
-                    "help_text": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
-                    "fa_icon": "far fa-check-square"
-                }
-            },
-            "fa_icon": "far fa-chart-bar"
-        },
-        "database_search": {
-            "title": "Database search",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "met_excision": {
-                    "type": "boolean",
-                    "description": "Database searches accounted for N-terminal methionine excision, a common co-translational modification where the initial methionine is enzymatically removed from proteins.",
-                    "default": true,
-                    "fa_icon": "far fa-check-square",
-                    "help_text": "Database searches account for N-terminal methionine excision."
-                },
-                "allowed_missed_cleavages": {
-                    "type": "integer",
-                    "description": "Specify the maximum number of allowed missed enzyme cleavages in a peptide. The parameter is not applied if `unspecific cleavage` is specified as enzyme.",
-                    "default": 2,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "precursor_mass_tolerance": {
-                    "type": "integer",
-                    "description": "Precursor mass tolerance used for database search. For High-Resolution instruments a precursor mass tolerance value of 5 ppm is recommended (i.e. 5). See also [`--precursor_mass_tolerance_unit`](#precursor_mass_tolerance_unit).",
-                    "default": 5,
-                    "fa_icon": "fas fa-sliders-h",
-                    "help_text": "This value can be overridden via command line. If not specified, the value from the SDRF file will be used."
-                },
-                "precursor_mass_tolerance_unit": {
-                    "type": "string",
-                    "description": "Precursor mass tolerance unit used for database search. Possible values are 'ppm' (default) and 'Da'.",
-                    "default": "ppm",
-                    "fa_icon": "fas fa-sliders-h",
-                    "enum": ["Da", "ppm"],
-                    "help_text": "This value can be overridden via command line. If not specified, the value from the SDRF file will be used."
-                },
-                "fragment_mass_tolerance": {
-                    "type": "number",
-                    "description": "Fragment mass tolerance used for database search. The default of 0.03 Da is for high-resolution instruments.",
-                    "default": 0.03,
-                    "fa_icon": "fas fa-sliders-h",
-                    "help_text": "This value can be overridden via command line. If not specified, the value from the SDRF file will be used."
-                },
-                "fragment_mass_tolerance_unit": {
-                    "type": "string",
-                    "description": "Fragment mass tolerance unit used for database search. Possible values are 'ppm' and 'Da' (default).",
-                    "default": "Da",
-                    "fa_icon": "fas fa-list-ol",
-                    "help_text": "This value can be overridden via command line. If not specified, the value from the SDRF file will be used.",
-                    "enum": ["Da", "ppm"]
-                },
-                "variable_mods": {
-                    "type": "string",
-                    "description": "A comma-separated list of variable modifications with their Unimod name to be searched during database search",
-                    "default": "Oxidation (M)",
-                    "fa_icon": "fas fa-tasks",
-                    "help_text": "Specify which variable modifications should be applied to the database search (e.g. 'Oxidation (M)'). Use Unimod names in the style '({unimod name} ({optional term specificity} {optional origin})'. Multiple variable modifications can be specified comma separated (e.g. 'Carbamidomethyl (C),Oxidation (M)'). This value can be overridden via command line. If not specified, the value from the SDRF file will be used."
-                },
-                "min_precursor_charge": {
-                    "type": "integer",
-                    "description": "Minimum precursor ion charge. Omit the '+'",
-                    "default": 2,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "max_precursor_charge": {
-                    "type": "integer",
-                    "description": "Maximum precursor ion charge. Omit the '+'",
-                    "default": 4,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "min_peptide_length": {
-                    "type": "integer",
-                    "description": "Minimum peptide length to consider",
-                    "default": 6,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "max_peptide_length": {
-                    "type": "integer",
-                    "description": "Maximum peptide length to consider",
-                    "default": 40,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "max_mods": {
-                    "type": "integer",
-                    "description": "Maximum number of modifications per peptide. If this value is large, the search may take very long.",
-                    "default": 3,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "min_pr_mz": {
-                    "type": "number",
-                    "description": "The minimum precursor m/z for the in silico library generation or library-free search",
-                    "fa_icon": "fas fa-filter",
-                    "default": 400
-                },
-                "max_pr_mz": {
-                    "type": "number",
-                    "description": "The maximum precursor m/z for the in silico library generation or library-free search",
-                    "fa_icon": "fas fa-filter",
-                    "default": 2400
-                },
-                "min_fr_mz": {
-                    "type": "number",
-                    "description": "The minimum fragment m/z for the in silico library generation or library-free search",
-                    "fa_icon": "fas fa-filter",
-                    "default": 100
-                },
-                "max_fr_mz": {
-                    "type": "number",
-                    "description": "The maximum fragment m/z for the in silico library generation or library-free search",
-                    "fa_icon": "fas fa-filter",
-                    "default": 1800
-                }
-            },
-            "fa_icon": "fas fa-search"
-        },
-        "psm_re_scoring_general": {
-            "title": "PSM re-scoring (general)",
-            "type": "object",
-            "description": "Choose between different rescoring/posterior probability calculation methods and set them up.",
-            "default": "",
-            "properties": {
-                "pp_debug": {
-                    "type": "integer",
-                    "description": "Debug level when running the re-scoring. Logs become more verbose and at '>5' temporary files are kept.",
-                    "fa_icon": "fas fa-bug",
-                    "default": 0,
-                    "hidden": true
-                }
-            },
-            "fa_icon": "fas fa-star-half-alt"
-        },
-        "DIA-NN": {
-            "title": "DIA-NN",
-            "type": "object",
-            "description": "Settings for DIA-NN - a universal software for data-independent acquisition (DIA) proteomics data processing.",
-            "default": "",
-            "properties": {
-                "diann_version": {
-                    "type": "string",
-                    "description": "Specify the DIA-NN version to be used in the workflow.",
-                    "fa_icon": "fas fa-tag"
-                },
-                "enable_mod_localization": {
-                    "type": "boolean",
-                    "description": "Enable or disable modification localization scoring in DIA-NN.",
-                    "fa_icon": "fas fa-map-marker-alt"
-                },
-                "mod_localization": {
-                    "type": "string",
-                    "description": "Specify the modification localization parameters for DIA-NN.",
-                    "fa_icon": "fas fa-cogs"
-                },
-                "mass_acc_automatic": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Choosing the MS2 mass accuracy setting automatically",
-                    "fa_icon": "fas fa-toggle-on"
-                },
-                "scan_window_automatic": {
-                    "type": "boolean",
-                    "description": "Choosing scan_window setting automatically",
-                    "default": true,
-                    "fa_icon": "fas fa-toggle-on"
-                },
-                "scan_window": {
-                    "type": "integer",
-                    "description": "Set the scan window radius to a specific value",
-                    "fa_icon": "fas fa-filter",
-                    "help_text": " Ideally, should be approximately equal to the average number of data points per peak",
-                    "default": 8
-                },
-                "mass_acc_ms2": {
-                    "type": "number",
-                    "description": "Set the MS2 mass accuracy (tolerance) to a specific value in ppm.",
-                    "fa_icon": "fas fa-bullseye",
-                    "help_text": "If specified, this overrides the automatic calibration. Corresponds to the --mass-acc parameter in DIA-NN.",
-                    "default": 15
-                },
-                "mass_acc_ms1": {
-                    "type": "number",
-                    "description": "Set the MS1 mass accuracy (tolerance) to a specific value in ppm.",
-                    "fa_icon": "fas fa-bullseye",
-                    "help_text": "If specified, this overrides the automatic calibration. Corresponds to the --mass-acc-ms1 parameter in DIA-NN.",
-                    "default": 15
-                },
-                "performance_mode": {
-                    "type": "boolean",
-                    "description": "Set Low RAM & High Speed Mode for DIANN, including min-corr, corr-diff, and time-corr-only three parameters",
-                    "fa_icon": "far fa-check-square",
-                    "default": true
-                },
-                "quick_mass_acc": {
-                    "type": "boolean",
-                    "description": "when choosing the MS2 mass accuracy setting automatically, DIA-NN will use a fast heuristical algorithm instead of IDs number optimisation",
-                    "fa_icon": "far fa-check-square",
-                    "default": true
-                },
-                "pg_level": {
-                    "type": "integer",
-                    "description": "Controls the protein inference mode",
-                    "fa_icon": "fas fa-list-ol",
-                    "enum": [0, 1, 2],
-                    "default": 2
-                },
-                "precursor_qvalue": {
-                    "type": "number",
-                    "description": "Precursor-level q-value filtering threshold for the DIA-NN main report. Maps to --qvalue.",
-                    "default": 0.01,
-                    "fa_icon": "fas fa-filter",
-                    "help_text": "Controls how strictly precursor identifications are filtered in the DIA-NN main report. For proteogenomics with variant databases, the standard 0.01 (1%) is recommended."
-                },
-                "matrix_qvalue": {
-                    "type": "number",
-                    "description": "Q-value threshold for DIA-NN output matrices (pr_matrix, pg_matrix, etc.). Maps to --matrix-qvalue.",
-                    "default": 0.01,
-                    "fa_icon": "fas fa-filter",
-                    "help_text": "Controls the global q-value filtering applied when generating the quantification matrices. Default matches DIA-NN's built-in default of 1%."
-                },
-                "matrix_spec_q": {
-                    "type": "number",
-                    "description": "Run-specific protein q-value filter for protein/gene matrices. Maps to --matrix-spec-q.",
-                    "default": 0.05,
-                    "fa_icon": "fas fa-filter",
-                    "help_text": "An additional run-specific protein-level FDR filter applied to the protein and gene matrices. Default matches DIA-NN's built-in default of 5%. For proteogenomics/variant detection, consider setting to 1.0 to retain variant proteins that lack sufficient unique peptides for protein-level confidence."
-                },
-                "species_genes": {
-                    "type": "boolean",
-                    "description": "Instructs DIA-NN to add the organism identifier to the gene names",
-                    "fa_icon": "far fa-check-square"
-                },
-                "speclib": {
-                    "type": "string",
-                    "description": "The spectral library to use for DIA-NN",
-                    "fa_icon": "fas fa-file",
-                    "help_text": "If passed, will use that spectral library to carry out the DIA-NN search, instead of predicting one from the fasta file.",
-                    "hidden": false
-                },
-                "report_decoys": {
-                    "type": "boolean",
-                    "description": "Save decoy PSMs to the main .parquet report for DIA-NN 2.0.*",
-                    "fa_icon": "far fa-check-square",
-                    "hidden": false
-                },
-                "export_xic": {
-                    "type": "boolean",
-                    "description": "instructs DIA-NN to extract MS1/fragment chromatograms for identified precursors within X seconds from the elution apex, with X set to 10s if not provided;equivalent to the 'XICs' option in the GUI",
-                    "fa_icon": "far fa-check-square",
-                    "hidden": false
-                },
-                "quantums": {
-                    "type": "boolean",
-                    "description": "Use legacy DIA-NN quantification algorithms (DIA-NN parameter --direct-quant); if true, QuantUMS is enabled.",
-                    "fa_icon": "far fa-check-square",
-                    "hidden": false
-                },
-                "quantums_train_runs": {
-                    "type": "string",
-                    "description": "Run index range for QuantUMS training (e.g., '0:5').",
-                    "fa_icon": "fas fa-sliders-h",
-                    "help_text": "Sets the DIA-NN parameter '--quant-train-runs'. Format: '[N1]:[N2]'. Instructs QuantUMS to train its parameters on runs with indices in the range N1 to N2 (inclusive).",
-                    "hidden": false
-                },
-                "quantums_sel_runs": {
-                    "type": "integer",
-                    "description": "Number of automatically selected runs for QuantUMS training.",
-                    "fa_icon": "fas fa-sliders-h",
-                    "help_text": "Sets the DIA-NN parameter --quant-sel-runs. Format: [N]. QuantUMS will train its parameters on N automatically selected runs to speed up training in large experiments. N must be 6 or greater.",
-                    "hidden": false
-                },
-                "quantums_params": {
-                    "type": "string",
-                    "description": "Pre-calculated QuantUMS parameters.",
-                    "fa_icon": "fas fa-sliders-h",
-                    "help_text": "Sets the DIA-NN parameter --quant-params. Provide previously obtained QuantUMS parameters to use instead of training new ones.",
-                    "hidden": false
-                },
-                "scoring_mode": {
-                    "type": "string",
-                    "default": "generic",
-                    "enum": ["generic", "proteoforms", "peptidoforms"],
-                    "description": "DIA-NN scoring mode. 'generic' maximizes IDs (default). 'proteoforms' validates single-residue differences — recommended for proteogenomics/variant detection (requires DIA-NN >= 2.0). 'peptidoforms' provides extra peptidoform q-values for PTM analysis.",
-                    "fa_icon": "fas fa-bullseye",
-                    "help_text": "Controls DIA-NN's decoy generation strategy. In 'generic' mode, decoys are fully shuffled sequences. In 'proteoforms' mode, decoys differ by a single residue — directly modelling the confusion between canonical and variant peptides (e.g., COSMIC missense mutations). In 'peptidoforms' mode, generic q-values are calculated plus extra peptidoform-level q-values for PTM localization."
-                },
-                "aa_eq": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Treat I&L, Q&E, N&D as equivalent amino acids during reannotation. Essential for entrapment FDR benchmarks.",
-                    "fa_icon": "fas fa-equals",
-                    "help_text": "Maps to DIA-NN's --aa-eq flag. When enabled, peptides are matched to proteins considering isoleucine/leucine, glutamine/glutamic acid, and asparagine/aspartic acid as equivalent. This is essential when benchmarking FDR using entrapment databases, as without it the assessment measures the ability to distinguish deamidated peptides rather than true FDR."
-                },
-                "tims_sum": {
-                    "type": "boolean",
-                    "description": "Enable '--quant-tims-sum' for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF).",
-                    "fa_icon": "far fa-check-square",
-                    "default": false
-                },
-                "im_window": {
-                    "type": "number",
-                    "description": "Set '--im-window' to ensure the IM extraction window is not smaller than the specified value.",
-                    "fa_icon": "fas fa-filter"
-                },
-                "use_quant": {
-                    "type": "boolean",
-                    "description": "Set '--use-quant' to reuse existing .quant files if available.",
-                    "fa_icon": "far fa-check-square",
-                    "default": true
-                },
-
-                "channel_run_norm": {
-                    "type": "boolean",
-                    "description": "Set '--channel-run-norm'. Run-specific normalisation for multiplexing (e.g., Protein Turnover SILAC)",
-                    "fa_icon": "far fa-check-square",
-                    "default": false
-                },
-                "channel_spec_norm": {
-                    "type": "boolean",
-                    "description": "Set '--channel-spec-norm'. Channel-specific normalisation for multiplexing (Independent Samples)",
-                    "fa_icon": "far fa-check-square",
-                    "default": false
-                },
-                "skip_preliminary_analysis": {
-                    "type": "boolean",
-                    "description": "Skip the preliminary analysis step, thus use the passed spectral library as-is instead of generating a local consensus library.",
-                    "fa_icon": "fas fa-forward",
-                    "hidden": false
-                },
-                "debug_level": {
-                    "type": "integer",
-                    "description": "Debug level",
-                    "default": 3,
-                    "fa_icon": "fas fa-bug",
-                    "enum": [0, 1, 2, 3, 4],
-                    "hidden": true
-                },
-                "normalize": {
-                    "type": "boolean",
-                    "description": "Enable cross-run normalization between runs by diann.",
-                    "default": true,
-                    "fa_icon": "far fa-check-square"
-                },
-                "random_preanalysis": {
-                    "type": "boolean",
-                    "description": "Enable random selection of spectrum files to generate empirical library.",
-                    "fa_icon": "far fa-check-square"
-                },
-                "random_preanalysis_seed": {
-                    "type": "integer",
-                    "description": "Set the random seed for the random selection of spectrum files to generate the empirical library.",
-                    "default": 42,
-                    "fa_icon": "fas fa-filter"
-                },
-                "empirical_assembly_ms_n": {
-                    "type": "integer",
-                    "description": "The number of randomly selected spectrum files.",
-                    "default": 200,
-                    "fa_icon": "fas fa-filter",
-                    "hidden": true
-                },
-                "extra_args": {
-                    "type": "string",
-                    "description": "Extra arguments appended to all DIA-NN steps. Flags incompatible with specific steps are automatically stripped with a warning.",
-                    "fa_icon": "fas fa-terminal",
-                    "hidden": false,
-                    "help_text": "Pass additional DIA-NN command-line arguments that will be appended to all DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION). Flags that conflict with a specific step are automatically stripped with a warning. For step-specific overrides, use custom Nextflow config files with ext.args."
-                },
-                "dda": {
-                    "type": "boolean",
-                    "description": "Explicitly enable DDA mode. Normally auto-detected from the SDRF acquisition method column. Use only when SDRF lacks this column. Requires DIA-NN >= 2.3.2.",
-                    "fa_icon": "fas fa-flask",
-                    "default": false
-                },
-                "light_models": {
-                    "type": "boolean",
-                    "description": "Enable --light-models for 10x faster in-silico library generation (DIA-NN >= 2.0).",
-                    "fa_icon": "fas fa-bolt",
-                    "default": false
-                },
-                "export_quant": {
-                    "type": "boolean",
-                    "description": "Enable --export-quant for fragment-level parquet data export (DIA-NN >= 2.0).",
-                    "fa_icon": "fas fa-file-export",
-                    "default": false
-                },
-                "site_ms1_quant": {
-                    "type": "boolean",
-                    "description": "Enable --site-ms1-quant to use MS1 apex intensities for PTM site quantification (DIA-NN >= 2.0).",
-                    "fa_icon": "fas fa-crosshairs",
-                    "default": false
-                },
-                "enable_fine_tuning": {
-                    "type": "boolean",
-                    "description": "Enable DL model fine-tuning before the main analysis. Runs a tuning search on a file subset, fine-tunes RT/IM models, then runs the full pipeline with tuned models. Requires DIA-NN >= 2.3.2.",
-                    "fa_icon": "fas fa-brain",
-                    "default": false,
-                    "help_text": "When enabled, Phase 0 runs before the main pipeline: (1) in-silico library generation with default models, (2) preliminary analysis + assembly on a subset of files (controlled by --tune_n_files), (3) fine-tuning RT/IM models on the resulting empirical library, (4) re-generation of the in-silico library with tuned models. The main pipeline then runs from preliminary analysis using the tuned library."
-                },
-                "tune_n_files": {
-                    "type": "integer",
-                    "description": "Number of files to use for the fine-tuning search. Use the largest/best-quality files.",
-                    "fa_icon": "fas fa-layer-group",
-                    "default": 3
-                },
-                "tune_fr": {
-                    "type": "boolean",
-                    "description": "Also fine-tune the fragmentation model (quality-sensitive — verify results vs base model).",
-                    "fa_icon": "fas fa-flask",
-                    "default": false
-                },
-                "tune_lr": {
-                    "type": "number",
-                    "description": "Fine-tuning learning rate (default in DIA-NN: 0.0005). Maps to --tune-lr.",
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "enable_infin_dia": {
-                    "type": "boolean",
-                    "description": "Enable InfinDIA for ultra-large search spaces (DIA-NN >= 2.3.0). Experimental.",
-                    "fa_icon": "fas fa-infinity",
-                    "default": false
-                },
-                "pre_select": {
-                    "type": "integer",
-                    "description": "Set --pre-select N precursor limit for InfinDIA pre-search.",
-                    "fa_icon": "fas fa-filter"
-                },
-                "save_speclib_tsv": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Save the TSV spectral library from the in-silico library generation step.",
-                    "fa_icon": "fas fa-save",
-                    "help_text": "When enabled, the human-readable TSV version of the spectral library produced by DIA-NN during the INSILICO_LIBRARY_GENERATION step is published to the output directory under `library_generation/`. By default this file is discarded as an intermediate."
-                }
-            },
-            "fa_icon": "fas fa-braille"
-        },
-        "quality_control": {
-            "title": "Quality control",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "enable_pmultiqc": {
-                    "type": "boolean",
-                    "description": "Enable generation of pmultiqc report? default: true",
-                    "fa_icon": "fas fa-toggle-on",
-                    "default": true
-                },
-                "pmultiqc_idxml_skip": {
-                    "type": "boolean",
-                    "description": "Skip idXML files (do not generate search engine scores) in pmultiqc report? default: 'true'",
-                    "fa_icon": "fas fa-toggle-on",
-                    "default": true
-                },
-                "contaminant_string": {
-                    "type": "string",
-                    "description": "Contaminant affix string for pmultiqc report. This parameter maps to --contaminant_affix in pmultiqc. default: 'CONT'",
-                    "default": "CONT"
-                }
-            },
-            "fa_icon": "fas fa-file-medical-alt"
+            }
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -676,24 +185,12 @@
                     "fa_icon": "fas fa-palette",
                     "hidden": true
                 },
-                "hook_url": {
-                    "type": "string",
-                    "description": "Incoming hook URL for messaging service",
-                    "fa_icon": "fas fa-people-group",
-                    "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
-                    "hidden": true
-                },
                 "multiqc_config": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Custom config file to supply to MultiQC.",
                     "fa_icon": "fas fa-cog",
                     "hidden": true
-                },
-                "skip_table_plots": {
-                    "type": "boolean",
-                    "description": "Skip protein/peptide table plots with pmultiqc for large dataset.",
-                    "fa_icon": "fas fa-toggle-on"
                 },
                 "multiqc_logo": {
                     "type": "string",
@@ -722,7 +219,7 @@
                 },
                 "trace_report_suffix": {
                     "type": "string",
-                    "fa_icon": "far fa-calendar",
+                    "fa_icon": "far calendar",
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
                 },
@@ -746,25 +243,7 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/$defs/protein_database"
-        },
-        {
-            "$ref": "#/$defs/sdrf_validation"
-        },
-        {
-            "$ref": "#/$defs/spectrum_preprocessing"
-        },
-        {
-            "$ref": "#/$defs/database_search"
-        },
-        {
-            "$ref": "#/$defs/psm_re_scoring_general"
-        },
-        {
-            "$ref": "#/$defs/DIA-NN"
-        },
-        {
-            "$ref": "#/$defs/quality_control"
+            "$ref": "#/$defs/reference_genome_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

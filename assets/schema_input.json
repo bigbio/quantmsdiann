@@ -6,25 +6,28 @@
     "type": "array",
     "items": {
         "type": "object",
-        "required": ["source name", "comment[data file]", "assay name"],
         "properties": {
-            "source name": {
+            "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Source name must be provided and cannot contain spaces"
-            },
-            "comment[data file]": {
-                "type": "string",
-                "format": "file-path",
-                "errorMessage": "Spectrum files must be provided",
+                "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta": ["id"]
             },
-            "assay name": {
+            "fastq_1": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Assay name must be provided and cannot contain whitespace",
-                "meta": ["assay"]
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
+                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "fastq_2": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
+                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             }
-        }
+        },
+        "required": ["sample", "fastq_1"]
     }
 }

@@ -1,55 +1,73 @@
 # bigbio/quantmsdiann: Usage
 
+> _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
+
 ## Introduction
 
-quantmsdiann is a Nextflow pipeline for DIA-NN-based quantitative mass spectrometry analysis.
+<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+
+## Samplesheet input
+
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+
+```bash
+--input '[path to samplesheet file]'
+```
+
+### Multiple runs of the same sample
+
+The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+
+```csv title="samplesheet.csv"
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
+CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+```
+
+### Full samplesheet
+
+The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+
+A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+
+```csv title="samplesheet.csv"
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
+CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
+TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
+TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
+TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
+TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+```
+
+| Column    | Description                                                                                                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+
+An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run bigbio/quantmsdiann \
-    --input 'experiment.sdrf.tsv' \
-    --database 'proteins.fasta' \
-    --outdir './results' \
-    -profile docker
+nextflow run bigbio/quantmsdiann --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
 ```
 
+<<<<<<< HEAD
 The input file must be in [Sample-to-data-relationship format (SDRF)](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.0c00376) and can have `.sdrf`, `.tsv`, or `.csv` file extensions.
+=======
+This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 
-### Supported file formats
-
-The pipeline supports the following mass spectrometry data file formats:
-
-- **`.raw`** - Thermo RAW files (automatically converted to mzML)
-- **`.mzML`** - Open standard mzML files
-- **`.d`** - Bruker timsTOF files (processed natively by DIA-NN)
-- **`.dia`** - DIA-NN native binary format (passed through without conversion)
-
-Compressed variants are supported for `.raw`, `.mzML`, and `.d` formats: `.gz`, `.tar`, `.tar.gz`, `.zip`.
-
-### Preprocessing Options
-
-The pipeline includes several preprocessing steps that can be controlled via parameters:
-
-- **`--reindex_mzml`** (default: `true`) -- Force re-indexing of input mzML files at the start of the pipeline. This fixes common issues with slightly incomplete or outdated mzML files and is enabled by default for safety. Set to `false` only if you are certain your mzML files are well-formed.
-
-- **`--mzml_statistics`** (default: `false`) -- Compute MS1/MS2 statistics from mzML files. When enabled, `*_ms_info.parquet` files are generated for each mzML file and used in QC reporting. Bruker `.d` files are always skipped by this step.
-
-- **`--mzml_features`** (default: `false`) -- Compute MS1-level features during the mzML statistics step. Only available for mzML files.
-
-### Bruker/timsTOF Data
-
-For Bruker timsTOF datasets, DIA-NN recommends manually fixing MS1 and MS2 mass accuracy (typically 10-15 ppm) rather than using automatic calibration. There are two ways to set this:
-
-**Option 1 — SDRF columns (per-file control, recommended):**
-
-Set `PrecursorMassTolerance`, `PrecursorMassToleranceUnit`, `FragmentMassTolerance`, and `FragmentMassToleranceUnit` columns in your SDRF file. The pipeline reads these per-file and passes them to DIA-NN when `--mass_acc_automatic false` is set. This allows different tolerances for different files in the same experiment.
-
-**Option 2 — Pipeline parameters (global override):**
+Note that the pipeline will create the following files in your working directory:
 
 ```bash
+<<<<<<< HEAD
 nextflow run bigbio/quantmsdiann \
   --input sdrf.tsv \
   --database proteins.fasta \
@@ -57,15 +75,22 @@ nextflow run bigbio/quantmsdiann \
   --mass_acc_ms1 <value> \
   --mass_acc_ms2 <value> \
   -profile docker
+=======
+work                # Directory containing the nextflow working files
+<OUTDIR>            # Finished results in specified location (defined with --outdir)
+.nextflow_log       # Log file from Nextflow
+# Other nextflow hidden files, eg. history of pipeline runs and old logs.
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 ```
 
-For Synchro-PASEF data, enable `--tims_sum` (which adds `--quant-tims-sum` to DIA-NN).
+If you wish to repeatedly use the same parameters for multiple runs, rather than specifying each flag in the command, you can specify these in a params file.
 
-> [!NOTE]
-> The pipeline will emit a warning during PRELIMINARY_ANALYSIS if it detects `.d` files with automatic mass accuracy calibration enabled, recommending to set tolerances via SDRF or pipeline parameters.
+Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
-### DDA Analysis Mode (Beta)
+> [!WARNING]
+> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/running/run-pipelines#configuring-pipelines), other infrastructural tweaks (such as output directories), or module arguments (args).
 
+<<<<<<< HEAD
 DIA-NN 2.3.2+ supports DDA data analysis via the `--dda` flag. The pipeline **auto-detects DDA mode** from the SDRF `comment[proteomics data acquisition method]` column — no extra flags needed if your SDRF contains `data-dependent acquisition`:
 
 ```bash
@@ -138,51 +163,102 @@ This publishes ThermoRawFileParser conversions, mzML indexing results, per-file 
 ### Pipeline settings via params file
 
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`:
+=======
+The above pipeline run specified with a params file in yaml format:
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 
 ```bash
 nextflow run bigbio/quantmsdiann -profile docker -params-file params.yaml
 ```
 
-```yaml
-input: "./experiment.sdrf.tsv"
-database: "./proteins.fasta"
-outdir: "./results"
+with:
+
+```yaml title="params.yaml"
+input: './samplesheet.csv'
+outdir: './results/'
+genome: 'GRCh37'
+<...>
 ```
 
-> [!WARNING]
-> Do not use `-c <file>` to specify parameters. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) or module arguments.
+You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+
+### Updating the pipeline
+
+When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+
+```bash
+nextflow pull bigbio/quantmsdiann
+```
 
 ### Reproducibility
 
-Specify the pipeline version when running on your data:
+It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
+<<<<<<< HEAD
 ```bash
 nextflow run bigbio/quantmsdiann -r 2.0.0 -profile docker --input sdrf.tsv --database db.fasta --outdir results
 ```
+=======
+First, go to the [bigbio/quantmsdiann releases page](https://github.com/bigbio/quantmsdiann/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+
+This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
+
+To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
+
+> [!TIP]
+> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 
 ## Core Nextflow arguments
 
+> [!NOTE]
+> These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen)
+
 ### `-profile`
 
-Use this parameter to choose a configuration profile:
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
 
-- `docker` - Run with Docker containers
-- `singularity` - Run with Singularity containers
-- `podman` - Run with Podman containers
-- `apptainer` - Run with Apptainer containers
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Apptainer, Conda) - see below.
 
-Multiple profiles can be loaded: `-profile test_dia,docker`
+> [!IMPORTANT]
+> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
+
+The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to check if your system is supported, please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
+
+Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
+They are loaded in sequence, so later profiles can overwrite earlier profiles.
+
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
+
+- `test`
+  - A profile with a complete configuration for automated testing
+  - Includes links to test data so needs no other parameters
+- `docker`
+  - A generic configuration profile to be used with [Docker](https://docker.com/)
+- `singularity`
+  - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
+- `podman`
+  - A generic configuration profile to be used with [Podman](https://podman.io/)
+- `shifter`
+  - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+- `charliecloud`
+  - A generic configuration profile to be used with [Charliecloud](https://charliecloud.io/)
+- `apptainer`
+  - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
+- `wave`
+  - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow ` 24.03.0-edge` or later).
+- `conda`
+  - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
 
 ### `-resume`
 
-Resume from cached results:
+Specify this when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
 
-```bash
-nextflow run bigbio/quantmsdiann -profile test_dia,docker --outdir results -resume
-```
+You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
 
-## Test profiles
+### `-c`
 
+<<<<<<< HEAD
 ```bash
 # Quick DIA test
 nextflow run . -profile test_dia,docker --outdir results
@@ -553,89 +629,57 @@ For full verbose output of all intermediate files (useful for debugging), use th
 ```bash
 nextflow run bigbio/quantmsdiann -profile verbose_modules,docker ...
 ```
+=======
+Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 
 ## Custom configuration
 
 ### Resource requests
 
-Each step in the pipeline has default resource requirements. If a job exits with error code `137` or `143` (exceeded resources), it will automatically resubmit with higher requests (2x, then 3x original).
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher resources request (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
 
-To customize resources for a specific process:
+To change the resource requests, please see the [max resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#set-max-resources) and [customise process resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#customize-process-resources) section of the nf-core website.
 
-```nextflow
-process {
-    withName: 'BIGBIO_QUANTMSDIANN:QUANTMSDIANN:DIA:FINAL_QUANTIFICATION' {
-        memory = 100.GB
-    }
-}
-```
+### Custom Containers
 
-Save this to a file and pass via `-c custom.config`.
+In some cases, you may wish to change the container or conda environment used by a pipeline steps for a particular tool. By default, nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However, in some cases the pipeline specified version maybe out of date.
+
+To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#update-tool-versions) section of the nf-core website.
+
+### Custom Tool Arguments
+
+A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
+
+To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#modifying-tool-arguments) section of the nf-core website.
+
+### nf-core/configs
+
+In most cases, you will only need to create a custom config as a one-off but if you and others within your organisation are likely to be running nf-core pipelines regularly and need to use the same settings regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter. You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
+
+See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
+
+If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
 
 ## Running in the background
 
-Use `screen`, `tmux`, or the Nextflow `-bg` flag to run the pipeline in the background:
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
 
+<<<<<<< HEAD
 ```bash
 nextflow run bigbio/quantmsdiann -profile docker --input sdrf.tsv --database db.fasta --outdir results -bg
 ```
+=======
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
+>>>>>>> fe9e018 (Template update for nf-core/tools version 4.0.2)
 
-## Developer testing with local containers
-
-When developing changes to `sdrf-pipelines` or `quantms-utils`, you can build local Docker containers and test them with the pipeline without publishing to a registry.
-
-### 1. Build local dev containers
-
-```bash
-# From sdrf-pipelines repo
-cd /path/to/sdrf-pipelines
-docker build -f Dockerfile.dev -t local/sdrf-pipelines:dev .
-
-# From quantms-utils repo
-cd /path/to/quantms-utils
-docker build -f Dockerfile.dev -t local/quantms-utils:dev .
-```
-
-### 2. Run the pipeline with local containers
-
-Use the `test_dia_local.config` to override container references:
-
-```bash
-nextflow run main.nf \
-    -profile test_dia,docker \
-    -c conf/tests/test_dia_local.config \
-    --outdir results
-```
-
-This config (`conf/tests/test_dia_local.config`) overrides:
-
-- `SDRF_PARSING` → `local/sdrf-pipelines:dev`
-- `SAMPLESHEET_CHECK` → `local/quantms-utils:dev`
-- `DIANN_MSSTATS` → `local/quantms-utils:dev`
-
-### 3. Using pre-converted mzML files
-
-To skip ThermoRawFileParser (useful on macOS/ARM where Mono crashes):
-
-```bash
-# Convert raw files with ThermoRawFileParser v2.0+
-docker run --rm --platform=linux/amd64 \
-    -v /path/to/raw:/data -v /path/to/mzml:/out \
-    quay.io/biocontainers/thermorawfileparser:2.0.0.dev--h9ee0642_0 \
-    ThermoRawFileParser -d /data -o /out -f 2
-
-# Run pipeline with pre-converted files
-nextflow run main.nf \
-    -profile test_dia,docker \
-    -c conf/tests/test_dia_local.config \
-    --root_folder /path/to/mzml \
-    --local_input_type mzML \
-    --outdir results
-```
+Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
 
 ## Nextflow memory requirements
 
-Add the following to your environment to limit Java memory:
+In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
+We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
 
 ```bash
 NXF_OPTS='-Xms1g -Xmx4g'

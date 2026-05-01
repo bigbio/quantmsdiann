@@ -4,8 +4,6 @@
     bigbio/quantmsdiann
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/bigbio/quantmsdiann
-    Website: https://nf-co.re/quantmsdiann
-    Slack  : https://nfcore.slack.com/channels/quantms
 ----------------------------------------------------------------------------------------
 */
 
@@ -16,49 +14,80 @@
 */
 
 include { QUANTMSDIANN  } from './workflows/quantmsdiann'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_quantms_pipeline'
-include { UTILS_NEXTFLOW_PIPELINE   } from './subworkflows/nf-core/utils_nextflow_pipeline'
-
-
-//
-// WORKFLOW: Run main bigbio/quantmsdiann analysis pipeline
-//
-workflow BIGBIO_QUANTMSDIANN {
-
-    main:
-
-    QUANTMSDIANN ()
-
-    emit:
-    multiqc_report = QUANTMSDIANN.out.multiqc_report // channel: /path/to/multiqc_report.html
-}
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_quantmsdiann_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_quantmsdiann_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_quantmsdiann_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN ALL WORKFLOWS
+    GENOME PARAMETER VALUES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// TODO nf-core: Remove this line if you don't need a FASTA file
+//   This is an example of how to use getGenomeAttribute() to fetch parameters
+//   from igenomes.config using `--genome`
+params.fasta = getGenomeAttribute('fasta')
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //
-// WORKFLOW: Execute a single named workflow for the pipeline
-// See: https://github.com/nf-core/rnaseq/issues/619
+// WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow {
+workflow BIGBIO_QUANTMSDIANN {
+
+    take:
+    samplesheet // channel: samplesheet read in from --input
 
     main:
 
-    // Dump parameters to JSON file for documenting the pipeline settings
-
-    UTILS_NEXTFLOW_PIPELINE (
-        false,
-        true,
+    //
+    // WORKFLOW: Run pipeline
+    //
+    QUANTMSDIANN (
+        samplesheet,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
         params.outdir,
-        false
+    )
+    emit:
+    multiqc_report = QUANTMSDIANN.out.multiqc_report // channel: /path/to/multiqc_report.html
+}
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RUN MAIN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+workflow {
+
+    main:
+    //
+    // SUBWORKFLOW: Run initialisation tasks
+    //
+    PIPELINE_INITIALISATION (
+        params.version,
+        params.validate_params,
+        params.monochrome_logs,
+        args,
+        params.outdir,
+        params.input,
+        params.help,
+        params.help_full,
+        params.show_hidden
     )
 
-    // could take UTILS_NEXTFLOW_PIPELINE.out.samplesheet channel as parsed input
-    BIGBIO_QUANTMSDIANN ()
-
+    //
+    // WORKFLOW: Run main workflow
+    //
+    BIGBIO_QUANTMSDIANN (
+        PIPELINE_INITIALISATION.out.samplesheet
+    )
     //
     // SUBWORKFLOW: Run completion tasks
     //
@@ -68,11 +97,9 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
         BIGBIO_QUANTMSDIANN.out.multiqc_report
     )
 }
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

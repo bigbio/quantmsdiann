@@ -3,22 +3,8 @@ work/
 data/
 results/
 .DS_Store
-.env
-.env.*
-!.env.example
+testing/
 testing*
 *.pyc
-__pycache__/
 null/
-.idea/
-.vscode/
-/lint_log.txt
-/lint_results.md
-
-# AI assistant configuration
-.claude/
-.cursor/rules/codacy.mdc
-.codacy/
-.github/instructions/codacy.instructions.md
-docs/superpowers/
-docs/plans/
+.lineage/
