@@ -1,4 +1,8 @@
 email_template.html
+# Project notification templates contain Groovy <% %> blocks that prettier cannot parse
+assets/adaptivecard.json
+assets/slackreport.json
+modules.json
 .nextflow*
 work/
 data/

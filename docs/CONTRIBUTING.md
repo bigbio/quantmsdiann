@@ -193,16 +193,16 @@ Project-specific code lives under `modules/local/`, `subworkflows/local/`, and `
 
 ### Test profiles
 
-| Profile | Purpose |
-|---------|---------|
-| `test_dia` | DIA-NN 1.8.1 default smoke test (public data, no auth) — fastest, use when iterating locally |
-| `test_dia_dotd` | Bruker `.d` input handling |
-| `test_dia_2_2_0` | DIA-NN 2.2.0 features |
-| `test_dia_quantums` | QuantUMS scoring mode |
-| `test_dia_parquet` | Parquet fragment export |
-| `test_latest_dia` | Latest DIA-NN with all features enabled |
-| `test_full_dia` | Larger end-to-end validation run |
-| `test_dda` | DDA mode (requires DIA-NN ≥ 2.3.2) |
-| `test_dia_skip_preanalysis` | Skip preliminary analysis with a provided spectral library |
+| Profile                     | Purpose                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| `test_dia`                  | DIA-NN 1.8.1 default smoke test (public data, no auth) — fastest, use when iterating locally |
+| `test_dia_dotd`             | Bruker `.d` input handling                                                                   |
+| `test_dia_2_2_0`            | DIA-NN 2.2.0 features                                                                        |
+| `test_dia_quantums`         | QuantUMS scoring mode                                                                        |
+| `test_dia_parquet`          | Parquet fragment export                                                                      |
+| `test_latest_dia`           | Latest DIA-NN with all features enabled                                                      |
+| `test_full_dia`             | Larger end-to-end validation run                                                             |
+| `test_dda`                  | DDA mode (requires DIA-NN ≥ 2.3.2)                                                           |
+| `test_dia_skip_preanalysis` | Skip preliminary analysis with a provided spectral library                                   |
 
 Add a new test profile under `conf/tests/test_<name>.config` and register it in the `profiles { ... }` block of `nextflow.config`.
