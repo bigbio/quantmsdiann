@@ -28,12 +28,12 @@ nextflow run bigbio/quantmsdiann -profile singularity
 ```bash
 # AWS Batch
 nextflow run bigbio/quantmsdiann -profile docker \
-    --input s3://bucket/samplesheet.csv \
+    --input s3://bucket/experiment.sdrf.tsv \
     --outdir s3://bucket/results/
 
 # Google Cloud
 nextflow run bigbio/quantmsdiann -profile docker \
-    --input gs://bucket/samplesheet.csv \
+    --input gs://bucket/experiment.sdrf.tsv \
     --outdir gs://bucket/results/
 ```
 
@@ -65,7 +65,7 @@ quantmsdiann supports multiple DIA-NN versions:
 nextflow run bigbio/quantmsdiann \
     -profile docker \
     -c conf/diann_versions/v2_2_0.config \
-    --input samplesheet.csv \
+    --input experiment.sdrf.tsv \
     --database uniprot.fasta \
     --outdir results/
 ```

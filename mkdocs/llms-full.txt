@@ -17,24 +17,21 @@ quantmsdiann processes DIA (Data-Independent Acquisition) mass spectrometry data
 
 ### Run with Docker
 nextflow run bigbio/quantmsdiann -r main -profile docker \
-  --input samplesheet.csv \
+  --input experiment.sdrf.tsv \
   --database proteins.fasta \
   --outdir results/
 
 ### Run with Singularity (HPC)
 nextflow run bigbio/quantmsdiann -r main -profile singularity \
-  --input samplesheet.csv \
+  --input experiment.sdrf.tsv \
   --database proteins.fasta \
   --outdir results/
 
 ## Input Files
 
-### Samplesheet (CSV)
-spectra_file,sdrf_file
-/path/to/sample1.raw,/path/to/sdrf.tsv
-/path/to/sample2.raw,/path/to/sdrf.tsv
-
 ### SDRF File
+Use a proteomics SDRF file with the `.sdrf.tsv` extension as the pipeline input.
+
 Tab-separated file following the SDRF-Proteomics standard. Key columns:
 - source name: sample identifier
 - characteristics[organism]: species
@@ -79,14 +76,14 @@ results/
 
 ### Library-free DIA analysis
 nextflow run bigbio/quantmsdiann -r main -profile docker \
-  --input samplesheet.csv \
+  --input experiment.sdrf.tsv \
   --database uniprot_human.fasta \
   --diann_library_generation true \
   --outdir results/
 
 ### Library-based DIA analysis
 nextflow run bigbio/quantmsdiann -r main -profile docker \
-  --input samplesheet.csv \
+  --input experiment.sdrf.tsv \
   --diann_speclib spectral_library.tsv \
   --outdir results/
 

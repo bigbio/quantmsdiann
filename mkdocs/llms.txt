@@ -31,7 +31,7 @@ nextflow run bigbio/quantmsdiann -r main -profile docker
 ## Required Input
 
 - Raw DIA mass spectrometry files (.raw, .mzML, .d)
-- SDRF sample metadata file (.tsv)
+- SDRF sample metadata file (.sdrf.tsv)
 - Protein sequence database (.fasta)
 
 ## Output

@@ -16,7 +16,7 @@ nextflow run bigbio/quantmsdiann \
     -profile docker
 ```
 
-The input file must be in [Sample-to-data-relationship format (SDRF)](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.0c00376) and can have `.sdrf`, `.tsv`, or `.csv` file extensions.
+The input file must be in [Sample-to-data-relationship format (SDRF)](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.0c00376) and must use the `.sdrf.tsv` extension.
 
 ### Supported file formats
 
@@ -51,7 +51,7 @@ Set `PrecursorMassTolerance`, `PrecursorMassToleranceUnit`, `FragmentMassToleran
 
 ```bash
 nextflow run bigbio/quantmsdiann \
-  --input sdrf.tsv \
+  --input experiment.sdrf.tsv \
   --database proteins.fasta \
   --mass_acc_automatic false \
   --mass_acc_ms1 <value> \
@@ -86,7 +86,7 @@ outdir: "./results"
 Specify the pipeline version when running on your data:
 
 ```bash
-nextflow run bigbio/quantmsdiann -r 1.0.0 -profile docker --input sdrf.tsv --database db.fasta --outdir results
+nextflow run bigbio/quantmsdiann -r 1.0.0 -profile docker --input experiment.sdrf.tsv --database db.fasta --outdir results
 ```
 
 ## Core Nextflow arguments
@@ -268,12 +268,12 @@ Usage:
 # Run with DIA-NN 2.2.0
 nextflow run bigbio/quantmsdiann \
     -profile diann_v2_2_0,docker \
-    --input sdrf.tsv --database db.fasta --outdir results
+    --input experiment.sdrf.tsv --database db.fasta --outdir results
 
 # Run with DIA-NN 2.3.2 (latest, enables DDA and InfinDIA)
 nextflow run bigbio/quantmsdiann \
     -profile diann_v2_3_2,docker \
-    --input sdrf.tsv --database db.fasta --outdir results
+    --input experiment.sdrf.tsv --database db.fasta --outdir results
 ```
 
 > [!NOTE]
@@ -332,7 +332,7 @@ For running on HPC clusters with SLURM, the pipeline includes a reference config
 ```bash
 nextflow run bigbio/quantmsdiann \
     -profile pride_slurm \
-    --input sdrf.tsv --database db.fasta --outdir results
+    --input experiment.sdrf.tsv --database db.fasta --outdir results
 ```
 
 This profile enables Singularity, sets SLURM as the executor, and provides resource scaling for large experiments. Adapt it as a template for your own cluster by creating a custom config file.
@@ -400,7 +400,7 @@ Save this to a file and pass via `-c custom.config`.
 Use `screen`, `tmux`, or the Nextflow `-bg` flag to run the pipeline in the background:
 
 ```bash
-nextflow run bigbio/quantmsdiann -profile docker --input sdrf.tsv --database db.fasta --outdir results -bg
+nextflow run bigbio/quantmsdiann -profile docker --input experiment.sdrf.tsv --database db.fasta --outdir results -bg
 ```
 
 ## Developer testing with local containers
