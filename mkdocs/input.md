@@ -2,7 +2,7 @@
 
 ## SDRF (Recommended)
 
-The recommended input is an [SDRF](https://github.com/bigbio/sdrf-pipelines) file describing your experiment:
+The required input is an [SDRF](https://github.com/bigbio/sdrf-pipelines) file describing your experiment:
 
 ```bash
 nextflow run bigbio/quantmsdiann \
@@ -12,17 +12,7 @@ nextflow run bigbio/quantmsdiann \
     --outdir results/
 ```
 
-The SDRF file contains sample metadata, raw file paths, and experimental conditions in a standardized format.
-
-## Samplesheet (CSV)
-
-Alternatively, use a CSV samplesheet:
-
-```csv
-sample,spectra_file,sdrf_file,condition
-sample1,/path/to/sample1.mzML,experiment.sdrf.tsv,control
-sample2,/path/to/sample2.mzML,experiment.sdrf.tsv,treatment
-```
+The SDRF file contains sample metadata, raw file paths, and experimental conditions in a standardized format. quantmsdiann currently supports SDRF inputs only when they use the `.sdrf.tsv` extension.
 
 ## Supported Raw Formats
 

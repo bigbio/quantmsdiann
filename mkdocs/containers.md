@@ -130,7 +130,7 @@ nextflow run bigbio/quantmsdiann \
     -r 2.0.0 \
     -profile singularity \
     -c /path/to/hpc_diann.config \
-    --input sdrf.tsv \
+    --input experiment.sdrf.tsv \
     --database db.fasta \
     --diann_version '2.5.0' \
     --outdir results
@@ -164,14 +164,14 @@ nextflow run bigbio/quantmsdiann \
     -profile singularity \
     -c hpc_diann_versions.config \
     --diann_version '2.3.2' \
-    --input sdrf.tsv --database db.fasta --outdir results
+    --input experiment.sdrf.tsv --database db.fasta --outdir results
 
 # Run with DIA-NN 2.5.0
 nextflow run bigbio/quantmsdiann \
     -profile singularity \
     -c hpc_diann_versions.config \
     --diann_version '2.5.0' \
-    --input sdrf.tsv --database db.fasta --outdir results
+    --input experiment.sdrf.tsv --database db.fasta --outdir results
 ```
 
 ## SLURM cluster example
@@ -183,7 +183,7 @@ nextflow run bigbio/quantmsdiann \
     -profile singularity \
     -c conf/pride_codon_slurm.config \
     -c hpc_diann_versions.config \
-    --input sdrf.tsv \
+    --input experiment.sdrf.tsv \
     --database db.fasta \
     --diann_version '2.5.0' \
     --outdir results
