@@ -51,8 +51,9 @@
                     "type": "string",
                     "description": "Overwrite the file type/extension of the filename as specified in the SDRF",
                     "fa_icon": "fas fa-file-invoice",
-                    "default": "mzML",
-                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', or 'dia' (the letter cases should match your files exactly). Compressed variants (.gz, .tar, .tar.gz, .zip) are supported for 'mzML', 'raw', and 'd' formats."
+                    "default": "raw",
+                    "enum": ["mzML", "raw", "d", "dia", "d.tar", "d.tar.gz", "d.zip"],
+                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', or 'dia' (the letter cases should match your files exactly). For Bruker `.d` data, compressed archive variants `.d.tar`, `.d.tar.gz`, and `.d.zip` are also accepted and are decompressed automatically."
                 }
             }
         },
@@ -114,6 +115,12 @@
                     "type": "boolean",
                     "description": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
                     "help_text": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
+                    "fa_icon": "far fa-check-square"
+                },
+                "mzml_convert": {
+                    "type": "boolean",
+                    "description": "Convert Thermo .raw to .mzML via ThermoRawFileParser before feeding DIA-NN. If unset, the pipeline converts when DIA-NN < 2.1.0 and passes .raw files natively when DIA-NN >= 2.1.0.",
+                    "help_text": "DIA-NN 2.1.0 added native Thermo .raw support on Linux, so conversion via ThermoRawFileParser is no longer strictly required. Set `--mzml_convert false` to feed .raw files directly to DIA-NN (saves one container invocation and an I/O pass per file). Set `--mzml_convert true` to force conversion (e.g. for QC / mzML statistics, or to work around DIA-NN Thermo reader issues such as [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)). The parameter has no effect when inputs are already mzML / .d / .dia or when `--local_input_type mzML` is used with `--root_folder`.",
                     "fa_icon": "far fa-check-square"
                 }
             },

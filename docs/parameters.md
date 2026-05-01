@@ -22,11 +22,12 @@ This document lists every pipeline parameter organised by category. Default valu
 
 ## 3. File Preparation (Spectrum Preprocessing)
 
-| Parameter           | Type    | Default | Description                                                                                                                   |
-| ------------------- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `--reindex_mzml`    | boolean | `true`  | Force re-indexing of input mzML files at the start of the pipeline for safety.                                                |
-| `--mzml_statistics` | boolean | `false` | Compute MS1/MS2 statistics from mzML files. Generates `*_ms_info.parquet` files for QC. Bruker `.d` files are always skipped. |
-| `--mzml_features`   | boolean | `false` | Compute MS1-level features during the mzML statistics step. Only available for mzML files.                                    |
+| Parameter           | Type    | Default | Description                                                                                                                                                                                                                                                                                  |
+| ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--reindex_mzml`    | boolean | `true`  | Force re-indexing of input mzML files at the start of the pipeline for safety.                                                                                                                                                                                                               |
+| `--mzml_statistics` | boolean | `false` | Compute MS1/MS2 statistics from mzML files. Generates `*_ms_info.parquet` files for QC. Bruker `.d` files are always skipped.                                                                                                                                                                |
+| `--mzml_features`   | boolean | `false` | Compute MS1-level features during the mzML statistics step. Only available for mzML files.                                                                                                                                                                                                   |
+| `--mzml_convert`    | boolean | _auto_  | Convert Thermo `.raw` to `.mzML` via ThermoRawFileParser before DIA-NN. Unset = auto: convert when DIA-NN < 2.1.0, pass `.raw` through when DIA-NN >= 2.1.0. Set `false` to force native `.raw` (requires DIA-NN >= 2.1.0); set `true` to force conversion (e.g. to enable mzML statistics). |
 
 ## 4. Search Parameters
 

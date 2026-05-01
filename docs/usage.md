@@ -22,7 +22,7 @@ The input file must be in [Sample-to-data-relationship format (SDRF)](https://pu
 
 The pipeline supports the following mass spectrometry data file formats:
 
-- **`.raw`** - Thermo RAW files (automatically converted to mzML)
+- **`.raw`** - Thermo RAW files. Converted to `.mzML` via ThermoRawFileParser for DIA-NN < 2.1.0, passed through natively for DIA-NN >= 2.1.0. Control via `--mzml_convert`.
 - **`.mzML`** - Open standard mzML files
 - **`.d`** - Bruker timsTOF files (processed natively by DIA-NN)
 - **`.dia`** - DIA-NN native binary format (passed through without conversion)
@@ -38,6 +38,23 @@ The pipeline includes several preprocessing steps that can be controlled via par
 - **`--mzml_statistics`** (default: `false`) -- Compute MS1/MS2 statistics from mzML files. When enabled, `*_ms_info.parquet` files are generated for each mzML file and used in QC reporting. Bruker `.d` files are always skipped by this step.
 
 - **`--mzml_features`** (default: `false`) -- Compute MS1-level features during the mzML statistics step. Only available for mzML files.
+
+- **`--mzml_convert`** (default: _auto_) -- Controls whether Thermo `.raw` files are converted to `.mzML` via ThermoRawFileParser before being fed to DIA-NN.
+
+  DIA-NN 2.1.0 (2025-03-25) added native Thermo `.raw` support on Linux, so the conversion step is no longer strictly required. Skipping it saves one container invocation and an I/O pass per `.raw` file — non-trivial on Astral-scale datasets.
+
+  | Setting                | Behaviour                                                                                                              |
+  | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+  | unset (default)        | Auto: convert via TRFP for DIA-NN < 2.1.0, pass `.raw` through natively for DIA-NN >= 2.1.0.                           |
+  | `--mzml_convert true`  | Always convert `.raw` to `.mzML` via TRFP. Use this to enable `--mzml_statistics`, or as a workaround for DIA-NN bugs. |
+  | `--mzml_convert false` | Never convert. Pass `.raw` files straight to DIA-NN. Requires DIA-NN >= 2.1.0 (fails fast otherwise).                  |
+
+  The parameter has no effect when no `.raw` files are present in the input (e.g. all `.mzML`, `.d`, or `.dia`), or when `--local_input_type mzML` is combined with `--root_folder` so no `.raw` extensions reach the file-preparation branching step — the pipeline will emit a warning in that case.
+
+  > [!WARNING]
+  > DIA-NN's Linux Thermo reader has known issues on some acquisition schemes / instruments — see [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468) (`Instrument index not available for requested device`) and similar reports. If you hit such an issue, fall back to TRFP conversion with `--mzml_convert true`.
+  >
+  > Native `.raw` inputs do not produce `*_ms_info.parquet` QC files; combine `--mzml_convert true` with `--mzml_statistics true` if you need those statistics.
 
 ### Bruker/timsTOF Data
 

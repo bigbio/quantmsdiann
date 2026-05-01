@@ -12,6 +12,18 @@ workflow CREATE_INPUT_CHANNEL {
     main:
     ch_versions = channel.empty()
 
+    // Validate --local_input_type against supported local file formats when using --root_folder.
+    // Redundant with the schema enum, but still catches the case where schema validation is disabled.
+    def allowedLocalInputTypes = ['mzML', 'raw', 'd', 'dia', 'd.tar', 'd.tar.gz', 'd.zip']
+    if (params.root_folder && params.local_input_type && !allowedLocalInputTypes.contains(params.local_input_type)) {
+        exit(1, "ERROR: Unsupported --local_input_type '${params.local_input_type}'. Supported values: ${allowedLocalInputTypes.join(', ')}")
+    }
+
+    // Known raw-data extensions; order matters, so strip longest/compound ones first
+    // so 'sample.d.zip' -> 'sample', not 'sample.d'.
+    def knownRawExts = ['.d.tar.gz', '.d.tar', '.d.zip', '.mzML.gz', '.raw.gz',
+                        '.mzML', '.raw', '.dia', '.d']
+
     // Always parse as SDRF using DIA-NN converter
     SDRF_PARSING(ch_sdrf)
     ch_versions = ch_versions.mix(SDRF_PARSING.out.versions)
@@ -32,9 +44,24 @@ workflow CREATE_INPUT_CHANNEL {
             } else {
                 filestr = row.Filename.toString()
                 filestr = params.root_folder + File.separator + filestr
-                filestr = (params.local_input_type
-                    ? filestr.take(filestr.lastIndexOf('.')) + '.' + params.local_input_type
-                    : filestr)
+                if (params.local_input_type) {
+                    // Strip the longest matching known raw-data extension (covers
+                    // compound suffixes like .d.zip / .d.tar.gz from the SDRF),
+                    // then append the target extension.
+                    def stem = filestr
+                    def stemLower = stem.toLowerCase()
+
+                    def matched = knownRawExts.find { ext ->
+                        stemLower.endsWith(ext.toLowerCase())
+                    }
+
+                    if (matched) {
+                        stem = stem.substring(0, stem.length() - matched.length())
+                    } else if (stem.lastIndexOf('.') > 0) {
+                        stem = stem.take(stem.lastIndexOf('.'))
+                    }
+                    filestr = stem + '.' + params.local_input_type
+                }
             }
             return [filestr, experiment_id, row]
         }

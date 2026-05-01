@@ -34,6 +34,33 @@ workflow FILE_PREPARATION {
     ch_rawfiles = ch_branched_input.uncompressed.mix(DECOMPRESS.out.decompressed_files)
 
     //
+    // Resolve whether Thermo .raw should be converted to mzML via TRFP
+    // or passed natively to DIA-NN. DIA-NN added native Linux .raw support
+    // in 2.1.0; older versions must go through TRFP.
+    //
+    boolean native_raw_supported = VersionUtils.versionAtLeast(params.diann_version, '2.1.0')
+    boolean convert_raw
+    if (params.mzml_convert == null) {
+        convert_raw = !native_raw_supported
+    } else {
+        convert_raw = params.mzml_convert as boolean
+        if (!convert_raw && !native_raw_supported) {
+            error("--mzml_convert false (native .raw) requires DIA-NN >= 2.1.0. " +
+                "Current version: ${params.diann_version}. " +
+                "Use -profile diann_v2_1_0 (or later) or set --mzml_convert true.")
+        }
+    }
+
+    // Warn if the user set --mzml_convert but every input is already mzML / .d / .dia
+    // (i.e. no Thermo .raw will reach TRFP) — including when --local_input_type mzML
+    // overrides SDRF extensions under --root_folder.
+    if (params.mzml_convert != null && params.root_folder && params.local_input_type &&
+        params.local_input_type.toString().toLowerCase() != 'raw') {
+        log.warn "--mzml_convert=${params.mzml_convert} has no effect: " +
+            "--local_input_type '${params.local_input_type}' under --root_folder means no Thermo .raw files will be processed."
+    }
+
+    //
     // Divide mzml files
     ch_rawfiles
     .branch { item ->
@@ -76,9 +103,16 @@ workflow FILE_PREPARATION {
         ch_results = ch_results.mix(ch_branched_input.mzML)
     }
 
-    THERMORAWFILEPARSER( ch_branched_input.raw )
-    // Output: spectra (tuple val(meta), path(mzML/mgf/parquet)), log, versions via topic channel
-    ch_results  = ch_results.mix(THERMORAWFILEPARSER.out.spectra)
+    if (convert_raw) {
+        // Convert Thermo .raw to .mzML via ThermoRawFileParser (default for DIA-NN < 2.1.0).
+        THERMORAWFILEPARSER( ch_branched_input.raw )
+        // Output: spectra (tuple val(meta), path(mzML/mgf/parquet)), log, versions via topic channel
+        ch_results = ch_results.mix(THERMORAWFILEPARSER.out.spectra)
+    } else {
+        // Pass Thermo .raw straight through to DIA-NN (native reader, DIA-NN >= 2.1.0).
+        // See https://github.com/vdemichev/DiaNN/issues/1468 for known caveats.
+        ch_results = ch_results.mix(ch_branched_input.raw)
+    }
 
     ch_results.map{ it -> [it[0], it[1]] }.set{ indexed_mzml_bundle }
 
