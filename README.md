@@ -25,7 +25,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:
 
 1. **Input validation** — SDRF parsing and validation via [sdrf-pipelines](https://github.com/bigbio/sdrf-pipelines)
-2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing
+2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing. WIFF to mzML conversion ([WiffConverter](https://hub.docker.com/r/sciex/wiffconverter))
 3. **In-silico spectral library generation** — deep learning-based prediction, or use a user-provided library (`--speclib`)
 4. **Preliminary analysis** — per-file calibration and mass accuracy estimation (parallelized)
 5. **Empirical library assembly** — consensus library from preliminary results with RT profiling

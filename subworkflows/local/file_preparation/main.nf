@@ -6,6 +6,7 @@ include { THERMORAWFILEPARSER } from '../../../modules/bigbio/thermorawfileparse
 include { DECOMPRESS          } from '../../../modules/local/utils/decompress_dotd/main'
 include { MZML_INDEXING       } from '../../../modules/local/openms/mzml_indexing/main'
 include { MZML_STATISTICS     } from '../../../modules/local/utils/mzml_statistics/main'
+include { WIFF_CONVERT        } from '../../../modules/local/utils/wiff_convert/main'
 
 workflow FILE_PREPARATION {
     take:
@@ -64,6 +65,7 @@ workflow FILE_PREPARATION {
     // Divide mzml files
     ch_rawfiles
     .branch { item ->
+        wiff: item[0].is_wiff
         raw: hasExtension(item[1], '.raw')
         mzML: hasExtension(item[1], '.mzML')
         dotd: hasExtension(item[1], '.d')
@@ -81,7 +83,7 @@ workflow FILE_PREPARATION {
                 files.each { _meta, file ->
                     log.warn "  - ${file}"
                 }
-                log.warn "\nSupported formats: .raw, .mzML, .d (Bruker), .dia"
+                log.warn "\nSupported formats: .raw, .mzML, .d (Bruker), .dia, .wiff"
                 log.warn "Compressed variants (.gz, .tar, .tar.gz, .zip) are also supported."
                 log.warn "=" * 80
             }
@@ -95,6 +97,10 @@ workflow FILE_PREPARATION {
     //  This means users should pre-index to save time and space, especially
     //  when re-running.
 
+    // wiffconverter
+    WIFF_CONVERT( ch_branched_input.wiff )
+    ch_versions = ch_versions.mix(WIFF_CONVERT.out.versions)
+
     if (params.reindex_mzml) {
         MZML_INDEXING( ch_branched_input.mzML )
         ch_versions = ch_versions.mix(MZML_INDEXING.out.versions)
@@ -102,6 +108,8 @@ workflow FILE_PREPARATION {
     } else {
         ch_results = ch_results.mix(ch_branched_input.mzML)
     }
+
+    ch_results = ch_results.mix( WIFF_CONVERT.out.mzML )
 
     if (convert_raw) {
         // Convert Thermo .raw to .mzML via ThermoRawFileParser (default for DIA-NN < 2.1.0).
@@ -147,5 +155,6 @@ workflow FILE_PREPARATION {
 // check file extension
 //
 def hasExtension(file, extension) {
-    return file.toString().toLowerCase().endsWith(extension.toLowerCase())
+    def f = file instanceof List ? file[0] : file
+    return f.toString().toLowerCase().endsWith(extension.toLowerCase())
 }

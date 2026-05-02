@@ -1,0 +1,39 @@
+name: "wiff_convert"
+description: Converts SCIEX .wiff and .wiff.scan raw data into centroided and indexed .mzML files using OneOmics WiffConverter.
+keywords:
+  - mass spectrometry
+  - proteomics
+  - conversion
+  - wiff
+  - mzml
+  - sciex
+  - dia
+tools:
+  - wiffconverter:
+      description: "A Linux-compatible command line tool provided by SCIEX for converting .wiff and .wiff.scan files to mzML format."
+      homepage: "https://sciex.com/"
+      documentation: "https://sciex.com/support/software-support/software-downloads"
+      tool_dev_url: "https://github.com/bigbio/quantms-containers"
+      licence: "['Custom / Proprietary']"
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - wiff_files:
+      type: list
+      description: A tuple/list containing both the main '.wiff' file and its associated '.wiff.scan' file.
+      pattern: "*.{wiff,wiff.scan}"
+output:
+  - meta:
+      type: map
+      description: Groovy Map containing sample information
+  - mzml:
+      type: file
+      description: Centroided and indexed mzML file ready for downstream search engines (DIA-NN).
+      pattern: "*.{mzML}"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@bigbio"
