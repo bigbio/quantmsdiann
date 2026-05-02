@@ -21,7 +21,7 @@ jobs:
       # NOTE - this doesn't currently work if the PR is coming from a fork, due to limitations in GitHub actions secrets
       - name: Post PR comment
         if: failure()
-        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
+        uses: mshick/add-pr-comment@8e4927817251f1ff60c001f04568532b38e0b4a0 # v3
         with:
           message: |
             ## This PR is against the `${{github.event.pull_request.base.ref}}` branch :x:
@@ -34,7 +34,7 @@ jobs:
 
             Hi @${{ github.event.pull_request.user.login }},
 
-            It looks like this pull-request has been made against the [${{github.event.pull_request.head.repo.full_name }}](https://github.com/${{github.event.pull_request.head.repo.full_name }}) ${{github.event.pull_request.base.ref}} branch.
+            It looks like this pull-request is has been made against the [${{github.event.pull_request.head.repo.full_name }}](https://github.com/${{github.event.pull_request.head.repo.full_name }}) ${{github.event.pull_request.base.ref}} branch.
             The ${{github.event.pull_request.base.ref}} branch on nf-core repositories should always contain code from the latest release.
             Because of this, PRs to ${{github.event.pull_request.base.ref}} are only allowed if they come from the [${{github.event.pull_request.head.repo.full_name }}](https://github.com/${{github.event.pull_request.head.repo.full_name }}) `dev` branch.
 

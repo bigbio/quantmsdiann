@@ -39,7 +39,7 @@ This is **non-negotiable**. All code must pass formatting and style checks befor
 
 ### Core Technologies
 
-- **Nextflow**: >=25.04.0 (DSL2 syntax)
+- **Nextflow**: >=25.10.4 (DSL2 syntax)
 - **nf-schema plugin**: 2.5.1 (parameter validation)
 - **nf-test**: Testing framework (config: `nf-test.config`)
 - **nf-core tools**: Pipeline standards and linting
@@ -365,7 +365,7 @@ nf-test test --profile debug,test,docker --update-snapshot
 ```bash
 nextflow self-update
 # Or install specific version
-export NXF_VER=25.04.0
+export NXF_VER=25.10.4
 ```
 
 **Problem**: "Process terminated with exit code 137"
@@ -437,4 +437,4 @@ nextflow clean -f
 
 **Last Updated**: April 2, 2026
 **Pipeline Version**: 1.0.0
-**Minimum Nextflow**: 25.04.0
+**Minimum Nextflow**: 25.10.4
