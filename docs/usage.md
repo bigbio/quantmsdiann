@@ -72,8 +72,9 @@ nextflow run bigbio/quantmsdiann \
 | Parameter                      | Default   | Description                                                    |
 | ------------------------------ | --------- | -------------------------------------------------------------- |
 | `--pridepy_download`           | `false`   | Enable pre-downloading raw files from PRIDE Archive             |
+| `--project_accession`          | `null`    | PRIDE project accession (required when `--pridepy_download`)    |
 | `--pridepy_protocol`           | `globus`  | Download protocol (`globus`, `ftp`, `aspera`)                  |
-| `--aspera_maximum_bandwidth`   | `500M`    | Maximum bandwidth for Aspera transfers                         |
+| `--aspera_maximum_bandwidth`   | `1000M`   | Maximum bandwidth for Aspera transfers                         |
 
 Downloaded files are resolved by filename in `CREATE_INPUT_CHANNEL` and passed to downstream processes. When `--pridepy_download` is not set, the pipeline behaves as before (expects files at URIs specified in the SDRF).
 

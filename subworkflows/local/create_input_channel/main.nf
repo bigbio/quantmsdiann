@@ -96,8 +96,7 @@ def create_meta_channel_grouped(String filestr, List rows, Map wrapper, List dow
     // Check pridepy downloaded files for pre-downloaded spectra
     if (downloaded_files) {
         def fname = file(filestr).name
-        def pairs = downloaded_files.collate(2)
-        def match = pairs.find { it[0] == fname }
+        def match = downloaded_files.find { it[0] == fname }
         if (match) {
             filestr = match[1].toString()
         }
