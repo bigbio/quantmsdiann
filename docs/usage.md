@@ -16,7 +16,7 @@ nextflow run bigbio/quantmsdiann \
     -profile docker
 ```
 
-The input file must be in [Sample-to-data-relationship format (SDRF)](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.0c00376) and can have the `.sdrf.tsv` file extension.
+The input file must be in [Sample-to-data-relationship format (SDRF)](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.0c00376) and **must use the `.sdrf.tsv` extension** — files ending in `.sdrf`, `.tsv`, or `.csv` are rejected at startup by schema validation.
 
 ### Minimal valid metadata example
 
