@@ -14,7 +14,7 @@ process WIFF_CONVERT {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     def wiff_main = wiff_files.find { it.name.endsWith('.wiff') }
-    
+
     """
     export HOME=/tmp
 
