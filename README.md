@@ -22,7 +22,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
   <img src="docs/images/quantmsdiann_workflow.svg" alt="quantmsdiann workflow" width="800">
 </p>
 
-The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:
+The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata (must use the `.sdrf.tsv` extension) and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:
 
 1. **Input validation** — SDRF parsing and validation via [sdrf-pipelines](https://github.com/bigbio/sdrf-pipelines)
 2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing
