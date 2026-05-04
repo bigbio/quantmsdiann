@@ -1,0 +1,61 @@
+nextflow_process {
+
+    name "Test Process PRIDEPY_DOWNLOAD"
+    script "../main.nf"
+    process "PRIDEPY_DOWNLOAD"
+    tag "modules"
+    tag "modules_bigbio"
+    tag "modules_pridepy"
+    tag "pridepy"
+
+    test("Should run stub mode (no checksum)") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ id: 'PXD001819' ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.spectra.size() == 1
+            assert process.out.checksums.size() == 0
+            assert snapshot(
+                process.out.spectra,
+                process.out.versions
+            ).match("stub_no_checksum")
+        }
+    }
+
+    test("Should run stub mode with --checksum-check") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ id: 'PXD001819' ]
+                """
+            }
+            params {
+                module_args = '--checksum-check'
+            }
+            config "./nextflow.config"
+        }
+
+        then {
+            assert process.success
+            assert process.out.spectra.size() == 1
+            assert process.out.checksums.size() == 1
+            assert snapshot(
+                process.out.spectra,
+                process.out.checksums,
+                process.out.versions
+            ).match("stub_with_checksum")
+        }
+    }
+}

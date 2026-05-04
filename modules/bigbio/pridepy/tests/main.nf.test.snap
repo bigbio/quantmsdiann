@@ -1,0 +1,50 @@
+{
+    "stub_no_checksum": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "PXD001819"
+                    },
+                    "PXD001819.raw:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                "versions.yml:md5,c27ccb04c91f92f188b7f4cf2d54ed49"
+            ]
+        ],
+        "timestamp": "2026-04-28T18:15:37.876014654",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    },
+    "stub_with_checksum": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "PXD001819"
+                    },
+                    "PXD001819.raw:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "PXD001819"
+                    },
+                    "PXD001819-checksum.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                "versions.yml:md5,c27ccb04c91f92f188b7f4cf2d54ed49"
+            ]
+        ],
+        "timestamp": "2026-04-28T18:15:43.996367071",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.4"
+        }
+    }
+}
