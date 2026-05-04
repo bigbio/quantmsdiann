@@ -8,6 +8,7 @@ include { SDRF_PARSING } from '../../../modules/local/sdrf_parsing/main'
 workflow CREATE_INPUT_CHANNEL {
     take:
     ch_sdrf
+    ch_downloaded_files  // collected list of [name, path] pairs from PRIDEPY_DOWNLOAD, or empty list
 
     main:
     ch_versions = channel.empty()
@@ -77,11 +78,12 @@ workflow CREATE_INPUT_CHANNEL {
             return [filestr, experiment_id, row]
         }
         .groupTuple(by: 0)
-        .map { filestr, experiment_ids, rows ->
+        .combine(ch_downloaded_files)
+        .map { filestr, experiment_ids, rows, downloaded_files ->
             def experiment_id = experiment_ids[0]
             def is_wiff = (rows[0].IsWiff?.toString()?.toLowerCase() == 'true')
             def wrapper = [acquisition_method: "", experiment_id: experiment_id]
-            return create_meta_channel_grouped(filestr, rows, wrapper)
+            return create_meta_channel_grouped(filestr, rows, wrapper, downloaded_files)
         }
         .set { ch_meta_config_dia }
 
@@ -93,7 +95,7 @@ workflow CREATE_INPUT_CHANNEL {
 }
 
 // Function to get list of [meta, [ spectra_files ]]
-def create_meta_channel_grouped(def filestr, List rows, Map wrapper) {
+def create_meta_channel_grouped(def filestr, List rows, Map wrapper, List downloaded_files) {
     def meta = [:]
 
     def base_row = rows[0]
@@ -105,6 +107,21 @@ def create_meta_channel_grouped(def filestr, List rows, Map wrapper) {
     meta.experiment_id = wrapper.experiment_id
 
     meta.is_wiff = (base_row.IsWiff?.toString()?.toLowerCase() == 'true')
+
+    // Substitute SDRF URIs with pre-downloaded local files (by filename) when available
+    if (downloaded_files) {
+        if (filestr instanceof List) {
+            filestr = filestr.collect { f ->
+                def match = downloaded_files.find { it[0] == file(f).name }
+                match ? match[1].toString() : f
+            }
+        } else {
+            def match = downloaded_files.find { it[0] == file(filestr).name }
+            if (match) {
+                filestr = match[1].toString()
+            }
+        }
+    }
 
     // existence check
     def files_to_check = filestr instanceof List ? filestr : [filestr]

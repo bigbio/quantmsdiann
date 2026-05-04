@@ -86,6 +86,28 @@ The pipeline includes several preprocessing steps that can be controlled via par
   >
   > Native `.raw` inputs do not produce `*_ms_info.parquet` QC files; combine `--mzml_convert true` with `--mzml_statistics true` if you need those statistics.
 
+### PRIDE Archive Download
+
+The pipeline can optionally download raw files directly from [PRIDE Archive](https://www.ebi.ac.uk/pride/) using [pridepy](https://github.com/PRIDE-Archive/pridepy) before analysis. This is useful when running the pipeline on a cluster without pre-staged data.
+
+```bash
+nextflow run bigbio/quantmsdiann \
+  --input sdrf.tsv \
+  --database proteins.fasta \
+  --pridepy_download \
+  --project_accession PXD001819 \
+  -profile docker
+```
+
+| Parameter                    | Default  | Description                                                  |
+| ---------------------------- | -------- | ------------------------------------------------------------ |
+| `--pridepy_download`         | `false`  | Enable pre-downloading raw files from PRIDE Archive          |
+| `--project_accession`        | `null`   | PRIDE project accession (required when `--pridepy_download`) |
+| `--pridepy_protocol`         | `globus` | Download protocol (`globus`, `ftp`, `aspera`)                |
+| `--aspera_maximum_bandwidth` | `1000M`  | Maximum bandwidth for Aspera transfers                       |
+
+Downloaded files are resolved by filename in `CREATE_INPUT_CHANNEL` and passed to downstream processes. When `--pridepy_download` is not set, the pipeline behaves as before (expects files at URIs specified in the SDRF).
+
 ### Bruker/timsTOF Data
 
 For Bruker timsTOF datasets, DIA-NN recommends manually fixing MS1 and MS2 mass accuracy (typically 10-15 ppm) rather than using automatic calibration. There are two ways to set this:

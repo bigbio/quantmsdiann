@@ -10,10 +10,11 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes DIA data using the following steps:
 
-1. RAW data is converted to mzML using ThermoRawFileParser (or .d/.dia files are handled natively)
-2. DIA-NN is used for identification and quantification of peptides and proteins
-3. DIA-NN report is converted to MSstats-compatible format
-4. Generation of QC reports using pmultiqc
+1. (Optional) Raw files are downloaded from PRIDE Archive using pridepy
+2. RAW data is converted to mzML using ThermoRawFileParser (or .d/.dia files are handled natively)
+3. DIA-NN is used for identification and quantification of peptides and proteins
+4. DIA-NN report is converted to MSstats-compatible format
+5. Generation of QC reports using pmultiqc
 
 ## Output structure
 
@@ -24,6 +25,7 @@ Output will be saved to the folder defined by the parameter `--outdir`.
 ```
 results/
 ├── pipeline_info/             # Nextflow pipeline information
+├── pridepy/                   # (Optional) Downloaded raw files from PRIDE Archive
 ├── sdrf/                      # SDRF files and configs
 ├── quant_tables/              # Quantification tables and results
 │   ├── diann_report.{tsv,parquet}  # Main DIA-NN report

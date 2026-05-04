@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- Optional PRIDE Archive download via [pridepy](https://github.com/PRIDE-Archive/pridepy) (`--pridepy_download`). Downloads raw files before analysis using Globus, FTP, or Aspera. Controlled by `--pridepy_protocol` and `--aspera_maximum_bandwidth`.
 - `--mzml_convert` parameter to control Thermo `.raw` conversion. Default (unset) auto-selects based on `--diann_version`: converts via ThermoRawFileParser for DIA-NN < 2.1.0, passes `.raw` natively to DIA-NN for >= 2.1.0. Explicit `true` forces conversion (useful for `--mzml_statistics` or to work around DIA-NN Thermo reader issues like [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)); explicit `false` requires DIA-NN >= 2.1.0 and skips TRFP entirely (closes [#66](https://github.com/bigbio/quantmsdiann/issues/66)).
 - Schema-level enum validation for `--local_input_type`, with a matching runtime guard in `CREATE_INPUT_CHANNEL` that fails fast and lists the supported values when an unknown type is supplied under `--root_folder`.
 - Bruker `.d` archive variants `d.tar`, `d.tar.gz`, and `d.zip` as accepted `--local_input_type` values; archives are decompressed automatically by the workflow.

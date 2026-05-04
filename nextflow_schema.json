@@ -57,6 +57,40 @@
                 }
             }
         },
+        "pride_archive_download": {
+            "title": "PRIDE Archive download",
+            "type": "object",
+            "fa_icon": "fas fa-cloud-download-alt",
+            "description": "Optional pre-download of raw files from PRIDE Archive via pridepy before analysis.",
+            "properties": {
+                "pridepy_download": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable pre-downloading raw files from PRIDE Archive via pridepy.",
+                    "help_text": "When set, the workflow runs `PRIDEPY_DOWNLOAD` for the project given by `--project_accession` and substitutes SDRF URIs with the pre-downloaded local files (matched by filename) before analysis.",
+                    "fa_icon": "far fa-check-square"
+                },
+                "project_accession": {
+                    "type": "string",
+                    "description": "PRIDE project accession to download (required when --pridepy_download is set).",
+                    "help_text": "PRIDE Archive project accession, e.g. `PXD001819`. Required when `--pridepy_download` is enabled.",
+                    "fa_icon": "fas fa-fingerprint"
+                },
+                "pridepy_protocol": {
+                    "type": "string",
+                    "default": "globus",
+                    "enum": ["globus", "ftp", "aspera"],
+                    "description": "Protocol used by pridepy to download files from PRIDE Archive.",
+                    "fa_icon": "fas fa-network-wired"
+                },
+                "aspera_maximum_bandwidth": {
+                    "type": "string",
+                    "default": "1000M",
+                    "description": "Maximum bandwidth for Aspera transfers (only used when --pridepy_protocol is 'aspera').",
+                    "fa_icon": "fas fa-tachometer-alt"
+                }
+            }
+        },
         "sdrf_validation": {
             "title": "SDRF validation",
             "type": "object",
@@ -751,6 +785,9 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/pride_archive_download"
         },
         {
             "$ref": "#/$defs/protein_database"

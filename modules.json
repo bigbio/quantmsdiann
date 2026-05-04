@@ -5,6 +5,13 @@
         "https://github.com/bigbio/nf-modules.git": {
             "modules": {
                 "bigbio": {
+                    "pridepy": {
+                        "branch": "main",
+                        "git_sha": "2694907ec41be68998dab141be326f421e71eba6",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "thermorawfileparser": {
                         "branch": "main",
                         "git_sha": "daddf26d8c36e28dffe673949dc340ed6387de9a",
