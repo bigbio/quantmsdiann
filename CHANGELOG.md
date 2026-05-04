@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Default for `--local_input_type` switched from `mzML` to `raw` to match the typical local-input flow (SDRF-referenced `.raw` files staged via `--root_folder`). **Migration:** users who point `--root_folder` at a local mzML cache must now pass `--local_input_type mzML` explicitly.
 - `ASSEMBLE_EMPIRICAL_LIBRARY` resource scaling in `conf/pride_codon_slurm.config` simplified: the manual `Math.min` clamps were removed because `resourceLimits` already caps memory and cpus.
+- `--input` is now restricted to files with the `.sdrf.tsv` extension (schema pattern `^\S+\.sdrf\.tsv$`). Inputs ending in `.sdrf`, `.tsv`, or `.csv` are rejected at startup by nf-schema validation. **Migration:** rename existing samplesheets (e.g. `experiment.tsv` → `experiment.sdrf.tsv`); users with `.csv` inputs must convert to TSV beforehand. The `SAMPLESHEET_CHECK` module no longer carries the in-process pandas-based CSV→TSV conversion or `.sdrf → .sdrf.tsv` renaming, since the file extension is now guaranteed by the schema.
 
 ### `Fixed`
 
