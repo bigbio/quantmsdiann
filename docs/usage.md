@@ -32,7 +32,9 @@ You can download our ready-to-use minimal SDRF templates [here](minimal_sdrf_exa
 #### How to adjust for different acquisition methods
 
 While the core SDRF columns remain the same, you need to adjust specific values depending on your experimental design:
+
 **For Label-Free DDA Datasets:** Ensure `comment[proteomics data acquisition method]` is set to **data-dependent acquisition**.
+
 **For Multiplexed Datasets (e.g., mTRAQ, SILAC):**
 | source name | characteristics[organism] | characteristics[organism part] | characteristics[disease] | characteristics[biological replicate] | assay name | technology type | comment[technical replicate] | comment[data file] | comment[file uri] | comment[fraction identifier] | comment[label] | comment[instrument] | comment[proteomics data acquisition method] | comment[cleavage agent details] | comment[modification parameters] | comment[precursor mass tolerance] | comment[fragment mass tolerance] | factor value[condition] |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
