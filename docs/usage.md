@@ -283,6 +283,75 @@ Supported modification name mappings:
 | Deamidated  | `UniMod:7`   | `Deamidated (N),Deamidated (Q)`       |
 | Methylation | `UniMod:34`  | `Methylation (K),Methylation (R)`     |
 
+## Reproducing a DIA-NN GUI run
+
+If you have an existing DIA-NN GUI (workstation) run and want to reproduce its results in `quantmsdiann`, the most reliable starting point is the first line of the GUI's `report.log.txt`, which contains the literal `diann.exe` command line. Translate that into pipeline parameters using the table below.
+
+### Where each GUI flag goes
+
+| GUI flag (from `report.log.txt`)                         | quantmsdiann equivalent                                                       |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `--fasta <db>`, `--fasta-search`, `--predictor`          | Set automatically by INSILICO_LIBRARY_GENERATION when `--diann_speclib` is unset. |
+| `--missed-cleavages N`                                   | `allowed_missed_cleavages: N`                                                 |
+| `--min-pep-len`, `--max-pep-len`                         | `min_peptide_length`, `max_peptide_length`                                    |
+| `--min-pr-charge`, `--max-pr-charge`                     | `min_precursor_charge`, `max_precursor_charge`                                |
+| `--min-pr-mz`, `--max-pr-mz`, `--min-fr-mz`, `--max-fr-mz` | `min_pr_mz`, `max_pr_mz`, `min_fr_mz`, `max_fr_mz`                          |
+| `--met-excision`                                         | `met_excision: true`                                                          |
+| `--unimod4` (Carbamidomethyl-C fixed)                    | Declare via SDRF: `comment[modification parameters]` = `NT=Carbamidomethyl;MT=Fixed;TA=C;AC=UNIMOD:4`. |
+| `--var-mod UniMod:35,15.994915,M` (Oxidation-M variable) | Declare via SDRF: `comment[modification parameters]` = `NT=Oxidation;MT=Variable;TA=M;AC=UNIMOD:35`. |
+| `--mass-acc 15 --mass-acc-ms1 15` (fixed tolerances)     | `mass_acc_automatic: false`, `mass_acc_ms1: 15`, `mass_acc_ms2: 15`.          |
+| (no `--mass-acc`; GUI auto)                              | `mass_acc_automatic: true` (the default). **Not recommended for Bruker timsTOF** — see [Bruker/timsTOF Data](#brukertimstof-data). |
+| `--reanalyse` (MBR / shared-library two-pass)            | **No equivalent flag — already done by the pipeline architecture.** PRELIMINARY_ANALYSIS → ASSEMBLE_EMPIRICAL_LIBRARY → INDIVIDUAL_ANALYSIS implements the same shared-library, per-run-search behaviour. Do not pass `--reanalyse` via `--extra_args`. |
+| `--relaxed-prot-inf`                                     | Always set by INDIVIDUAL_ANALYSIS and FINAL_QUANTIFICATION. (`pg_level: 2` = genes is the matching default.) |
+| `--smart-profiling`                                      | Pass via `--extra_args '--smart-profiling'`.                                  |
+| `--peak-center`                                          | Pass via `--extra_args '--peak-center'`.                                      |
+| `--no-ifs-removal`                                       | Set automatically for DIA-NN < 2.3 (removed upstream in 2.3+).                |
+| `--qvalue 0.01`                                          | DIA-NN default; `protein_level_fdr_cutoff: 0.01` controls pmultiqc filtering. |
+| `--matrices`, `--out`, `--out-lib`, `--gen-spec-lib`, `--lib`, `--threads`, `--verbose`, `--temp`, `--f`, `--use-quant` | Managed by the pipeline. Do not pass them. |
+
+### Worked example
+
+Given this GUI command line from `report.log.txt`:
+
+```
+diann.exe --f <runs> --lib --threads 16 --verbose 1 --out report.tsv --qvalue 0.01 --matrices \
+  --out-lib lib.tsv --gen-spec-lib --predictor --fasta UP000005640.fasta --fasta-search \
+  --min-fr-mz 200 --max-fr-mz 1000 --met-excision --cut K*,R* --missed-cleavages 2 \
+  --min-pep-len 7 --max-pep-len 30 --min-pr-mz 400 --max-pr-mz 1000 \
+  --min-pr-charge 2 --max-pr-charge 4 --unimod4 --var-mods 1 --var-mod UniMod:35,15.994915,M \
+  --mass-acc 15 --mass-acc-ms1 15 --reanalyse --relaxed-prot-inf \
+  --smart-profiling --peak-center --no-ifs-removal
+```
+
+The equivalent `params.yml` is:
+
+```yaml
+input: experiment.sdrf.tsv          # SDRF declares Carbamidomethyl(C) fixed and Oxidation(M) variable
+database: UP000005640.fasta
+allowed_missed_cleavages: 2
+min_peptide_length: 7
+max_peptide_length: 30
+min_precursor_charge: 2
+max_precursor_charge: 4
+min_pr_mz: 400
+max_pr_mz: 1000
+min_fr_mz: 200
+max_fr_mz: 1000
+met_excision: true
+mass_acc_automatic: false           # GUI used fixed tolerances; required for Bruker timsTOF
+mass_acc_ms1: 15
+mass_acc_ms2: 15
+pg_level: 2
+diann_extra_args: "--smart-profiling --peak-center"
+```
+
+### Common pitfalls
+
+- **Auto mass accuracy on Bruker `.d` files.** The pipeline default `mass_acc_automatic: true` runs `--quick-mass-acc` per file. For timsTOF data this can lock in a poor window on low-input samples; the GUI typically uses the user-supplied 10–15 ppm. Always set `mass_acc_automatic: false` for `.d` inputs (the pipeline emits a warning when it detects this combination).
+- **Passing `--reanalyse` via `--extra_args`.** It will be stripped or it will collide with the pipeline's empirical-library two-pass. Leave it out.
+- **Setting Carbamidomethyl(C) via parameters.** Modifications come from the SDRF, not from `params.yml`. If your GUI run had `--unimod4`, make sure the SDRF declares Carbamidomethyl(C) as fixed.
+- **Different DIA-NN version.** A pipeline run with `-profile diann_v2_3_2` will not match a 1.8.1 GUI run even with identical flags. Pin the same version in both places when comparing.
+
 ## Passing Extra Arguments to DIA-NN
 
 The `--extra_args` parameter appends additional DIA-NN command-line flags to **all** DIA-NN steps (INSILICO_LIBRARY_GENERATION, PRELIMINARY_ANALYSIS, ASSEMBLE_EMPIRICAL_LIBRARY, INDIVIDUAL_ANALYSIS, FINAL_QUANTIFICATION).
