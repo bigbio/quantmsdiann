@@ -8,9 +8,22 @@ include { SDRF_PARSING } from '../../../modules/local/sdrf_parsing/main'
 workflow CREATE_INPUT_CHANNEL {
     take:
     ch_sdrf
+    ch_downloaded_files  // collected list of [name, path] pairs from PRIDEPY_DOWNLOAD, or empty list
 
     main:
     ch_versions = channel.empty()
+
+    // Validate --local_input_type against supported local file formats when using --root_folder.
+    // Redundant with the schema enum, but still catches the case where schema validation is disabled.
+    def allowedLocalInputTypes = ['mzML', 'raw', 'd', 'dia', 'd.tar', 'd.tar.gz', 'd.zip', 'wiff']
+    if (params.root_folder && params.local_input_type && !allowedLocalInputTypes.contains(params.local_input_type)) {
+        exit(1, "ERROR: Unsupported --local_input_type '${params.local_input_type}'. Supported values: ${allowedLocalInputTypes.join(', ')}")
+    }
+
+    // Known raw-data extensions; order matters, so strip longest/compound ones first
+    // so 'sample.d.zip' -> 'sample', not 'sample.d'.
+    def knownRawExts = ['.d.tar.gz', '.d.tar', '.d.zip', '.mzML.gz', '.raw.gz',
+                        '.mzML', '.raw', '.dia', '.d', '.wiff']
 
     // Always parse as SDRF using DIA-NN converter
     SDRF_PARSING(ch_sdrf)
@@ -27,22 +40,50 @@ workflow CREATE_INPUT_CHANNEL {
         .splitCsv(header: true, sep: '\t')
         .map { experiment_id, row ->
             def filestr
+            def is_wiff = (row.IsWiff?.toString()?.toLowerCase() == 'true')
+
             if (!params.root_folder) {
                 filestr = row.URI?.toString()?.trim() ? row.URI.toString() : row.Filename.toString()
+
+                if (is_wiff) {
+                    def scan_filestr = row.Associated_URI?.toString()?.trim() ? row.Associated_URI.toString() : filestr + ".scan"
+                    filestr = [filestr, scan_filestr]
+                }
             } else {
                 filestr = row.Filename.toString()
                 filestr = params.root_folder + File.separator + filestr
-                filestr = (params.local_input_type
-                    ? filestr.take(filestr.lastIndexOf('.')) + '.' + params.local_input_type
-                    : filestr)
+                if (params.local_input_type) {
+                    // Strip the longest matching known raw-data extension (covers
+                    // compound suffixes like .d.zip / .d.tar.gz from the SDRF),
+                    // then append the target extension.
+                    def stem = filestr
+                    def stemLower = stem.toLowerCase()
+
+                    def matched = knownRawExts.find { ext ->
+                        stemLower.endsWith(ext.toLowerCase())
+                    }
+
+                    if (matched) {
+                        stem = stem.substring(0, stem.length() - matched.length())
+                    } else if (stem.lastIndexOf('.') > 0) {
+                        stem = stem.take(stem.lastIndexOf('.'))
+                    }
+                    filestr = stem + '.' + params.local_input_type
+                }
+
+                if (is_wiff) {
+                    filestr = [filestr, filestr + ".scan"]
+                }
             }
             return [filestr, experiment_id, row]
         }
         .groupTuple(by: 0)
-        .map { filestr, experiment_ids, rows ->
+        .combine(ch_downloaded_files)
+        .map { filestr, experiment_ids, rows, downloaded_files ->
             def experiment_id = experiment_ids[0]
+            def is_wiff = (rows[0].IsWiff?.toString()?.toLowerCase() == 'true')
             def wrapper = [acquisition_method: "", experiment_id: experiment_id]
-            return create_meta_channel_grouped(filestr, rows, wrapper)
+            return create_meta_channel_grouped(filestr, rows, wrapper, downloaded_files)
         }
         .set { ch_meta_config_dia }
 
@@ -54,19 +95,40 @@ workflow CREATE_INPUT_CHANNEL {
 }
 
 // Function to get list of [meta, [ spectra_files ]]
-def create_meta_channel_grouped(String filestr, List rows, Map wrapper) {
+def create_meta_channel_grouped(def filestr, List rows, Map wrapper, List downloaded_files) {
     def meta = [:]
 
     def base_row = rows[0]
 
-    def fileName = file(filestr).name
+    def main_file_str = filestr instanceof List ? filestr[0] : filestr
+    def fileName = file(main_file_str).name
     def dotIndex = fileName.lastIndexOf('.')
     meta.id = dotIndex > 0 ? fileName.take(dotIndex) : fileName
     meta.experiment_id = wrapper.experiment_id
 
+    meta.is_wiff = (base_row.IsWiff?.toString()?.toLowerCase() == 'true')
+
+    // Substitute SDRF URIs with pre-downloaded local files (by filename) when available
+    if (downloaded_files) {
+        if (filestr instanceof List) {
+            filestr = filestr.collect { f ->
+                def match = downloaded_files.find { it[0] == file(f).name }
+                match ? match[1].toString() : f
+            }
+        } else {
+            def match = downloaded_files.find { it[0] == file(filestr).name }
+            if (match) {
+                filestr = match[1].toString()
+            }
+        }
+    }
+
     // existence check
-    if (!file(filestr).exists()) {
-        exit(1, "ERROR: Please check input file -> File Uri does not exist!\n${filestr}")
+    def files_to_check = filestr instanceof List ? filestr : [filestr]
+    files_to_check.each { f ->
+        if (!file(f).exists()) {
+            exit(1, "ERROR: Please check input file -> File Uri does not exist!\n${f}")
+        }
     }
 
     // Detect acquisition method from SDRF or fallback to --dda param
@@ -181,5 +243,6 @@ def create_meta_channel_grouped(String filestr, List rows, Map wrapper) {
     meta.ms2minmz = base_row.MS2MinMz?.toString()?.trim() ?: ""
     meta.ms2maxmz = base_row.MS2MaxMz?.toString()?.trim() ?: ""
 
-    return [meta, filestr]
+    def resolved_files = filestr instanceof List ? filestr.collect { file(it) } : file(filestr)
+    return [meta, resolved_files]
 }

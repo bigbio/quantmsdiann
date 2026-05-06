@@ -31,4 +31,22 @@ class VersionUtils {
     static boolean versionAtLeast(String version, String required) {
         return compare(version, required) >= 0
     }
+
+    /**
+     * Minimum DIA-NN version that supports native Linux Thermo .raw reading.
+     * Used by stageInMode closures in DIA-NN per-file process modules.
+     */
+    static final String NATIVE_RAW_MIN_VERSION = '2.1.0'
+
+    /**
+     * Returns true when DIA-NN processes should receive .raw files directly
+     * (without prior ThermoRawFileParser conversion), based on pipeline params.
+     *
+     * @param params  Nextflow params map (must have diann_version and mzml_convert)
+     */
+    static boolean isNativeRawMode(params) {
+        if (params.mzml_convert == false) return true
+        if (params.mzml_convert != null) return false
+        return versionAtLeast(params.diann_version?.toString() ?: '1.8.1', NATIVE_RAW_MIN_VERSION)
+    }
 }

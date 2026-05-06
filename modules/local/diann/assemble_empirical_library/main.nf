@@ -4,6 +4,10 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     label 'diann'
     label 'error_retry'
 
+    // DIA-NN's native Thermo .raw reader fails on symlinked files (Thermo SDK limitation).
+    // Use 'copy' when .raw files are passed directly to DIA-NN (DIA-NN >= 2.1.0 without TRFP conversion).
+    stageInMode { VersionUtils.isNativeRawMode(params) ? 'copy' : 'symlink' }
+
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
         'docker.io/biocontainers/diann:v1.8.1_cv1' }"
@@ -45,6 +49,9 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
 
+    diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
+
     """
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
     # Fragment Tolerance value was: ${meta['fragmentmasstolerance']}
@@ -72,6 +79,8 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\
+            ${diann_channel_run_norm} \\
+            ${diann_channel_spec_norm} \\
             \${mod_flags} \\
             $args \\
             2>&1 | tee assemble_empirical_library.log

@@ -10,6 +10,7 @@ testing*
 *.pyc
 __pycache__/
 null/
+.lineage/
 .idea/
 .vscode/
 /lint_log.txt

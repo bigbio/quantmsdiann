@@ -70,6 +70,7 @@ class BlockedFlags {
             '--mass-acc', '--mass-acc-ms1', '--window',
             '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
             '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
+            '--channel-run-norm', '--channel-spec-norm',
             // Pipeline-managed: preliminary step disables protein inference (--no-prot-inf)
             '--no-prot-inf',
         ],
@@ -79,6 +80,7 @@ class BlockedFlags {
             '--mass-acc', '--mass-acc-ms1', '--window',
             '--individual-mass-acc', '--individual-windows',
             '--out-lib', '--use-quant', '--gen-spec-lib', '--rt-profiling',
+            '--channel-run-norm', '--channel-spec-norm',
             // No-effect guard: protein inference flags have no effect during library assembly
             // (--gen-spec-lib produces a spectral library, not a quantified report).
             // Blocked to prevent users from thinking they affect this step.
@@ -92,6 +94,7 @@ class BlockedFlags {
             // Pipeline-managed: protein inference set by pipeline (--relaxed-prot-inf --pg-level)
             '--relaxed-prot-inf', '--pg-level',
             '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
+            '--channel-run-norm', '--channel-spec-norm',
             '--no-prot-inf',
         ],
         FINAL_QUANTIFICATION: [

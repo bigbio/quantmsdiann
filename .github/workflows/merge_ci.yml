@@ -51,7 +51,7 @@ jobs:
       - name: Set up Nextflow
         uses: nf-core/setup-nextflow@v2
         with:
-          version: "25.04.0"
+          version: "25.10.4"
 
       - name: Disk space cleanup
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -128,7 +128,7 @@ jobs:
       - name: Set up Nextflow
         uses: nf-core/setup-nextflow@v2
         with:
-          version: "25.04.0"
+          version: "25.10.4"
 
       - name: Log in to GitHub Container Registry
         env:
@@ -223,7 +223,7 @@ jobs:
       - name: Set up Nextflow
         uses: nf-core/setup-nextflow@v2
         with:
-          version: "25.04.0"
+          version: "25.10.4"
 
       - name: Log in to GitHub Container Registry
         env:

@@ -16,10 +16,10 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "mimetype": "text/csv",
-                    "pattern": "^\\S+\\.(?:csv|tsv|sdrf)$",
-                    "description": "URI/path to an SDRF file in SDRF format with .sdrf, .tsv, or .csv extension. For more info see help text or docs.",
-                    "help_text": "Input is specified by using a path or URI to a PRIDE Sample to Data Relation Format file (SDRF), e.g. as part of a submitted and annotated PRIDE experiment (see [here](https://github.com/bigbio/proteomics-metadata-standard/tree/master/annotated-projects) for examples). Input files will be downloaded and cached from the URIs specified in the SDRF file.\n\nThe SDRF file can have .sdrf, .tsv, or .csv extensions. An OpenMS-style experimental design will be generated based on the factor columns of the SDRF.\n\nThe following parameters are read **exclusively** from the SDRF file (required columns):\n\n    * `acquisition_method` (from 'Proteomics Data Acquisition Method' column),\n    * `labelling_type` (from 'Label' column),\n    * `enzyme` (from 'Enzyme' column),\n    * `fixed_mods` (from 'FixedModifications' column)\n\nThe following parameters are read from SDRF but can be **overridden via command line**:\n\n    * `precursor_mass_tolerance` (from 'PrecursorMassTolerance' column),\n    * `precursor_mass_tolerance_unit` (from 'PrecursorMassToleranceUnit' column),\n    * `fragment_mass_tolerance` (from 'FragmentMassTolerance' column),\n    * `fragment_mass_tolerance_unit` (from 'FragmentMassToleranceUnit' column),\n    * `variable_mods` (from 'VariableModifications' column)",
+                    "mimetype": "text/tab-separated-values",
+                    "pattern": "^\\S+\\.sdrf\\.tsv$",
+                    "description": "URI/path to an SDRF file (must use the `.sdrf.tsv` extension). For more info see help text or docs.",
+                    "help_text": "Input is specified by using a path or URI to a PRIDE Sample to Data Relation Format file (SDRF), e.g. as part of a submitted and annotated PRIDE experiment (see [here](https://github.com/bigbio/proteomics-metadata-standard/tree/master/annotated-projects) for examples). Input files will be downloaded and cached from the URIs specified in the SDRF file.\n\nThe SDRF file **must** use the `.sdrf.tsv` extension. An OpenMS-style experimental design will be generated based on the factor columns of the SDRF.\n\nThe following parameters are read **exclusively** from the SDRF file (required columns):\n\n    * `acquisition_method` (from 'Proteomics Data Acquisition Method' column),\n    * `labelling_type` (from 'Label' column),\n    * `enzyme` (from 'Enzyme' column),\n    * `fixed_mods` (from 'FixedModifications' column)\n\nThe following parameters are read from SDRF but can be **overridden via command line**:\n\n    * `precursor_mass_tolerance` (from 'PrecursorMassTolerance' column),\n    * `precursor_mass_tolerance_unit` (from 'PrecursorMassToleranceUnit' column),\n    * `fragment_mass_tolerance` (from 'FragmentMassTolerance' column),\n    * `fragment_mass_tolerance_unit` (from 'FragmentMassToleranceUnit' column),\n    * `variable_mods` (from 'VariableModifications' column)",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -51,8 +51,43 @@
                     "type": "string",
                     "description": "Overwrite the file type/extension of the filename as specified in the SDRF",
                     "fa_icon": "fas fa-file-invoice",
-                    "default": "mzML",
-                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', or 'dia' (the letter cases should match your files exactly). Compressed variants (.gz, .tar, .tar.gz, .zip) are supported for 'mzML', 'raw', and 'd' formats."
+                    "default": "raw",
+                    "enum": ["mzML", "raw", "d", "dia", "d.tar", "d.tar.gz", "d.zip"],
+                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', or 'dia' (the letter cases should match your files exactly). For Bruker `.d` data, compressed archive variants `.d.tar`, `.d.tar.gz`, and `.d.zip` are also accepted and are decompressed automatically."
+                }
+            }
+        },
+        "pride_archive_download": {
+            "title": "PRIDE Archive download",
+            "type": "object",
+            "fa_icon": "fas fa-cloud-download-alt",
+            "description": "Optional pre-download of raw files from PRIDE Archive via pridepy before analysis.",
+            "properties": {
+                "pridepy_download": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable pre-downloading raw files from PRIDE Archive via pridepy.",
+                    "help_text": "When set, the workflow runs `PRIDEPY_DOWNLOAD` for the project given by `--project_accession` and substitutes SDRF URIs with the pre-downloaded local files (matched by filename) before analysis.",
+                    "fa_icon": "far fa-check-square"
+                },
+                "project_accession": {
+                    "type": "string",
+                    "description": "PRIDE project accession to download (required when --pridepy_download is set).",
+                    "help_text": "PRIDE Archive project accession, e.g. `PXD001819`. Required when `--pridepy_download` is enabled.",
+                    "fa_icon": "fas fa-fingerprint"
+                },
+                "pridepy_protocol": {
+                    "type": "string",
+                    "default": "globus",
+                    "enum": ["globus", "ftp", "aspera"],
+                    "description": "Protocol used by pridepy to download files from PRIDE Archive.",
+                    "fa_icon": "fas fa-network-wired"
+                },
+                "aspera_maximum_bandwidth": {
+                    "type": "string",
+                    "default": "1000M",
+                    "description": "Maximum bandwidth for Aspera transfers (only used when --pridepy_protocol is 'aspera').",
+                    "fa_icon": "fas fa-tachometer-alt"
                 }
             }
         },
@@ -99,10 +134,10 @@
             "properties": {
                 "reindex_mzml": {
                     "type": "boolean",
-                    "default": true,
-                    "description": "Force initial re-indexing of input mzML files. Also fixes some common mistakes in slightly incomplete/outdated mzMLs. (Default: true for safety)",
+                    "default": false,
+                    "description": "Force initial re-indexing of input mzML files. Also fixes some common mistakes in slightly incomplete/outdated mzMLs. (Default: false; only needed for user-supplied unindexed mzML — TRFP and the wiff converter already emit indexed mzML.)",
                     "fa_icon": "far fa-check-square",
-                    "help_text": "Force re-indexing in the beginning of the pipeline to make sure that indices are up-to-date."
+                    "help_text": "Force re-indexing in the beginning of the pipeline to make sure that indices are up-to-date. Enable only when supplying pre-built mzML files that may be unindexed; outputs from ThermoRawFileParser and the wiff converter are indexed already."
                 },
                 "mzml_statistics": {
                     "type": "boolean",
@@ -114,6 +149,12 @@
                     "type": "boolean",
                     "description": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
                     "help_text": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
+                    "fa_icon": "far fa-check-square"
+                },
+                "mzml_convert": {
+                    "type": "boolean",
+                    "description": "Convert Thermo .raw to .mzML via ThermoRawFileParser before feeding DIA-NN. If unset, the pipeline converts when DIA-NN < 2.1.0 and passes .raw files natively when DIA-NN >= 2.1.0.",
+                    "help_text": "DIA-NN 2.1.0 added native Thermo .raw support on Linux, so conversion via ThermoRawFileParser is no longer strictly required. Set `--mzml_convert false` to feed .raw files directly to DIA-NN (saves one container invocation and an I/O pass per file). Set `--mzml_convert true` to force conversion (e.g. for QC / mzML statistics, or to work around DIA-NN Thermo reader issues such as [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)). The parameter has no effect when inputs are already mzML / .d / .dia or when `--local_input_type mzML` is used with `--root_folder`.",
                     "fa_icon": "far fa-check-square"
                 }
             },
@@ -744,6 +785,9 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/pride_archive_download"
         },
         {
             "$ref": "#/$defs/protein_database"

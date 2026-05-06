@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        NXF_VER: ["25.04.0", "latest-everything"]
+        NXF_VER: ["25.10.4", "latest-everything"]
         test_profile: ["test_dia", "test_dia_dotd"]
     env:
       NXF_ANSI_LOG: false
@@ -135,7 +135,7 @@ jobs:
       - name: Set up Nextflow
         uses: nf-core/setup-nextflow@v2
         with:
-          version: "25.04.0"
+          version: "25.10.4"
 
       - name: Log in to GitHub Container Registry
         env:
@@ -202,7 +202,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        NXF_VER: ["25.04.0", "latest-everything"]
+        NXF_VER: ["25.10.4", "latest-everything"]
         test_profile: ["test_dia", "test_dia_dotd"]
     env:
       NXF_ANSI_LOG: false
