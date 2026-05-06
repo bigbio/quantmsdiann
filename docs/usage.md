@@ -360,7 +360,7 @@ If you have an existing DIA-NN GUI (workstation) run and want to reproduce its r
 
 | GUI flag (from `report.log.txt`)                                                                                        | quantmsdiann equivalent                                                                                                                                                                                                                                 |
 | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--fasta <db>`, `--fasta-search`, `--predictor`                                                                         | Set automatically by INSILICO_LIBRARY_GENERATION when `--diann_speclib` is unset.                                                                                                                                                                       |
+| `--fasta <db>`, `--fasta-search`, `--predictor`                                                                         | Set automatically by INSILICO_LIBRARY_GENERATION when `--speclib` is unset.                                                                                                                                                                             |
 | `--missed-cleavages N`                                                                                                  | `allowed_missed_cleavages: N`                                                                                                                                                                                                                           |
 | `--min-pep-len`, `--max-pep-len`                                                                                        | `min_peptide_length`, `max_peptide_length`                                                                                                                                                                                                              |
 | `--min-pr-charge`, `--max-pr-charge`                                                                                    | `min_precursor_charge`, `max_precursor_charge`                                                                                                                                                                                                          |
@@ -372,8 +372,8 @@ If you have an existing DIA-NN GUI (workstation) run and want to reproduce its r
 | (no `--mass-acc`; GUI auto)                                                                                             | `mass_acc_automatic: true` (the default). **Not recommended for Bruker timsTOF** — see [Bruker/timsTOF Data](#brukertimstof-data).                                                                                                                      |
 | `--reanalyse` (MBR / shared-library two-pass)                                                                           | **No equivalent flag — already done by the pipeline architecture.** PRELIMINARY_ANALYSIS → ASSEMBLE_EMPIRICAL_LIBRARY → INDIVIDUAL_ANALYSIS implements the same shared-library, per-run-search behaviour. Do not pass `--reanalyse` via `--extra_args`. |
 | `--relaxed-prot-inf`                                                                                                    | Always set by INDIVIDUAL_ANALYSIS and FINAL_QUANTIFICATION. (`pg_level: 2` = genes is the matching default.)                                                                                                                                            |
-| `--smart-profiling`                                                                                                     | Pass via `--extra_args '--smart-profiling'`.                                                                                                                                                                                                            |
-| `--peak-center`                                                                                                         | Pass via `--extra_args '--peak-center'`.                                                                                                                                                                                                                |
+| `--smart-profiling`                                                                                                     | Pass via `--extra_args '--smart-profiling'` if you want exact parity. Per the DIA-NN author, this flag does not have a non-negligible effect on ID counts.                                                                                              |
+| `--peak-center`                                                                                                         | Pass via `--extra_args '--peak-center'` if you want exact parity. Per the DIA-NN author, this flag does not have a non-negligible effect on ID counts.                                                                                                  |
 | `--no-ifs-removal`                                                                                                      | Set automatically for DIA-NN < 2.3 (removed upstream in 2.3+).                                                                                                                                                                                          |
 | `--qvalue 0.01`                                                                                                         | DIA-NN default; `protein_level_fdr_cutoff: 0.01` controls pmultiqc filtering.                                                                                                                                                                           |
 | `--matrices`, `--out`, `--out-lib`, `--gen-spec-lib`, `--lib`, `--threads`, `--verbose`, `--temp`, `--f`, `--use-quant` | Managed by the pipeline. Do not pass them.                                                                                                                                                                                                              |
@@ -407,19 +407,38 @@ max_pr_mz: 1000
 min_fr_mz: 200
 max_fr_mz: 1000
 met_excision: true
-mass_acc_automatic: false # GUI used fixed tolerances; required for Bruker timsTOF
+mass_acc_automatic: false # GUI used fixed tolerances; recommended for Bruker timsTOF
 mass_acc_ms1: 15
 mass_acc_ms2: 15
 pg_level: 2
-diann_extra_args: "--smart-profiling --peak-center"
+# extra_args: "--smart-profiling --peak-center"   # optional; negligible effect per DIA-NN author
 ```
 
 ### Common pitfalls
 
-- **Auto mass accuracy on Bruker `.d` files.** The pipeline default `mass_acc_automatic: true` runs `--quick-mass-acc` per file. For timsTOF data this can lock in a poor window on low-input samples; the GUI typically uses the user-supplied 10–15 ppm. Always set `mass_acc_automatic: false` for `.d` inputs (the pipeline emits a warning when it detects this combination).
+- **Auto mass accuracy on Bruker `.d` files.** The pipeline default `mass_acc_automatic: true` runs `--quick-mass-acc` per file. The DIA-NN author has confirmed that on timsTOF data it is "always OK to fix to 15 ppm anyway", so the recommendation is to set `mass_acc_automatic: false` with `mass_acc_ms1: 15`, `mass_acc_ms2: 15` for `.d` inputs (the pipeline emits a warning when it detects auto + `.d`).
+- **Mismatched DIA-NN tolerances vs OpenMS-style search tolerances.** `precursor_mass_tolerance` / `fragment_mass_tolerance` are OpenMS-style search-engine tolerances and are interpreted in their declared units (`ppm` or `Da`). Setting `fragment_mass_tolerance: 0.03` with unit `Da` is approximately 30 ppm at m/z 1000 and is far too loose for high-resolution timsTOF data — DIA-NN will produce nonsensical results when those values reach it. For DIA-NN runs, prefer the `mass_acc_*` parameters (in ppm) and leave the OpenMS-style tolerances to match.
+- **`local_input_type` with `.d` data.** `local_input_type: mzML` only takes effect when `--root_folder` is also set; with native `.d` inputs in the SDRF it is a no-op. Setting it to `mzML` while feeding `.d` files via `--root_folder` would force a nonsense conversion path — leave it alone unless you are deliberately substituting file types.
 - **Passing `--reanalyse` via `--extra_args`.** It will be stripped or it will collide with the pipeline's empirical-library two-pass. Leave it out.
 - **Setting Carbamidomethyl(C) via parameters.** Modifications come from the SDRF, not from `params.yml`. If your GUI run had `--unimod4`, make sure the SDRF declares Carbamidomethyl(C) as fixed.
 - **Different DIA-NN version.** A pipeline run with `-profile diann_v2_3_2` will not match a 1.8.1 GUI run even with identical flags. Pin the same version in both places when comparing.
+
+### Renamed and removed parameters
+
+The `diann_` prefix was removed from all user-facing parameters (see `CHANGELOG.md`). Old `diann_*` keys in a `params.yml` are silently ignored on current versions of the pipeline — Nextflow accepts them as unrecognised parameters but the canonical (unprefixed) names take their default values. If you copied a YAML from an older pipeline release, rename the keys:
+
+| Old name (deprecated)   | Current name                 | Notes                                                                                                              |
+| ----------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `diann_debug`           | `debug_level`                | DIA-NN verbosity (0–4).                                                                                            |
+| `diann_speclib`         | `speclib`                    | External `.speclib`/`.tsv` library; skips in-silico generation.                                                    |
+| `diann_extra_args`      | `extra_args`                 | Extra DIA-NN flags appended to every step.                                                                         |
+| `diann_tims_sum`        | `tims_sum`                   | Adds `--quant-tims-sum` (timsTOF Synchro/scanning).                                                                |
+| `diann_im_window`       | `im_window`                  | Adds `--im-window <value>` (Bruker IM extraction floor).                                                           |
+| `diann_normalize`       | `normalize`                  | When `false`, adds `--no-norm`.                                                                                    |
+| `diann_report_decoys`   | `report_decoys`              | When `true`, adds `--report-decoys` (DIA-NN ≥ 2.0).                                                                |
+| `diann_export_xic`      | `export_xic`                 | When `true`, adds `--xic`.                                                                                         |
+| `diann_no_peptidoforms` | **removed** → `scoring_mode` | Replaced by an enum: `generic` (default), `proteoforms` (variant detection, ≥ 2.0), `peptidoforms` (PTM analysis). |
+| `diann_use_quant`       | `use_quant`                  | Adds `--use-quant` to FINAL_QUANTIFICATION.                                                                        |
 
 ## Passing Extra Arguments to DIA-NN
 
