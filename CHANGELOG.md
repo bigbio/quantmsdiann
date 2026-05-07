@@ -30,9 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Dependencies`
 
-| Dependency        | Version                                 |
-| ----------------- | --------------------------------------- |
-| `qpx` (container) | `biocontainers/qpx:1.0.2--pyhdfd78af_1` |
+| Dependency        | Old version | New version                             |
+| ----------------- | ----------- | --------------------------------------- |
+| `sdrf-pipelines`  | 0.1.2       | 0.1.4                                   |
+| `quantms-utils`   | 0.0.29      | 0.0.30                                  |
+| `qpx` (container) | —           | `biocontainers/qpx:1.0.2--pyhdfd78af_1` |
 
 ## [2.0.0] bigbio/quantmsdiann — Rome - 2026-04-18
 
