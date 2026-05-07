@@ -692,6 +692,39 @@ For full verbose output of all intermediate files (useful for debugging), use th
 nextflow run bigbio/quantmsdiann -profile verbose_modules,docker ...
 ```
 
+## QPX Export (Experimental, 2.1.0)
+
+When `--enable_qpx_export` is set, the pipeline converts DIA-NN output to a [QPX Parquet](https://github.com/bigbio/qpx) dataset and a [MuData](https://mudata.readthedocs.io/) `.h5mu` file in a single step. On by default.
+
+```bash
+nextflow run bigbio/quantmsdiann -profile docker \
+    --input sdrf.tsv --database db.fasta \
+    --enable_qpx_export \
+    --project_accession PXD019909 \
+    --outdir results
+```
+
+This writes to `results/qpx/`:
+
+- `<prefix>.feature.parquet`, `<prefix>.pg.parquet` — precursor and protein-group intensities
+- `<prefix>.sample.parquet`, `<prefix>.run.parquet` — SDRF-derived metadata
+- `<prefix>.h5mu` — MuData container (modalities: `precursors`, `proteins`)
+
+`<prefix>` defaults to `diann` and is overridden by `--project_accession`.
+
+### Parameters
+
+| Parameter             | Default | Description                                           |
+| --------------------- | ------- | ----------------------------------------------------- |
+| `--enable_qpx_export` | `true`  | Export DIA-NN output to QPX Parquet + MuData          |
+| `--project_accession` | `null`  | PRIDE/PX accession used as output prefix and metadata |
+
+### Quick test
+
+```bash
+nextflow run bigbio/quantmsdiann -profile test_dia_qpx,docker --outdir results_qpx_test
+```
+
 ## Custom configuration
 
 ### Resource requests

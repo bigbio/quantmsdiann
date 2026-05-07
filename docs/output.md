@@ -111,6 +111,20 @@ These files are not published by default. Enable them with `save_*` parameters o
 
 - `library_generation/*.tsv` - TSV spectral library from in-silico library generation (`--save_speclib_tsv`)
 
+### QPX Export (Experimental, 2.1.0)
+
+When `--enable_qpx_export` is set, the pipeline produces a [QPX Parquet dataset](https://github.com/bigbio/qpx) and a [MuData](https://mudata.readthedocs.io/) `.h5mu` file under `results/qpx/`. `<prefix>` defaults to `diann`, overridden by `--project_accession`.
+
+- `<prefix>.feature.parquet` — precursor-level features
+- `<prefix>.pg.parquet` — protein-group intensities per run
+- `<prefix>.sample.parquet`, `<prefix>.run.parquet` — SDRF-derived metadata
+- `<prefix>.h5mu` — MuData with `precursors` and `proteins` modalities
+
+```python
+import mudata as mu
+mdata = mu.read("results/qpx/PXD019909.h5mu")
+```
+
 ### Nextflow pipeline info
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline.

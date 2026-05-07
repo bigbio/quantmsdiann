@@ -1,0 +1,17 @@
+{
+    "stub": {
+        "content": [
+            [
+                "PXD026600.h5mu:md5,d41d8cd98f00b204e9800998ecf8427e"
+            ],
+            [
+                "versions.yml:md5,cc457dc644e23b74317eaa02eedda495"
+            ]
+        ],
+        "timestamp": "2026-05-05T18:36:46.564300378",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    }
+}

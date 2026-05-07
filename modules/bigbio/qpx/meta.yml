@@ -1,0 +1,65 @@
+name: qpx_export
+description: Convert DIA-NN quantification outputs to QPX Parquet dataset and MuData (.h5mu)
+keywords:
+  - proteomics
+  - quantification
+  - parquet
+  - mudata
+  - dia-nn
+  - qpx
+tools:
+  - qpx:
+      description: |
+        QPX (Quantitative Proteomics eXchange) converts tool-specific quantification
+        outputs into a standardised Parquet dataset and optionally a MuData (.h5mu) file
+        for downstream analysis in Python (scanpy / muon).
+      homepage: https://github.com/bigbio/qpx
+      documentation: https://github.com/bigbio/qpx
+      tool_dev_url: https://github.com/bigbio/qpx
+      licence:
+        - "Apache-2.0"
+      identifier: ""
+input:
+  - diann_report:
+      type: file
+      description: DIA-NN main report (TSV or Parquet)
+      pattern: "*.{tsv,parquet}"
+  - pg_matrix:
+      type: file
+      description: DIA-NN protein-group matrix
+      pattern: "*.{tsv,parquet}"
+  - sdrf:
+      type: file
+      description: SDRF sample metadata file
+      pattern: "*.sdrf.tsv"
+  - diann_log:
+      type: file
+      description: DIA-NN summary log for version detection
+      pattern: "*.log"
+  - project_accession:
+      type: string
+      description: PRIDE project accession (e.g. PXD026600) used as output prefix
+output:
+  qpx_dataset:
+    - "qpx_output/":
+        type: directory
+        description: QPX Parquet dataset directory
+        pattern: "qpx_output/"
+  mudata:
+    - "*.h5mu":
+        type: file
+        description: MuData file containing the quantification data
+        pattern: "*.h5mu"
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750
+authors:
+  - "@ypriverol"
+  - "@Shen-YuFei"
+maintainers:
+  - "@ypriverol"
+  - "@Shen-YuFei"

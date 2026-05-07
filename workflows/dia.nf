@@ -17,6 +17,7 @@ include { INSILICO_LIBRARY_GENERATION as TUNED_LIBRARY_GENERATION   } from '../m
 include { FINE_TUNE_MODELS            } from '../modules/local/diann/fine_tune_models/main'
 include { INDIVIDUAL_ANALYSIS         } from '../modules/local/diann/individual_analysis/main'
 include { FINAL_QUANTIFICATION        } from '../modules/local/diann/final_quantification/main'
+include { QPX_EXPORT                   } from '../modules/bigbio/qpx/main'
 
 //
 // SUBWORKFLOWS: Consisting of a mix of local and nf-core/modules
@@ -320,11 +321,33 @@ workflow DIA {
     ch_software_versions = ch_software_versions
         .mix(DIANN_MSSTATS.out.versions)
 
+    //
+    // MODULE: QPX_EXPORT — Convert DIA-NN output to QPX Parquet + MuData (optional)
+    //
+    qpx_dataset_ch = Channel.empty()
+    mudata_ch      = Channel.empty()
+    if (params.enable_qpx_export) {
+        ch_sdrf_original = channel.fromPath(params.input, checkIfExists: true).first()
+
+        QPX_EXPORT(
+            diann_main_report,
+            FINAL_QUANTIFICATION.out.pg_matrix,
+            ch_sdrf_original,
+            FINAL_QUANTIFICATION.out.log,
+            params.project_accession ?: ''
+        )
+        ch_software_versions = ch_software_versions.mix(QPX_EXPORT.out.versions)
+        qpx_dataset_ch = QPX_EXPORT.out.qpx_dataset
+        mudata_ch      = QPX_EXPORT.out.mudata
+    }
+
     emit:
     versions                = ch_software_versions
     diann_report            = diann_main_report
     diann_log               = FINAL_QUANTIFICATION.out.log
     msstats_in              = DIANN_MSSTATS.out.out_msstats
+    qpx_dataset             = qpx_dataset_ch
+    mudata                  = mudata_ch
 }
 
 // remove meta.id to make sure cache identical HashCode

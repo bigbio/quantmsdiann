@@ -593,6 +593,21 @@
             },
             "fa_icon": "fas fa-braille"
         },
+        "qpx_export": {
+            "title": "QPX export (experimental)",
+            "type": "object",
+            "description": "Export DIA-NN outputs to QPX Parquet + MuData (.h5mu).",
+            "default": "",
+            "properties": {
+                "enable_qpx_export": {
+                    "type": "boolean",
+                    "description": "Export DIA-NN output to QPX Parquet dataset and MuData .h5mu in a single step.",
+                    "fa_icon": "fas fa-file-export",
+                    "default": true
+                }
+            },
+            "fa_icon": "fas fa-file-export"
+        },
         "quality_control": {
             "title": "Quality control",
             "type": "object",
@@ -806,6 +821,9 @@
         },
         {
             "$ref": "#/$defs/DIA-NN"
+        },
+        {
+            "$ref": "#/$defs/qpx_export"
         },
         {
             "$ref": "#/$defs/quality_control"
