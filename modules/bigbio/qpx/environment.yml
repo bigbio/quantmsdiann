@@ -4,4 +4,4 @@ channels:
   - defaults
 dependencies:
   - pip:
-      - qpx
+      - qpx==1.0.2

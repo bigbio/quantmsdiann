@@ -121,7 +121,7 @@ jobs:
             "test_dia_parquet",
             "test_dia_qpx",
             "test_dda",
-            "test_dia_skip_preanalysis",
+            "test_dia_skip_preanalysis"
           ]
     env:
       NXF_ANSI_LOG: false
