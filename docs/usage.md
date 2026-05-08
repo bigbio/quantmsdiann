@@ -714,9 +714,9 @@ This writes to `results/qpx/`:
 
 ### Parameters
 
-| Parameter             | Default | Description                                           |
-| --------------------- | ------- | ----------------------------------------------------- |
-| `--enable_qpx_export` | `false` | Export DIA-NN output to QPX Parquet + MuData          |
+| Parameter             | Default | Description                                                                                 |
+| --------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| `--enable_qpx_export` | `false` | Export DIA-NN output to QPX Parquet + MuData                                                |
 | `--project_accession` | `null`  | PRIDE/PX accession used as output prefix and metadata (required when `--enable_qpx_export`) |
 
 ### Quick test
