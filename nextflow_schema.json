@@ -834,17 +834,6 @@
         },
         {
             "$ref": "#/$defs/generic_options"
-        },
-        {
-            "if": {
-                "properties": {
-                    "enable_qpx_export": { "const": true }
-                },
-                "required": ["enable_qpx_export"]
-            },
-            "then": {
-                "required": ["project_accession"]
-            }
         }
     ]
 }
