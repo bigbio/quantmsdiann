@@ -38,6 +38,22 @@
 
   > Dai C, Pfeuffer J, Wang H, Sachsenberg T, Bai M, Kohlbacher O, Perez-Riverol Y. pmultiqc: a MultiQC plugin for proteomics quality control reporting. 2024. GitHub: https://github.com/bigbio/pmultiqc
 
+- [pridepy](https://github.com/PRIDE-Archive/pridepy)
+
+  > PRIDE Archive Team. pridepy: a Python client to download data from the PRIDE Archive. GitHub: https://github.com/PRIDE-Archive/pridepy
+
+- [QPX](https://github.com/bigbio/qpx)
+
+  > bigbio. QPX: Quantitative Proteomics eXchange Parquet + MuData format converter. GitHub: https://github.com/bigbio/qpx
+
+- [MuData](https://mudata.readthedocs.io/)
+
+  > Bredikhin D, Kats I, Stegle O. MUON: multimodal omics analysis framework. Genome Biol. 2022 Feb 1;23(1):42. doi: 10.1186/s13059-021-02577-8. PMID: 35105380; PMCID: PMC8807747.
+
+- [WiffConverter](https://github.com/bigbio/quantms-containers)
+
+  > SCIEX / bigbio. WiffConverter: command-line tool to convert SCIEX `.wiff` and `.wiff.scan` files to indexed mzML. Container: `ghcr.io/bigbio/wiffconverter`.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

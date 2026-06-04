@@ -3,6 +3,56 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0dev] bigbio/quantmsdiann
+
+### `Added`
+
+- DIA-NN **2.5.1** (academic) version profile `-profile diann_v2_5_1` (container `ghcr.io/bigbio/diann:2.5.1`).
+- **DIA-NN Enterprise (2.5.1) support** via `-profile diann_v2_5_1_enterprise` (container `ghcr.io/bigbio/diann-enterprise:2.5.1`). New `--enable_kb` flag adds the Enterprise Knowledge Base (`--kb`) to the first-pass search to boost identifications (mainly human data); it is gated to the Enterprise build and **on by default** under the `diann_v2_5_1_enterprise` profile (disable with `--enable_kb false`). New `--diann_license <file>` stages the Enterprise license key into each DIA-NN step as `--license`, with fallback to a key bundled next to the binary when unset. The license key is a per-user secret and is never committed or bundled into the shared image.
+
+### `Changed`
+
+- Documentation: clarified DIA-NN container licensing. Only DIA-NN 1.8.1 is publicly redistributable (pulled from BioContainers as the default); releases from 1.9 onward must be built locally from the [quantms-containers](https://github.com/bigbio/quantms-containers) recipes and tagged `ghcr.io/bigbio/diann:<version>` so the matching `-profile diann_v<version>` resolves them. Added the missing DIA-NN 2.5.0 row to the README support table.
+- QPX export now publishes the Parquet dataset files and the `.h5mu` MuData file directly under `results/qpx/`, removing the intermediate `qpx/qpx_output/` subfolder. The `bigbio/qpx` module emits the dataset as `qpx_output/*` files (bigbio/nf-modules#39) so `publishDir` can flatten them.
+- `--precursor_qvalue` default is now **version-aware**: unset resolves by `--diann_version` to `0.01` (1%) for DIA-NN < 2.5 and `0.05` (5%) for >= 2.5, matching DIA-NN's recommended precursor q-value. An explicit `--precursor_qvalue` always overrides and is never replaced by the version default. Applies to both the DIA-NN main report (`--qvalue`) and the MSstats input; the matrix thresholds (`--matrix_qvalue`, `--matrix_spec_q`) are unchanged.
+- `--performance_mode` now defaults to **`false`**. The DIA-NN calibration speed flags `--min-corr 2 --corr-diff 1 --time-corr-only` can drop identifications on some data (per DIA-NN guidance) and are now opt-in. `--quick_mass_acc` is unchanged (still `true`).
+
+## [2.1.0] bigbio/quantmsdiann — Sao Pablo - 2026-05-05
+
+### `Added`
+
+- Optional PRIDE Archive download via [pridepy](https://github.com/PRIDE-Archive/pridepy) (`--pridepy_download`). Downloads raw files before analysis using Globus, FTP, or Aspera. Controlled by `--pridepy_protocol` and `--aspera_maximum_bandwidth`.
+- `--mzml_convert` parameter to control Thermo `.raw` conversion. Default (unset) auto-selects based on `--diann_version`: converts via ThermoRawFileParser for DIA-NN < 2.1.0, passes `.raw` natively to DIA-NN for >= 2.1.0. Explicit `true` forces conversion (useful for `--mzml_statistics` or to work around DIA-NN Thermo reader issues like [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)); explicit `false` requires DIA-NN >= 2.1.0 and skips TRFP entirely (closes [#66](https://github.com/bigbio/quantmsdiann/issues/66)).
+- Schema-level enum validation for `--local_input_type`, with a matching runtime guard in `CREATE_INPUT_CHANNEL` that fails fast and lists the supported values when an unknown type is supplied under `--root_folder`.
+- Bruker `.d` archive variants `d.tar`, `d.tar.gz`, and `d.zip` as accepted `--local_input_type` values; archives are decompressed automatically by the workflow.
+- Support for [QPX](https://github.com/bigbio/qpx) file format as a first-class output of the pipeline (Parquet + MuData `.h5mu`).
+- **QPX export (experimental)**: convert DIA-NN outputs to [QPX Parquet](https://github.com/bigbio/qpx) + [MuData](https://mudata.readthedocs.io/) `.h5mu` in a single step — enabled with `--enable_qpx_export`
+- Parameters: `--project_accession`
+- New module: `QPX_EXPORT` (`modules/bigbio/qpx/`)
+- New test profile: `test_dia_qpx`
+- New output directory: `results/qpx/` (Parquet dataset + `.h5mu`)
+- SCIEX `.wiff` + `.wiff.scan` format support via [WiffConverter](https://github.com/bigbio/quantms-containers) (`ghcr.io/bigbio/wiffconverter:0.10`). New module `WIFF_CONVERT` (`modules/local/utils/wiff_convert/`) routes `.wiff` files through wiff-to-mzML conversion in `FILE_PREPARATION`. Uses the `IsWiff` and `Associated_URI` columns now emitted by `parse_sdrf convert-diann` (sdrf-pipelines >= 0.1.4) to detect wiff rows and pair each `.wiff` with its `.wiff.scan` companion file. `wiff` is also accepted as a `--local_input_type`.
+
+### `Changed`
+
+- Default for `--local_input_type` switched from `mzML` to `raw` to match the typical local-input flow (SDRF-referenced `.raw` files staged via `--root_folder`). **Migration:** users who point `--root_folder` at a local mzML cache must now pass `--local_input_type mzML` explicitly.
+- Default for `--reindex_mzml` switched from `true` to `false`. ThermoRawFileParser and the wiff converter both emit indexed mzML, and DIA-NN handles unindexed mzML on its own, so the OpenMS `FileConverter` step is redundant in the common flow. **Migration:** users who feed pre-built mzML files that may be unindexed should pass `--reindex_mzml true` explicitly.
+- `ASSEMBLE_EMPIRICAL_LIBRARY` resource scaling in `conf/pride_codon_slurm.config` simplified: the manual `Math.min` clamps were removed because `resourceLimits` already caps memory and cpus.
+- `--input` is now restricted to files with the `.sdrf.tsv` extension (schema pattern `^\S+\.sdrf\.tsv$`). Inputs ending in `.sdrf`, `.tsv`, or `.csv` are rejected at startup by nf-schema validation. **Migration:** rename existing samplesheets (e.g. `experiment.tsv` → `experiment.sdrf.tsv`); users with `.csv` inputs must convert to TSV beforehand. The `SAMPLESHEET_CHECK` module no longer carries the in-process pandas-based CSV→TSV conversion or `.sdrf → .sdrf.tsv` renaming, since the file extension is now guaranteed by the schema.
+- Default for `--enable_qpx_export` flipped from `true` to `false`. QPX export is now opt-in; supply `--enable_qpx_export` together with `--project_accession` to enable it.
+
+### `Fixed`
+
+- DIA-NN per-file processes (`PRELIMINARY_ANALYSIS`, `INDIVIDUAL_ANALYSIS`, `ASSEMBLE_EMPIRICAL_LIBRARY`) now use `stageInMode 'copy'` when native `.raw` mode is active. DIA-NN's native Thermo reader fails when `.raw` files are staged as symlinks (Thermo SDK limitation); the copy-mode closure only kicks in for DIA-NN >= 2.1.0 with `--mzml_convert != true`.
+
+### `Dependencies`
+
+| Dependency        | Old version | New version                             |
+| ----------------- | ----------- | --------------------------------------- |
+| `sdrf-pipelines`  | 0.1.2       | 0.1.4                                   |
+| `quantms-utils`   | 0.0.29      | 0.0.30                                  |
+| `qpx` (container) | —           | `biocontainers/qpx:1.0.2--pyhdfd78af_1` |
+
 ## [2.0.0] bigbio/quantmsdiann — Rome - 2026-04-18
 
 ### `Added`

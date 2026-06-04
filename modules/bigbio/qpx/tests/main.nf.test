@@ -1,0 +1,38 @@
+nextflow_process {
+
+    name "Test Process QPX_EXPORT"
+    script "../main.nf"
+    process "QPX_EXPORT"
+    tag "modules"
+    tag "modules_bigbio"
+    tag "modules_qpx"
+    tag "qpx"
+
+    test("Should run stub mode") {
+
+        options "-stub"
+        config "./nextflow.config"
+
+        when {
+            process {
+                """
+                input[0] = file("stub_report.tsv", checkIfExists: false)
+                input[1] = file("stub_pg_matrix.tsv", checkIfExists: false)
+                input[2] = file("stub_sample.sdrf.tsv", checkIfExists: false)
+                input[3] = file("stub_diann.log", checkIfExists: false)
+                input[4] = "PXD026600"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.qpx_dataset.size() == 1
+            assert process.out.mudata.size() == 1
+            assert snapshot(
+                process.out.mudata,
+                process.out.versions
+            ).match("stub")
+        }
+    }
+}

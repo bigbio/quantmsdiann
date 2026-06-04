@@ -39,8 +39,8 @@ This is **non-negotiable**. All code must pass formatting and style checks befor
 
 ### Core Technologies
 
-- **Nextflow**: >=25.04.0 (DSL2 syntax)
-- **nf-schema plugin**: 2.5.1 (parameter validation)
+- **Nextflow**: >=25.10.4 (DSL2 syntax)
+- **nf-schema plugin**: 2.6.1 (parameter validation)
 - **nf-test**: Testing framework (config: `nf-test.config`)
 - **nf-core tools**: Pipeline standards and linting
 - **Containers**: Docker/Singularity/Apptainer/Podman (Conda deprecated)
@@ -80,7 +80,14 @@ quantmsdiann/
 │   ├── pmultiqc/              # QC reporting
 │   ├── sdrf_parsing/          # SDRF parsing
 │   ├── samplesheet_check/     # Input validation
-│   └── utils/                 # decompress, mzml stats
+│   └── utils/                 # Format converters & helpers
+│       ├── decompress_dotd/   # Decompress Bruker .d archives
+│       ├── mzml_statistics/   # MS1/MS2 statistics for mzML
+│       └── wiff_convert/      # SCIEX .wiff -> mzML via WiffConverter
+├── modules/bigbio/            # Shared bigbio modules (synced via nf-core)
+│   ├── pridepy/               # PRIDE Archive raw-file downloader
+│   ├── qpx/                   # QPX Parquet + MuData export
+│   └── thermorawfileparser/   # Thermo .raw -> mzML
 ├── conf/
 │   ├── base.config            # Resource definitions
 │   ├── modules/               # Module-specific configs
@@ -96,16 +103,18 @@ quantmsdiann/
 
 The pipeline executes the following steps:
 
-1. **SDRF Validation & Parsing** - Validates input SDRF and extracts metadata
-2. **File Preparation** - Converts RAW/mzML/.d/.dia files (ThermoRawFileParser)
-3. **Generate Config** - Creates DIA-NN config from enzyme/modifications (`quantmsutilsc dianncfg`)
-4. **In-Silico Library Generation** - Predicts spectral library from FASTA (or uses provided library)
-5. **Preliminary Analysis** - Per-file calibration and mass accuracy determination
-6. **Assemble Empirical Library** - Builds consensus library from preliminary results using .quant files
-7. **Individual Analysis** - Per-file search with empirical library (optional, for large datasets)
-8. **Final Quantification** - Summary quantification with protein/peptide/gene matrices
-9. **MSstats Format Conversion** - Converts DIA-NN report to MSstats-compatible CSV (`quantmsutilsc diann2msstats`)
-10. **pmultiqc** - Quality control reporting
+1. (Optional) **PRIDE Archive Download** - Pre-fetches raw files from PRIDE via pridepy when `--pridepy_download true` is set (uses `--project_accession` and `--pridepy_protocol`)
+2. **SDRF Validation & Parsing** - Validates input SDRF and extracts metadata
+3. **File Preparation** - Converts Thermo `.raw` (ThermoRawFileParser) and SCIEX `.wiff` + `.wiff.scan` (WiffConverter) to mzML; `.d` (Bruker) and `.dia` files are passed through natively
+4. **Generate Config** - Creates DIA-NN config from enzyme/modifications (`quantmsutilsc dianncfg`)
+5. **In-Silico Library Generation** - Predicts spectral library from FASTA (or uses provided library)
+6. **Preliminary Analysis** - Per-file calibration and mass accuracy determination
+7. **Assemble Empirical Library** - Builds consensus library from preliminary results using .quant files
+8. **Individual Analysis** - Per-file search with empirical library (optional, for large datasets)
+9. **Final Quantification** - Summary quantification with protein/peptide/gene matrices
+10. **MSstats Format Conversion** - Converts DIA-NN report to MSstats-compatible CSV (`quantmsutilsc diann2msstats`)
+11. (Optional) **QPX Export** - Exports DIA-NN output to QPX Parquet dataset and MuData `.h5mu` when `--enable_qpx_export` is set
+12. **pmultiqc** - Quality control reporting
 
 ### DIA-NN Version-Specific Features
 
@@ -178,15 +187,20 @@ nf-core pipelines schema build
 
 ### Test Profiles (DIA only)
 
-| Profile             | Feature Tested          | Default Container            | Min DIA-NN |
-| ------------------- | ----------------------- | ---------------------------- | ---------- |
-| `test_dia`          | Core workflow           | biocontainers 1.8.1 (public) | 1.8.1      |
-| `test_dia_dotd`     | Bruker .d format        | biocontainers 1.8.1 (public) | 1.8.1      |
-| `test_dia_quantums` | QuantUMS quantification | ghcr.io/bigbio/diann:2.2.0   | 1.9.2      |
-| `test_dia_parquet`  | Parquet output + decoys | ghcr.io/bigbio/diann:2.2.0   | 2.0        |
-| `test_latest_dia`   | Core on latest DIA-NN   | ghcr.io/bigbio/diann:2.2.0   | latest     |
-| `test_dia_2_2_0`    | DIA-NN 2.2.0 compat     | ghcr.io/bigbio/diann:2.2.0   | 2.2.0      |
-| `test_full_dia`     | Full-size dataset       | biocontainers 1.8.1 (public) | 1.8.1      |
+| Profile                     | Feature Tested                              | Default Container            | Min DIA-NN |
+| --------------------------- | ------------------------------------------- | ---------------------------- | ---------- |
+| `test_dia`                  | Core workflow                               | biocontainers 1.8.1 (public) | 1.8.1      |
+| `test_dia_dotd`             | Bruker .d format                            | biocontainers 1.8.1 (public) | 1.8.1      |
+| `test_dia_quantums`         | QuantUMS quantification                     | ghcr.io/bigbio/diann:2.2.0   | 1.9.2      |
+| `test_dia_parquet`          | Parquet output + decoys                     | ghcr.io/bigbio/diann:2.2.0   | 2.0        |
+| `test_dia_qpx`              | QPX Parquet + MuData export                 | biocontainers 1.8.1 (public) | 1.8.1      |
+| `test_dia_skip_preanalysis` | `skip_preliminary_analysis` path            | biocontainers 1.8.1 (public) | 1.8.1      |
+| `test_dda`                  | DDA mode (`--dda true`, requires >= 2.3.2)  | ghcr.io/bigbio/diann:2.3.2   | 2.3.2      |
+| `test_latest_dia`           | Core on latest DIA-NN                       | ghcr.io/bigbio/diann:2.2.0   | latest     |
+| `test_dia_2_2_0`            | DIA-NN 2.2.0 compat                         | ghcr.io/bigbio/diann:2.2.0   | 2.2.0      |
+| `test_full_dia`             | Full-size dataset                           | biocontainers 1.8.1 (public) | 1.8.1      |
+
+> `test_dia_local` is _not_ a standalone profile but a dev-container override (sdrf-pipelines / quantms-utils dev images). Stack it on a real test profile, e.g. `-profile test_dia,test_dia_local,docker`.
 
 ### Version Override Profiles (for merge matrix)
 
@@ -276,10 +290,10 @@ Defined in `conf/base.config`:
 | ------------------ | --- | ------ | ---- | --------------------- |
 | `process_single`   | 1   | 6 GB   | 4h   | Single-threaded tools |
 | `process_tiny`     | 1   | 1 GB   | 1h   | Minimal processing    |
-| `process_very_low` | 2   | 12 GB  | 4h   | Light parallelism     |
-| `process_low`      | 4   | 36 GB  | 8h   | Moderate workload     |
-| `process_medium`   | 8   | 72 GB  | 16h  | Standard processing   |
-| `process_high`     | 12  | 108 GB | 20h  | Heavy computation     |
+| `process_very_low` | 2   | 4 GB   | 3h   | Light parallelism     |
+| `process_low`      | 4   | 12 GB  | 6h   | Moderate workload     |
+| `process_medium`   | 8   | 36 GB  | 8h   | Standard processing   |
+| `process_high`     | 12  | 72 GB  | 16h  | Heavy computation     |
 
 ### DIA-NN Module Labels
 
@@ -365,7 +379,7 @@ nf-test test --profile debug,test,docker --update-snapshot
 ```bash
 nextflow self-update
 # Or install specific version
-export NXF_VER=25.04.0
+export NXF_VER=25.10.4
 ```
 
 **Problem**: "Process terminated with exit code 137"
@@ -435,6 +449,6 @@ nextflow clean -f
 
 ---
 
-**Last Updated**: April 2, 2026
-**Pipeline Version**: 1.0.0
-**Minimum Nextflow**: 25.04.0
+**Last Updated**: 2026-05-08
+**Pipeline Version**: 2.1.0
+**Minimum Nextflow**: 25.10.4

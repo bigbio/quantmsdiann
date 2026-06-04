@@ -19,6 +19,7 @@ process FINAL_QUANTIFICATION {
     path("quant/")
     path(fasta)
     path(diann_config)
+    path(diann_license)
 
     output:
     // DIA-NN < 1.9 produces TSV; >= 1.9 produces parquet (ignores .tsv in --out)
@@ -62,6 +63,10 @@ process FINAL_QUANTIFICATION {
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     aa_eq = params.aa_eq ? '--aa-eq' : ''
+    // Precursor q-value: explicit param wins, else auto by diann_version (<2.5 -> 0.01, >=2.5 -> 0.05)
+    precursor_qvalue = VersionUtils.resolvePrecursorQvalue(params)
+    // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
+    license_arg = diann_license ? "--license ${diann_license}" : ""
     diann_use_quant = params.use_quant ? "--use-quant" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
     diann_export_quant = params.export_quant ? "--export-quant" : ""
@@ -88,7 +93,8 @@ process FINAL_QUANTIFICATION {
             ${no_norm} \\
             --matrices \\
             --out diann_report.tsv \\
-            --qvalue $params.precursor_qvalue \\
+            --qvalue ${precursor_qvalue} \\
+            ${license_arg} \\
             --matrix-qvalue $params.matrix_qvalue \\
             --matrix-spec-q $params.matrix_spec_q \\
             ${report_decoys} \\

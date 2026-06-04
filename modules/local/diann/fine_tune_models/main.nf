@@ -11,6 +11,7 @@ process FINE_TUNE_MODELS {
     path(tune_lib)
     path(fasta)
     path(diann_config)
+    path(diann_license)
 
     output:
     path "*.dict.txt", emit: tokens
@@ -31,6 +32,8 @@ process FINE_TUNE_MODELS {
 
     tune_fr = params.tune_fr ? '--tune-fr' : ''
     tune_lr = params.tune_lr ? "--tune-lr ${params.tune_lr}" : ''
+    // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
+    license_arg = diann_license ? "--license ${diann_license}" : ""
 
     // Extract mod flags from diann_config.cfg so DIA-NN recognises modifications in the library
     """
@@ -44,6 +47,7 @@ process FINE_TUNE_MODELS {
             --fasta ${fasta} \\
             --threads ${task.cpus} \\
             --verbose $params.debug_level \\
+            ${license_arg} \\
             \${mod_flags} \\
             $args \\
             2>&1 | tee fine_tune.log

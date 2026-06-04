@@ -16,10 +16,10 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "mimetype": "text/csv",
-                    "pattern": "^\\S+\\.(?:csv|tsv|sdrf)$",
-                    "description": "URI/path to an SDRF file in SDRF format with .sdrf, .tsv, or .csv extension. For more info see help text or docs.",
-                    "help_text": "Input is specified by using a path or URI to a PRIDE Sample to Data Relation Format file (SDRF), e.g. as part of a submitted and annotated PRIDE experiment (see [here](https://github.com/bigbio/proteomics-metadata-standard/tree/master/annotated-projects) for examples). Input files will be downloaded and cached from the URIs specified in the SDRF file.\n\nThe SDRF file can have .sdrf, .tsv, or .csv extensions. An OpenMS-style experimental design will be generated based on the factor columns of the SDRF.\n\nThe following parameters are read **exclusively** from the SDRF file (required columns):\n\n    * `acquisition_method` (from 'Proteomics Data Acquisition Method' column),\n    * `labelling_type` (from 'Label' column),\n    * `enzyme` (from 'Enzyme' column),\n    * `fixed_mods` (from 'FixedModifications' column)\n\nThe following parameters are read from SDRF but can be **overridden via command line**:\n\n    * `precursor_mass_tolerance` (from 'PrecursorMassTolerance' column),\n    * `precursor_mass_tolerance_unit` (from 'PrecursorMassToleranceUnit' column),\n    * `fragment_mass_tolerance` (from 'FragmentMassTolerance' column),\n    * `fragment_mass_tolerance_unit` (from 'FragmentMassToleranceUnit' column),\n    * `variable_mods` (from 'VariableModifications' column)",
+                    "mimetype": "text/tab-separated-values",
+                    "pattern": "^\\S+\\.sdrf\\.tsv$",
+                    "description": "URI/path to an SDRF file (must use the `.sdrf.tsv` extension). For more info see help text or docs.",
+                    "help_text": "Input is specified by using a path or URI to a PRIDE Sample to Data Relation Format file (SDRF), e.g. as part of a submitted and annotated PRIDE experiment (see [here](https://github.com/bigbio/proteomics-metadata-standard/tree/master/annotated-projects) for examples). Input files will be downloaded and cached from the URIs specified in the SDRF file.\n\nThe SDRF file **must** use the `.sdrf.tsv` extension. An OpenMS-style experimental design will be generated based on the factor columns of the SDRF.\n\nThe following parameters are read **exclusively** from the SDRF file (required columns):\n\n    * `acquisition_method` (from 'Proteomics Data Acquisition Method' column),\n    * `labelling_type` (from 'Label' column),\n    * `enzyme` (from 'Enzyme' column),\n    * `fixed_mods` (from 'FixedModifications' column)\n\nThe following parameters are read from SDRF but can be **overridden via command line**:\n\n    * `precursor_mass_tolerance` (from 'PrecursorMassTolerance' column),\n    * `precursor_mass_tolerance_unit` (from 'PrecursorMassToleranceUnit' column),\n    * `fragment_mass_tolerance` (from 'FragmentMassTolerance' column),\n    * `fragment_mass_tolerance_unit` (from 'FragmentMassToleranceUnit' column),\n    * `variable_mods` (from 'VariableModifications' column)",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -51,8 +51,43 @@
                     "type": "string",
                     "description": "Overwrite the file type/extension of the filename as specified in the SDRF",
                     "fa_icon": "fas fa-file-invoice",
-                    "default": "mzML",
-                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', or 'dia' (the letter cases should match your files exactly). Compressed variants (.gz, .tar, .tar.gz, .zip) are supported for 'mzML', 'raw', and 'd' formats."
+                    "default": "raw",
+                    "enum": ["mzML", "raw", "d", "dia", "d.tar", "d.tar.gz", "d.zip", "wiff"],
+                    "help_text": "If the above [`--root_folder`](#root_folder) was given to load local input files, this overwrites the file type/extension of\nthe filename as specified in the SDRF. Usually used in case you have an mzML-converted version of the files already. Needs to be\none of 'mzML', 'raw', 'd', 'dia', or 'wiff' (the letter cases should match your files exactly). For Bruker `.d` data, compressed archive variants `.d.tar`, `.d.tar.gz`, and `.d.zip` are also accepted and are decompressed automatically. SCIEX `.wiff` files are paired with their `.wiff.scan` companion files automatically and converted to mzML via WiffConverter."
+                }
+            }
+        },
+        "pride_archive_download": {
+            "title": "PRIDE Archive download",
+            "type": "object",
+            "fa_icon": "fas fa-cloud-download-alt",
+            "description": "Optional pre-download of raw files from PRIDE Archive via pridepy before analysis.",
+            "properties": {
+                "pridepy_download": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable pre-downloading raw files from PRIDE Archive via pridepy.",
+                    "help_text": "When set, the workflow runs `PRIDEPY_DOWNLOAD` for the project given by `--project_accession` and substitutes SDRF URIs with the pre-downloaded local files (matched by filename) before analysis.",
+                    "fa_icon": "far fa-check-square"
+                },
+                "project_accession": {
+                    "type": "string",
+                    "description": "PRIDE project accession to download (required when --pridepy_download is set).",
+                    "help_text": "PRIDE Archive project accession, e.g. `PXD001819`. Required when `--pridepy_download` is enabled.",
+                    "fa_icon": "fas fa-fingerprint"
+                },
+                "pridepy_protocol": {
+                    "type": "string",
+                    "default": "globus",
+                    "enum": ["globus", "ftp", "aspera"],
+                    "description": "Protocol used by pridepy to download files from PRIDE Archive.",
+                    "fa_icon": "fas fa-network-wired"
+                },
+                "aspera_maximum_bandwidth": {
+                    "type": "string",
+                    "default": "1000M",
+                    "description": "Maximum bandwidth for Aspera transfers (only used when --pridepy_protocol is 'aspera').",
+                    "fa_icon": "fas fa-tachometer-alt"
                 }
             }
         },
@@ -99,10 +134,10 @@
             "properties": {
                 "reindex_mzml": {
                     "type": "boolean",
-                    "default": true,
-                    "description": "Force initial re-indexing of input mzML files. Also fixes some common mistakes in slightly incomplete/outdated mzMLs. (Default: true for safety)",
+                    "default": false,
+                    "description": "Force initial re-indexing of input mzML files. Also fixes some common mistakes in slightly incomplete/outdated mzMLs. (Default: false; only needed for user-supplied unindexed mzML — TRFP and the wiff converter already emit indexed mzML.)",
                     "fa_icon": "far fa-check-square",
-                    "help_text": "Force re-indexing in the beginning of the pipeline to make sure that indices are up-to-date."
+                    "help_text": "Force re-indexing in the beginning of the pipeline to make sure that indices are up-to-date. Enable only when supplying pre-built mzML files that may be unindexed; outputs from ThermoRawFileParser and the wiff converter are indexed already."
                 },
                 "mzml_statistics": {
                     "type": "boolean",
@@ -114,6 +149,12 @@
                     "type": "boolean",
                     "description": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
                     "help_text": "Compute with mzmlstatistics step the features at MS1 level and output to a RAW file, only available for mzML files",
+                    "fa_icon": "far fa-check-square"
+                },
+                "mzml_convert": {
+                    "type": "boolean",
+                    "description": "Convert Thermo .raw to .mzML via ThermoRawFileParser before feeding DIA-NN. If unset, the pipeline converts when DIA-NN < 2.1.0 and passes .raw files natively when DIA-NN >= 2.1.0.",
+                    "help_text": "DIA-NN 2.1.0 added native Thermo .raw support on Linux, so conversion via ThermoRawFileParser is no longer strictly required. Set `--mzml_convert false` to feed .raw files directly to DIA-NN (saves one container invocation and an I/O pass per file). Set `--mzml_convert true` to force conversion (e.g. for QC / mzML statistics, or to work around DIA-NN Thermo reader issues such as [DiaNN#1468](https://github.com/vdemichev/DiaNN/issues/1468)). The parameter has no effect when inputs are already mzML / .d / .dia or when `--local_input_type mzML` is used with `--root_folder`.",
                     "fa_icon": "far fa-check-square"
                 }
             },
@@ -259,6 +300,24 @@
                     "description": "Specify the DIA-NN version to be used in the workflow.",
                     "fa_icon": "fas fa-tag"
                 },
+                "diann_enterprise": {
+                    "type": "boolean",
+                    "description": "Set automatically by -profile diann_v2_5_1_enterprise. Marks the DIA-NN Enterprise build and unlocks --enable_kb. Do not set manually unless using a custom Enterprise container.",
+                    "fa_icon": "fas fa-certificate",
+                    "default": false
+                },
+                "enable_kb": {
+                    "type": "boolean",
+                    "description": "Add the DIA-NN Enterprise Knowledge Base (--kb) to the first-pass search. Boosts identifications, primarily on human data. Requires the Enterprise build (-profile diann_v2_5_1_enterprise).",
+                    "fa_icon": "fas fa-brain",
+                    "default": false
+                },
+                "diann_license": {
+                    "type": ["string", "null"],
+                    "format": "file-path",
+                    "description": "Path to the DIA-NN Enterprise license key, passed as --license. Leave unset to rely on a key bundled next to the binary. The key is a per-user secret — never commit it.",
+                    "fa_icon": "fas fa-key"
+                },
                 "enable_mod_localization": {
                     "type": "boolean",
                     "description": "Enable or disable modification localization scoring in DIA-NN.",
@@ -304,9 +363,9 @@
                 },
                 "performance_mode": {
                     "type": "boolean",
-                    "description": "Set Low RAM & High Speed Mode for DIANN, including min-corr, corr-diff, and time-corr-only three parameters",
+                    "description": "Opt-in DIA-NN speed flags (--min-corr 2 --corr-diff 1 --time-corr-only) in the calibration step. Off by default: these can drop identifications on some data (DIA-NN guidance).",
                     "fa_icon": "far fa-check-square",
-                    "default": true
+                    "default": false
                 },
                 "quick_mass_acc": {
                     "type": "boolean",
@@ -322,11 +381,10 @@
                     "default": 2
                 },
                 "precursor_qvalue": {
-                    "type": "number",
-                    "description": "Precursor-level q-value filtering threshold for the DIA-NN main report. Maps to --qvalue.",
-                    "default": 0.01,
+                    "type": ["number", "null"],
+                    "description": "Precursor-level q-value threshold for the DIA-NN main report (--qvalue) and MSstats input. Unset = auto by diann_version: 0.01 (1%) for < 2.5, 0.05 (5%) for >= 2.5.",
                     "fa_icon": "fas fa-filter",
-                    "help_text": "Controls how strictly precursor identifications are filtered in the DIA-NN main report. For proteogenomics with variant databases, the standard 0.01 (1%) is recommended."
+                    "help_text": "Controls how strictly precursors are filtered. Leave unset to follow DIA-NN's version-dependent recommendation (1% before 2.5, 5% for 2.5+). Set an explicit value to override for any version."
                 },
                 "matrix_qvalue": {
                     "type": "number",
@@ -552,6 +610,22 @@
             },
             "fa_icon": "fas fa-braille"
         },
+        "qpx_export": {
+            "title": "QPX export (experimental)",
+            "type": "object",
+            "description": "Export DIA-NN outputs to QPX Parquet + MuData (.h5mu).",
+            "default": "",
+            "properties": {
+                "enable_qpx_export": {
+                    "type": "boolean",
+                    "description": "Export DIA-NN output to QPX Parquet dataset and MuData .h5mu in a single step. Requires --project_accession.",
+                    "help_text": "Experimental (2.1.0). Disabled by default; enable with `--enable_qpx_export` and supply `--project_accession` to set the output prefix and embed PRIDE/PX provenance into the QPX dataset and `.h5mu` metadata.",
+                    "fa_icon": "fas fa-file-export",
+                    "default": false
+                }
+            },
+            "fa_icon": "fas fa-file-export"
+        },
         "quality_control": {
             "title": "Quality control",
             "type": "object",
@@ -746,6 +820,9 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
+            "$ref": "#/$defs/pride_archive_download"
+        },
+        {
             "$ref": "#/$defs/protein_database"
         },
         {
@@ -762,6 +839,9 @@
         },
         {
             "$ref": "#/$defs/DIA-NN"
+        },
+        {
+            "$ref": "#/$defs/qpx_export"
         },
         {
             "$ref": "#/$defs/quality_control"

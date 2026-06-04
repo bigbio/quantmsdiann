@@ -5,8 +5,8 @@
 [![Cite with Zenodo](https://zenodo.org/badge/DOI/10.5281/zenodo.19437128.svg)](https://doi.org/10.5281/zenodo.19437128)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
-[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-4.0.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.0.2)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
@@ -22,10 +22,10 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
   <img src="docs/images/quantmsdiann_workflow.svg" alt="quantmsdiann workflow" width="800">
 </p>
 
-The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`) as input and performs:
+The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard) metadata (must use the `.sdrf.tsv` extension) and mass spectrometry data files (`.raw`, `.mzML`, `.d`, `.dia`, `.wiff`) as input and performs:
 
 1. **Input validation** — SDRF parsing and validation via [sdrf-pipelines](https://github.com/bigbio/sdrf-pipelines)
-2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing
+2. **File preparation** — RAW to mzML conversion ([ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)), indexing. WIFF to mzML conversion ([WiffConverter](https://github.com/bigbio/quantms-containers), `ghcr.io/bigbio/wiffconverter:0.10`)
 3. **In-silico spectral library generation** — deep learning-based prediction, or use a user-provided library (`--speclib`)
 4. **Preliminary analysis** — per-file calibration and mass accuracy estimation (parallelized)
 5. **Empirical library assembly** — consensus library from preliminary results with RT profiling
@@ -36,14 +36,38 @@ The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard
 
 ## Supported DIA-NN Versions
 
-| Version         | Profile        | Container                                  | Key features                                   |
-| --------------- | -------------- | ------------------------------------------ | ---------------------------------------------- |
-| 1.8.1 (default) | `diann_v1_8_1` | `docker.io/biocontainers/diann:v1.8.1_cv1` | Core DIA analysis, TSV output                  |
-| 2.1.0           | `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0`               | Native .raw support, Parquet output            |
-| 2.2.0           | `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC)        |
-| 2.3.2           | `diann_v2_3_2` | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (beta), InfinDIA, up to 9 var mods |
+| Version          | Profile                   | Container                                  | Key features                                                      |
+| ---------------- | ------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| 1.8.1 (default)  | `diann_v1_8_1`            | `docker.io/biocontainers/diann:v1.8.1_cv1` | Core DIA analysis, TSV output                                     |
+| 2.1.0            | `diann_v2_1_0`            | `ghcr.io/bigbio/diann:2.1.0`               | Native .raw support, Parquet output                               |
+| 2.2.0            | `diann_v2_2_0`            | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC)                           |
+| 2.3.2            | `diann_v2_3_2`            | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (beta), InfinDIA, up to 9 var mods                    |
+| 2.5.0            | `diann_v2_5_0`            | `ghcr.io/bigbio/diann:2.5.0`               | +70% protein IDs, DL model selection flags                        |
+| 2.5.1            | `diann_v2_5_1`            | `ghcr.io/bigbio/diann:2.5.1`               | Academic build of DIA-NN 2.5.1                                    |
+| 2.5.1 Enterprise | `diann_v2_5_1_enterprise` | `ghcr.io/bigbio/diann-enterprise:2.5.1`    | Knowledge Base (`--enable_kb`), extra QC metrics. Needs a license |
 
 Switch versions with e.g. `-profile diann_v2_2_0,docker`. See the [DIA-NN Version Selection](docs/usage.md#dia-nn-version-selection) guide and [full parameter reference](docs/parameters.md) for details.
+
+> [!IMPORTANT]
+> **DIA-NN licensing.** Only **DIA-NN 1.8.1** is redistributable and is pulled
+> automatically from the public BioContainers image
+> (`docker.io/biocontainers/diann:v1.8.1_cv1`), so the default profile works out
+> of the box. The DIA-NN license does **not** permit redistribution of releases
+> from 1.9 onward, so the `ghcr.io/bigbio/diann:*` images above are **not
+> public** — with a valid DIA-NN download you build them locally from the
+> [`quantms-containers`](https://github.com/bigbio/quantms-containers) recipes:
+>
+> ```bash
+> git clone https://github.com/bigbio/quantms-containers
+> cd quantms-containers/diann-2.5.0
+> docker build -t ghcr.io/bigbio/diann:2.5.0 .          # Docker
+> # or, for Singularity/Apptainer:
+> singularity build diann-2.5.0.sif docker-daemon://ghcr.io/bigbio/diann:2.5.0
+> ```
+>
+> The image **must** be tagged `ghcr.io/bigbio/diann:<version>` (matching the
+> `Container` column) for the matching `-profile diann_v<version>` to pick it up
+> automatically.
 
 ## Quick start
 
@@ -97,7 +121,7 @@ quantmsdiann is developed and maintained by:
 
 ## Contributions and Support
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+If you would like to contribute to this pipeline, please see the [contributing guidelines](docs/CONTRIBUTING.md).
 
 ## Citation
 

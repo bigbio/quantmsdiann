@@ -12,6 +12,7 @@ components:
   - mzml/indexing
   - mzml/statistics
   - openms/peak/picker
+  - wiff/convert
 input:
   - ch_input:
       type: file

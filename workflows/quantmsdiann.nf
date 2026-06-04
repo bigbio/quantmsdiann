@@ -19,6 +19,7 @@ include { CREATE_INPUT_CHANNEL } from '../subworkflows/local/create_input_channe
 
 // Modules import from the pipeline
 include { PMULTIQC as SUMMARY_PIPELINE } from '../modules/local/pmultiqc/main'
+include { PRIDEPY_DOWNLOAD } from '../modules/bigbio/pridepy/main'
 
 /*
 ========================================================================================
@@ -42,10 +43,35 @@ workflow QUANTMSDIANN {
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     //
+    // MODULE: PRIDEPY_DOWNLOAD — Optional pre-download of raw files from PRIDE
+    //
+    if (params.pridepy_download) {
+        if (!params.project_accession) {
+            error("--pridepy_download requires --project_accession (e.g. PXD001819)")
+        }
+        ch_pridepy_meta = channel.value([id: params.project_accession])
+        PRIDEPY_DOWNLOAD(ch_pridepy_meta)
+        ch_versions = ch_versions.mix(PRIDEPY_DOWNLOAD.out.versions)
+        // Normalize spectra (the glob can emit a List<Path>) into one [name, path]
+        // pair per file, then collect into a single list and wrap in a 1-tuple so
+        // .combine() concatenates the whole list as one extra element downstream.
+        ch_downloaded_files = PRIDEPY_DOWNLOAD.out.spectra
+            .flatMap { _meta, files -> (files instanceof List ? files : [files]).collect { f -> [f.name, f] } }
+            .collect()
+            .ifEmpty([])
+            .map { [it] }
+    } else {
+        // 1-tuple containing an empty list, so .combine() always adds exactly one
+        // extra element regardless of whether pridepy ran.
+        ch_downloaded_files = channel.value([[]])
+    }
+
+    //
     // SUBWORKFLOW: Create input channel
     //
     CREATE_INPUT_CHANNEL(
-        INPUT_CHECK.out.ch_input_file
+        INPUT_CHECK.out.ch_input_file,
+        ch_downloaded_files
     )
     ch_versions = ch_versions.mix(CREATE_INPUT_CHANNEL.out.versions)
 

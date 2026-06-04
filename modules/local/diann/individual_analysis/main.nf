@@ -4,6 +4,10 @@ process INDIVIDUAL_ANALYSIS {
     label 'diann'
     label 'error_retry'
 
+    // DIA-NN's native Thermo .raw reader fails on symlinked files (Thermo SDK limitation).
+    // Use 'copy' when .raw files are passed directly to DIA-NN (DIA-NN >= 2.1.0 without TRFP conversion).
+    stageInMode { VersionUtils.isNativeRawMode(params) ? 'copy' : 'symlink' }
+
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
         'docker.io/biocontainers/diann:v1.8.1_cv1' }"
@@ -11,6 +15,7 @@ process INDIVIDUAL_ANALYSIS {
     input:
     tuple val(meta), path(ms_file), path(fasta), path(library)
     path(diann_config)
+    path(diann_license)
 
     output:
     path "*.quant", emit: diann_quant
@@ -77,12 +82,17 @@ process INDIVIDUAL_ANALYSIS {
     // Flags removed in DIA-NN 2.3.x — only pass for older versions
     no_ifs_removal = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-ifs-removal" : ""
     no_main_report = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-main-report" : ""
+    // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
+    license_arg = diann_license ? "--license ${diann_license}" : ""
 
     // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
     min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
     max_pr_mz = meta['ms1maxmz'] ? "--max-pr-mz ${meta['ms1maxmz']}" : ""
     min_fr_mz = meta['ms2minmz'] ? "--min-fr-mz ${meta['ms2minmz']}" : ""
     max_fr_mz = meta['ms2maxmz'] ? "--max-fr-mz ${meta['ms2maxmz']}" : ""
+
+    diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
     """
     # Extract --var-mod, --fixed-mod, and --monitor-mod flags from diann_config.cfg
@@ -99,6 +109,7 @@ process INDIVIDUAL_ANALYSIS {
             --window ${scan_window} \\
             ${no_ifs_removal} \\
             ${no_main_report} \\
+            ${license_arg} \\
             --relaxed-prot-inf \\
             --pg-level $params.pg_level \\
             ${min_pr_mz} \\
@@ -110,6 +121,8 @@ process INDIVIDUAL_ANALYSIS {
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\
+            ${diann_channel_run_norm} \\
+            ${diann_channel_spec_norm} \\
             \${mod_flags} \\
             $args \\
             2>&1 | tee ${ms_file.baseName}_final_diann.log

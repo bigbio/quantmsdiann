@@ -4,6 +4,10 @@ process PRELIMINARY_ANALYSIS {
     label 'diann'
     label 'error_retry'
 
+    // DIA-NN's native Thermo .raw reader fails on symlinked files (Thermo SDK limitation).
+    // Use 'copy' when .raw files are passed directly to DIA-NN (DIA-NN >= 2.1.0 without TRFP conversion).
+    stageInMode { VersionUtils.isNativeRawMode(params) ? 'copy' : 'symlink' }
+
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
         'docker.io/biocontainers/diann:v1.8.1_cv1' }"
@@ -11,6 +15,7 @@ process PRELIMINARY_ANALYSIS {
     input:
     tuple val(meta), path(ms_file), path(predict_library)
     path(diann_config)
+    path(diann_license)
 
     output:
     path "*.quant", emit: diann_quant
@@ -29,6 +34,10 @@ process PRELIMINARY_ANALYSIS {
     // Performance flags for preliminary analysis calibration step
     quick_mass_acc = params.quick_mass_acc ? "--quick-mass-acc" : ""
     performance_flags = params.performance_mode ? "--min-corr 2 --corr-diff 1 --time-corr-only" : ""
+    // DIA-NN Enterprise: Knowledge Base on the first-pass search (boosts IDs, mainly human data)
+    kb = params.enable_kb ? "--kb" : ""
+    // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
+    license_arg = diann_license ? "--license ${diann_license}" : ""
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     aa_eq = params.aa_eq ? '--aa-eq' : ''
@@ -65,6 +74,9 @@ process PRELIMINARY_ANALYSIS {
     min_fr_mz = meta['ms2minmz'] ? "--min-fr-mz ${meta['ms2minmz']}" : ""
     max_fr_mz = meta['ms2maxmz'] ? "--max-fr-mz ${meta['ms2maxmz']}" : ""
 
+    diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
+    diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
+
     """
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
     # Fragment Tolerance value was: ${meta['fragmentmasstolerance']}
@@ -85,6 +97,8 @@ process PRELIMINARY_ANALYSIS {
             ${mass_acc} \\
             ${quick_mass_acc} \\
             ${performance_flags} \\
+            ${kb} \\
+            ${license_arg} \\
             ${min_pr_mz} \\
             ${max_pr_mz} \\
             ${min_fr_mz} \\
@@ -95,6 +109,8 @@ process PRELIMINARY_ANALYSIS {
             ${diann_im_window} \\
             --no-prot-inf \\
             ${diann_dda_flag} \\
+            ${diann_channel_run_norm} \\
+            ${diann_channel_spec_norm} \\
             \${mod_flags} \\
             $args \\
             2>&1 | tee ${ms_file.baseName}_diann.log
