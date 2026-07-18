@@ -77,6 +77,9 @@ process INDIVIDUAL_ANALYSIS {
     diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
 
+    // https://github.com/vdemichev/DiaNN/issues/1260
+    diann_export_xic = params.export_xic ? "--xic": ""
+
     // Flags removed in DIA-NN 2.3.x — only pass for older versions
     no_ifs_removal = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-ifs-removal" : ""
     no_main_report = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-main-report" : ""
@@ -104,6 +107,7 @@ process INDIVIDUAL_ANALYSIS {
             --threads ${task.cpus} \\
             --verbose $params.debug_level \\
             --temp ./ \\
+            --out ./ \\
             --mass-acc ${mass_acc_ms2} \\
             --mass-acc-ms1 ${mass_acc_ms1} \\
             --window ${scan_window} \\
@@ -118,6 +122,7 @@ process INDIVIDUAL_ANALYSIS {
             ${min_fr_mz} \\
             ${max_fr_mz} \\
             ${scoring_mode} \\
+            ${diann_export_xic} \\
             ${aa_eq} \\
             ${strip_unknown_mods} \\
             ${diann_tims_sum} \\

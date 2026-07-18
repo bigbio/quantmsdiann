@@ -55,7 +55,6 @@ process FINAL_QUANTIFICATION {
     prot_inf = params.relaxed_prot_inf ? "--relaxed-prot-inf" : (params.no_prot_inf ? "--no-prot-inf" : "")
     no_norm = params.normalize ? "" : "--no-norm"
     report_decoys = params.report_decoys ? "--report-decoys": ""
-    diann_export_xic = params.export_xic ? "--xic": ""
     quantums_on = params.quantums && VersionUtils.versionAtLeast(params.diann_version, '1.9.2')
     quantums = params.quantums ? "" : (VersionUtils.versionAtLeast(params.diann_version, '1.9.2') ? "--direct-quant" : "")
     quantums_train_runs = (quantums_on && params.quantums_train_runs) ? "--quant-train-runs $params.quantums_train_runs": ""
@@ -100,7 +99,6 @@ process FINAL_QUANTIFICATION {
             --matrix-qvalue $params.matrix_qvalue \\
             --matrix-spec-q $params.matrix_spec_q \\
             ${report_decoys} \\
-            ${diann_export_xic} \\
             ${quantums} \\
             ${quantums_train_runs} \\
             ${quantums_sel_runs} \\
