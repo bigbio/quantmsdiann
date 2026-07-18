@@ -352,14 +352,14 @@
                     "description": "Set the MS2 mass accuracy (tolerance) to a specific value in ppm.",
                     "fa_icon": "fas fa-bullseye",
                     "help_text": "If specified, this overrides the automatic calibration. Corresponds to the --mass-acc parameter in DIA-NN.",
-                    "default": 15
+                    "default": 20
                 },
                 "mass_acc_ms1": {
                     "type": "number",
                     "description": "Set the MS1 mass accuracy (tolerance) to a specific value in ppm.",
                     "fa_icon": "fas fa-bullseye",
                     "help_text": "If specified, this overrides the automatic calibration. Corresponds to the --mass-acc-ms1 parameter in DIA-NN.",
-                    "default": 15
+                    "default": 10
                 },
                 "performance_mode": {
                     "type": "boolean",
@@ -405,6 +405,18 @@
                     "description": "Instructs DIA-NN to add the organism identifier to the gene names",
                     "fa_icon": "far fa-check-square"
                 },
+                "relaxed_prot_inf": {
+                    "type": "boolean",
+                    "description": "Opt-in: add --relaxed-prot-inf (FragPipe/Spectronaut-style protein grouping) to INDIVIDUAL_ANALYSIS + FINAL_QUANTIFICATION. Mutually exclusive with no_prot_inf. Default off = DIA-NN standard inference.",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
+                "no_prot_inf": {
+                    "type": "boolean",
+                    "description": "Opt-in: add --no-prot-inf (reuse the empirical-library protein inference) to INDIVIDUAL_ANALYSIS + FINAL_QUANTIFICATION. Mutually exclusive with relaxed_prot_inf. Default off = DIA-NN standard inference.",
+                    "fa_icon": "far fa-check-square",
+                    "default": false
+                },
                 "speclib": {
                     "type": "string",
                     "description": "The spectral library to use for DIA-NN",
@@ -426,8 +438,9 @@
                 },
                 "quantums": {
                     "type": "boolean",
-                    "description": "Use legacy DIA-NN quantification algorithms (DIA-NN parameter --direct-quant); if true, QuantUMS is enabled.",
+                    "description": "Use QuantUMS quantification for DIA-NN >= 1.9.2 (default). If false, adds --direct-quant for legacy quantification.",
                     "fa_icon": "far fa-check-square",
+                    "default": true,
                     "hidden": false
                 },
                 "quantums_train_runs": {
@@ -442,6 +455,7 @@
                     "description": "Number of automatically selected runs for QuantUMS training.",
                     "fa_icon": "fas fa-sliders-h",
                     "help_text": "Sets the DIA-NN parameter --quant-sel-runs. Format: [N]. QuantUMS will train its parameters on N automatically selected runs to speed up training in large experiments. N must be 6 or greater.",
+                    "default": 20,
                     "hidden": false
                 },
                 "quantums_params": {
@@ -533,6 +547,13 @@
                     "default": 200,
                     "fa_icon": "fas fa-filter",
                     "hidden": true
+                },
+                "strip_unknown_mods": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Add --strip-unknown-mods so DIA-NN predicts spectra/RTs/IMs for declared modifications its predictor does not recognise (e.g. Oxidation on proline). Without it those precursors are skipped from the in-silico library.",
+                    "fa_icon": "fas fa-prescription-bottle",
+                    "help_text": "Some declared variable modifications are not built into the DIA-NN deep-learning predictor (e.g. Oxidation on proline). During in-silico library generation DIA-NN silently skips those precursors (logged as 'skipping N precursors, unrecognised modifications') unless this is enabled, so they never enter the library and are never identified. No-op when all declared modifications are recognised by the predictor."
                 },
                 "extra_args": {
                     "type": "string",

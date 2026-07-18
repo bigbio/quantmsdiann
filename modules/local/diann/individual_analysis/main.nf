@@ -55,15 +55,12 @@ process INDIVIDUAL_ANALYSIS {
             scan_window  = params.scan_window
         }
     } else {
+        // Not auto-calibrating: SDRF ppm tolerances if provided, otherwise the param
+        // defaults. Calibration values are intentionally NOT used here.
         if (meta['precursormasstoleranceunit']?.toLowerCase()?.endsWith('ppm') && meta['fragmentmasstoleranceunit']?.toLowerCase()?.endsWith('ppm')) {
             mass_acc_ms1 = meta["precursormasstolerance"]
             mass_acc_ms2 = meta["fragmentmasstolerance"]
             scan_window  = params.scan_window
-        }
-        else if (meta.mass_acc_ms2 != "0" && meta.mass_acc_ms2 != null) {
-            mass_acc_ms2 = meta.mass_acc_ms2
-            mass_acc_ms1 = meta.mass_acc_ms1
-            scan_window  = meta.scan_window
         }
         else {
             mass_acc_ms2 = params.mass_acc_ms2
@@ -75,6 +72,7 @@ process INDIVIDUAL_ANALYSIS {
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     aa_eq = params.aa_eq ? '--aa-eq' : ''
+    strip_unknown_mods = params.strip_unknown_mods ? "--strip-unknown-mods" : ""
     diann_tims_sum = params.tims_sum ? "--quant-tims-sum" : ""
     diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
@@ -84,6 +82,8 @@ process INDIVIDUAL_ANALYSIS {
     no_main_report = VersionUtils.versionLessThan(params.diann_version, '2.3') ? "--no-main-report" : ""
     // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
     license_arg = diann_license ? "--license ${diann_license}" : ""
+    prot_inf = params.relaxed_prot_inf ? "--relaxed-prot-inf" : (params.no_prot_inf ? "--no-prot-inf" : "")
+    kb = params.enable_kb ? "--kb" : ""
 
     // Per-file scan ranges from SDRF (empty = no flag, DIA-NN auto-detects)
     min_pr_mz = meta['ms1minmz'] ? "--min-pr-mz ${meta['ms1minmz']}" : ""
@@ -110,7 +110,8 @@ process INDIVIDUAL_ANALYSIS {
             ${no_ifs_removal} \\
             ${no_main_report} \\
             ${license_arg} \\
-            --relaxed-prot-inf \\
+            ${kb} \\
+            ${prot_inf} \\
             --pg-level $params.pg_level \\
             ${min_pr_mz} \\
             ${max_pr_mz} \\
@@ -118,6 +119,7 @@ process INDIVIDUAL_ANALYSIS {
             ${max_fr_mz} \\
             ${scoring_mode} \\
             ${aa_eq} \\
+            ${strip_unknown_mods} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\

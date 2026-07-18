@@ -52,17 +52,19 @@ process FINAL_QUANTIFICATION {
 
     scan_window = params.scan_window_automatic ? "--individual-windows" : "--window $params.scan_window"
     species_genes = params.species_genes ? "--species-genes": ""
+    prot_inf = params.relaxed_prot_inf ? "--relaxed-prot-inf" : (params.no_prot_inf ? "--no-prot-inf" : "")
     no_norm = params.normalize ? "" : "--no-norm"
     report_decoys = params.report_decoys ? "--report-decoys": ""
     diann_export_xic = params.export_xic ? "--xic": ""
-    // --direct-quant exists in DIA-NN >= 1.9.2 (QuantUMS counterpart); skip for older versions
+    quantums_on = params.quantums && VersionUtils.versionAtLeast(params.diann_version, '1.9.2')
     quantums = params.quantums ? "" : (VersionUtils.versionAtLeast(params.diann_version, '1.9.2') ? "--direct-quant" : "")
-    quantums_train_runs = params.quantums_train_runs ? "--quant-train-runs $params.quantums_train_runs": ""
-    quantums_sel_runs = params.quantums_sel_runs ? "--quant-sel-runs $params.quantums_sel_runs": ""
-    quantums_params = params.quantums_params ? "--quant-params $params.quantums_params": ""
+    quantums_train_runs = (quantums_on && params.quantums_train_runs) ? "--quant-train-runs $params.quantums_train_runs": ""
+    quantums_sel_runs = (quantums_on && params.quantums_sel_runs) ? "--quant-sel-runs $params.quantums_sel_runs": ""
+    quantums_params = (quantums_on && params.quantums_params) ? "--quant-params $params.quantums_params": ""
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     aa_eq = params.aa_eq ? '--aa-eq' : ''
+    strip_unknown_mods = params.strip_unknown_mods ? "--strip-unknown-mods" : ""
     // Precursor q-value: explicit param wins, else auto by diann_version (<2.5 -> 0.01, >=2.5 -> 0.05)
     precursor_qvalue = VersionUtils.resolvePrecursorQvalue(params)
     // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
@@ -87,7 +89,7 @@ process FINAL_QUANTIFICATION {
             --threads ${task.cpus} \\
             --verbose $params.debug_level \\
             --temp ./quant/ \\
-            --relaxed-prot-inf \\
+            ${prot_inf} \\
             --pg-level $params.pg_level \\
             ${species_genes} \\
             ${no_norm} \\
@@ -105,6 +107,7 @@ process FINAL_QUANTIFICATION {
             ${quantums_params} \\
             ${scoring_mode} \\
             ${aa_eq} \\
+            ${strip_unknown_mods} \\
             ${diann_use_quant} \\
             ${diann_dda_flag} \\
             ${diann_export_quant} \\

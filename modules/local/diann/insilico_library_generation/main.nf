@@ -40,6 +40,7 @@ process INSILICO_LIBRARY_GENERATION {
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     aa_eq = params.aa_eq ? '--aa-eq' : ''
+    strip_unknown_mods = params.strip_unknown_mods ? "--strip-unknown-mods" : ""
     diann_dda_flag = is_dda ? "--dda" : ""
     diann_light_models = params.light_models ? "--light-models" : ""
     // Fine-tuned model flags — only set when tuned model files are provided
@@ -72,6 +73,7 @@ process INSILICO_LIBRARY_GENERATION {
             --gen-spec-lib \\
             ${scoring_mode} \\
             ${aa_eq} \\
+            ${strip_unknown_mods} \\
             ${license_arg} \\
             ${diann_light_models} \\
             ${tuned_tokens_flag} \\

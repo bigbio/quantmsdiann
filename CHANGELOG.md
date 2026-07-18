@@ -3,19 +3,44 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0dev] bigbio/quantmsdiann
+## [2.3.0dev] bigbio/quantmsdiann
 
 ### `Added`
 
+### `Changed`
+
+### `Fixed`
+
+## [2.2.0] bigbio/quantmsdiann — Chongqing - 2026-06-16
+
+### `Added`
+
+- New `--strip_unknown_mods` parameter (default `false`) that adds `--strip-unknown-mods` to the DIA-NN steps. Some declared variable modifications are not built into the DIA-NN deep-learning predictor — for example **Oxidation on proline**. During in-silico library generation DIA-NN **silently skips** those precursors (logged as `skipping N precursors, unrecognised modifications`), so they never enter the library and are never identified. Enabling `--strip_unknown_mods` forces DIA-NN to predict spectra/RTs/IMs for them so they are retained and searchable; it is a no-op when every declared modification is already recognised. Documented under [Where each GUI flag goes](docs/usage.md) and [Common pitfalls](docs/usage.md).
+- New protein-inference parameters `relaxed_prot_inf` and `no_prot_inf` (both default `false`, mutually exclusive). By default the pipeline now uses DIA-NN's **standard** protein inference (no flag) in INDIVIDUAL_ANALYSIS + FINAL_QUANTIFICATION, matching DIA-NN's documented default. `relaxed_prot_inf` adds `--relaxed-prot-inf` (FragPipe/Spectronaut-style grouping); `no_prot_inf` adds `--no-prot-inf` (reuse the empirical-library inference). This replaces the previously hardcoded `--relaxed-prot-inf` (INDIVIDUAL_ANALYSIS) and `--no-prot-inf` (FINAL_QUANTIFICATION).
 - DIA-NN **2.5.1** (academic) version profile `-profile diann_v2_5_1` (container `ghcr.io/bigbio/diann:2.5.1`).
 - **DIA-NN Enterprise (2.5.1) support** via `-profile diann_v2_5_1_enterprise` (container `ghcr.io/bigbio/diann-enterprise:2.5.1`). New `--enable_kb` flag adds the Enterprise Knowledge Base (`--kb`) to the first-pass search to boost identifications (mainly human data); it is gated to the Enterprise build and **on by default** under the `diann_v2_5_1_enterprise` profile (disable with `--enable_kb false`). New `--diann_license <file>` stages the Enterprise license key into each DIA-NN step as `--license`, with fallback to a key bundled next to the binary when unset. The license key is a per-user secret and is never committed or bundled into the shared image.
 
 ### `Changed`
 
+- Removed the stale `diann_extra_args` references. The parameter was renamed to `extra_args`, but the documented worked example still used the old name — which is silently ignored, so flags such as `--smart-profiling`/`--peak-center` were dropped. The worked example now uses `extra_args`, and passing `diann_extra_args` is flagged by nf-schema parameter validation as unrecognised. Use `extra_args` (or, better, the dedicated parameters where they exist).
 - Documentation: clarified DIA-NN container licensing. Only DIA-NN 1.8.1 is publicly redistributable (pulled from BioContainers as the default); releases from 1.9 onward must be built locally from the [quantms-containers](https://github.com/bigbio/quantms-containers) recipes and tagged `ghcr.io/bigbio/diann:<version>` so the matching `-profile diann_v<version>` resolves them. Added the missing DIA-NN 2.5.0 row to the README support table.
 - QPX export now publishes the Parquet dataset files and the `.h5mu` MuData file directly under `results/qpx/`, removing the intermediate `qpx/qpx_output/` subfolder. The `bigbio/qpx` module emits the dataset as `qpx_output/*` files (bigbio/nf-modules#39) so `publishDir` can flatten them.
 - `--precursor_qvalue` default is now **version-aware**: unset resolves by `--diann_version` to `0.01` (1%) for DIA-NN < 2.5 and `0.05` (5%) for >= 2.5, matching DIA-NN's recommended precursor q-value. An explicit `--precursor_qvalue` always overrides and is never replaced by the version default. Applies to both the DIA-NN main report (`--qvalue`) and the MSstats input; the matrix thresholds (`--matrix_qvalue`, `--matrix_spec_q`) are unchanged.
 - `--performance_mode` now defaults to **`false`**. The DIA-NN calibration speed flags `--min-corr 2 --corr-diff 1 --time-corr-only` can drop identifications on some data (per DIA-NN guidance) and are now opt-in. `--quick_mass_acc` is unchanged (still `true`).
+- **QuantUMS** is now used by default for DIA-NN >= 1.9.2 (`--quantums true`, DIA-NN's recommended quantification). Set `--quantums false` to fall back to legacy quantification (adds `--direct-quant`). New `--quantums_sel_runs` (default `20`, maps to `--quant-sel-runs N`) auto-selects N runs to optimise QuantUMS parameters, keeping QuantUMS fast on large cohorts; the QuantUMS tuning flags are gated by DIA-NN version and only applied when QuantUMS is active.
+
+### `Fixed`
+
+- **Multi-residue modification sites are no longer silently dropped** (via the sdrf-pipelines 0.1.5 bump below). `parse_sdrf convert-diann` in 0.1.4 emitted multi-residue sites comma-separated (e.g. `Phospho,79.966331,S,T,Y`), which DIA-NN truncated to the first residue only (`S`) — dropping pT/pY (confirmed on PXD049692) and any modification spanning multiple residues. 0.1.5 concatenates sites (`S,T,Y` → `STY`, `M,P` → `MP`).
+- Mass accuracy handling for DIA-NN >= 2.5.0: when `--mass_acc_automatic` is set, the optimised MS1/MS2 mass accuracy is now read back from the `PRELIMINARY_ANALYSIS` logs and reused in later passes. When calibration can't be parsed, the pipeline falls back to the SDRF-declared tolerances and then to the `--mass_acc_ms2`/`--mass_acc_ms1` defaults (now `20`/`10` ppm). The fallback order is `calibration > SDRF ppm > defaults` (auto on) or `SDRF ppm > defaults` (auto off).
+- Per-run mass-accuracy triples are now collected with `toList()` instead of `collect()`, fixing channel cardinality when staging the per-run values.
+- The Enterprise Knowledge Base (`--kb`) and the QuantUMS tuning flags are now registered in the centralized `lib/BlockedFlags.groovy` registry so they can't be smuggled in twice via `--extra_args`, and the schema defaults were synced to match.
+
+### `Dependencies`
+
+| Dependency       | Old version | New version |
+| ---------------- | ----------- | ----------- |
+| `sdrf-pipelines` | 0.1.4       | 0.1.5       |
 
 ## [2.1.0] bigbio/quantmsdiann — Sao Pablo - 2026-05-05
 

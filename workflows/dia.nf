@@ -71,6 +71,11 @@ workflow DIA {
         error("Model fine-tuning requires DIA-NN >= 2.3.2. Current version: ${params.diann_version}. Use -profile diann_v2_3_2 or later")
     }
 
+    // Protein inference opt-ins are mutually exclusive; default (both off) = DIA-NN standard inference.
+    if (params.relaxed_prot_inf && params.no_prot_inf) {
+        error("--relaxed_prot_inf and --no_prot_inf are mutually exclusive. Set at most one (default: neither = DIA-NN standard inference).")
+    }
+
     // Enterprise guard: the Knowledge Base (--kb) is only available in the DIA-NN Enterprise build
     if (params.enable_kb && !params.diann_enterprise) {
         error("--enable_kb requires the DIA-NN Enterprise build. Use -profile diann_v2_5_1_enterprise.")
@@ -262,24 +267,78 @@ workflow DIA {
         )
         ch_software_versions = ch_software_versions
             .mix(ASSEMBLE_EMPIRICAL_LIBRARY.out.versions)
-        // Parse calibrated params from the assembly log on the head node
-        // Format changed in 2.5.0
-        ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.log
-            .map { log_file ->
-                def ms1 = "${params.mass_acc_ms1}"
-                def ms2 = "${params.mass_acc_ms2}"
-                def sw = "${params.scan_window}"
-                def match = log_file.text.readLines().find { it.contains("Averaged recommended settings") }
-                if (match) {
-                    def ms1_match = match =~ /MS1 accuracy\s*=\s*([0-9.]+)/
-                    if (ms1_match.find()) ms1 = ms1_match.group(1)
-                    def ms2_match = match =~ /(?:MS2|Mass) accuracy\s*=\s*([0-9.]+)/
-                    if (ms2_match.find()) ms2 = ms2_match.group(1)
-                    def sw_match = match =~ /Scan window\s*=\s*([0-9.]+)/
-                    if (sw_match.find()) sw = sw_match.group(1)
+        // Capture the optimised mass accuracy / scan window for the per-file search.
+        //
+        // DIA-NN >= 2.5.0 emits an UNRELIABLE "Averaged recommended settings" line in the
+        // ASSEMBLE_EMPIRICAL_LIBRARY log: that step combines --use-quant with
+        // --individual-mass-acc, which DIA-NN flags as "strongly not recommended" and then
+        // falls back to a default MS1 = 20 ppm (far too wide e.g. for Orbitrap Astral),
+        // decoupled from the genuine per-run optimisation. So for >= 2.5.0 we read the real
+        // optimised values from each PRELIMINARY log ("Recommended MS1 mass accuracy setting"
+        // = MS1, "Suggested mass accuracy" = MS2, "Scan window radius set to" = window) and
+        // average across runs. DIA-NN < 2.5.0 keeps the (correct, for that format) ASSEMBLE
+        // "Averaged recommended settings" line.
+        if (VersionUtils.versionAtLeast(params.diann_version, '2.5.0')) {
+            ch_parsed_vals = PRELIMINARY_ANALYSIS.out.log
+                .map { _meta, log_file ->
+                    Double ms1 = null
+                    Double ms2 = null
+                    Double sw  = null
+                    log_file.text.readLines().each { line ->
+                        def m1 = line =~ /Recommended MS1 mass accuracy setting:\s*([0-9.]+)/
+                        if (m1.find()) ms1 = m1.group(1) as Double
+                        def m2 = line =~ /Suggested mass accuracy:\s*([0-9.]+)/
+                        if (m2.find()) ms2 = m2.group(1) as Double
+                        def ws = line =~ /Scan window radius set to\s*([0-9.]+)/
+                        if (ws.find()) sw = ws.group(1) as Double
+                    }
+                    return [ ms2, ms1, sw ]
                 }
-                return "${ms2},${ms1},${sw}"
-            }
+                .toList()  // toList (not collect): keep per-run [ms2,ms1,sw] triples; collect() would flatten them
+                .map { rows ->
+                    def ms2s = rows.collect { it[0] }.findAll { it != null }
+                    def ms1s = rows.collect { it[1] }.findAll { it != null }
+                    def sws  = rows.collect { it[2] }.findAll { it != null }
+                    if (ms2s && ms1s) {
+                        def ms2 = ((ms2s.sum() as Double) / ms2s.size()).round(1)
+                        def ms1 = ((ms1s.sum() as Double) / ms1s.size()).round(1)
+                        def sw  = sws ? Math.round((sws.sum() as Double) / sws.size()) : params.scan_window
+                        log.info "DIA-NN >= 2.5.0: optimised mass accuracy from PRELIMINARY logs " +
+                                 "(averaged over ${ms1s.size()} run(s)): MS2=${ms2} ppm, MS1=${ms1} ppm, scan window=${sw}"
+                        return "${ms2},${ms1},${sw}"
+                    }
+                    // Calibration could not be parsed -> emit a 0,0,0 sentinel so
+                    // INDIVIDUAL_ANALYSIS falls back to the previous reliable value
+                    // (SDRF ppm tolerances if annotated, otherwise the param defaults).
+                    log.warn "DIA-NN >= 2.5.0: could not parse optimised mass accuracy from PRELIMINARY " +
+                             "logs; INDIVIDUAL_ANALYSIS will use SDRF ppm tolerances or mass_acc_ms1/ms2 defaults."
+                    return "0,0,0"
+                }
+        } else {
+            // DIA-NN < 2.5.0: the ASSEMBLE "Averaged recommended settings" line is reliable.
+            ch_parsed_vals = ASSEMBLE_EMPIRICAL_LIBRARY.out.log
+                .map { log_file ->
+                    def match = log_file.text.readLines().find { it.contains("Averaged recommended settings") }
+                    if (match) {
+                        def ms1 = null
+                        def ms2 = null
+                        def sw  = null
+                        def ms1_match = match =~ /MS1 accuracy\s*=\s*([0-9.]+)/
+                        if (ms1_match.find()) ms1 = ms1_match.group(1)
+                        def ms2_match = match =~ /(?:MS2|Mass) accuracy\s*=\s*([0-9.]+)/
+                        if (ms2_match.find()) ms2 = ms2_match.group(1)
+                        def sw_match = match =~ /Scan window\s*=\s*([0-9.]+)/
+                        if (sw_match.find()) sw = sw_match.group(1)
+                        if (ms1 != null && ms2 != null) {
+                            return "${ms2},${ms1},${sw ?: params.scan_window}"
+                        }
+                    }
+                    // Calibration could not be parsed -> sentinel, fall back to SDRF/params downstream.
+                    log.warn "DIA-NN < 2.5.0: could not parse 'Averaged recommended settings' from the " +
+                             "ASSEMBLE log; INDIVIDUAL_ANALYSIS will use SDRF ppm tolerances or mass_acc_ms1/ms2 defaults."
+                    return "0,0,0"
+                }
+        }
         indiv_fin_analysis_in = ch_file_preparation_results
             .combine(ch_searchdb)
             .combine(ASSEMBLE_EMPIRICAL_LIBRARY.out.empirical_library)

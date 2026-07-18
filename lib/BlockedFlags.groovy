@@ -71,8 +71,10 @@ class BlockedFlags {
             '--quick-mass-acc', '--min-corr', '--corr-diff', '--time-corr-only',
             '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
             '--channel-run-norm', '--channel-spec-norm',
-            // Pipeline-managed: preliminary step disables protein inference (--no-prot-inf)
-            '--no-prot-inf',
+            // Pipeline-managed: Enterprise Knowledge Base, gated by params.enable_kb
+            '--kb',
+            // Calibration pass: protein inference off (--no-prot-inf hard-coded)
+            '--no-prot-inf', '--relaxed-prot-inf',
         ],
         ASSEMBLE_EMPIRICAL_LIBRARY: [
             // Pipeline-managed: set from params and calibration results
@@ -85,24 +87,30 @@ class BlockedFlags {
             // (--gen-spec-lib produces a spectral library, not a quantified report).
             // Blocked to prevent users from thinking they affect this step.
             '--no-prot-inf', '--relaxed-prot-inf', '--pg-level',
+            // Pipeline-managed: Enterprise Knowledge Base, gated by params.enable_kb
+            '--kb',
         ],
         INDIVIDUAL_ANALYSIS: [
             // Pipeline-managed: set from params and calibrated values from assembly step
             '--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out', '--rt-profiling',
             '--mass-acc', '--mass-acc-ms1', '--window',
             '--no-ifs-removal', '--no-main-report',
-            // Pipeline-managed: protein inference set by pipeline (--relaxed-prot-inf --pg-level)
+            // Protein inference (relaxed_prot_inf / no_prot_inf) and --pg-level (pg_level)
             '--relaxed-prot-inf', '--pg-level',
             '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
             '--channel-run-norm', '--channel-spec-norm',
             '--no-prot-inf',
+            // Pipeline-managed: Enterprise Knowledge Base, gated by params.enable_kb
+            '--kb',
         ],
         FINAL_QUANTIFICATION: [
             // Pipeline-managed: set from params for final report generation
             '--no-main-report', '--gen-spec-lib', '--out-lib', '--no-ifs-removal',
             '--use-quant', '--matrices', '--out',
-            // Pipeline-managed: protein inference (--relaxed-prot-inf --pg-level)
+            // Protein inference (relaxed_prot_inf / no_prot_inf) and --pg-level (pg_level)
             '--relaxed-prot-inf', '--pg-level',
+            // Pipeline-managed: QuantUMS quantification (params.quantums and quantums_* params)
+            '--direct-quant', '--quant-sel-runs', '--quant-train-runs', '--quant-params',
             // Pipeline-managed: FDR controls (precursor_qvalue, matrix_qvalue, matrix_spec_q)
             '--qvalue', '--matrix-qvalue', '--matrix-spec-q',
             '--window', '--individual-windows',

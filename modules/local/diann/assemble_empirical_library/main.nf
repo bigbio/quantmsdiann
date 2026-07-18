@@ -33,6 +33,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     def args = task.ext.args ?: ''
     // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
     def license_arg = diann_license ? "--license ${diann_license}" : ""
+    def kb = params.enable_kb ? "--kb" : ""
     // Strip flags managed by the pipeline from extra_args to prevent silent conflicts.
     // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('ASSEMBLE_EMPIRICAL_LIBRARY', args, log)
@@ -48,6 +49,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
     aa_eq = params.aa_eq ? '--aa-eq' : ''
+    strip_unknown_mods = params.strip_unknown_mods ? "--strip-unknown-mods" : ""
     diann_tims_sum = params.tims_sum ? "--quant-tims-sum" : ""
     diann_im_window = params.im_window ? "--im-window $params.im_window" : ""
     diann_dda_flag = meta.acquisition_method == 'dda' ? "--dda" : ""
@@ -79,7 +81,9 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
             --gen-spec-lib \\
             ${scoring_mode} \\
             ${aa_eq} \\
+            ${strip_unknown_mods} \\
             ${license_arg} \\
+            ${kb} \\
             ${diann_tims_sum} \\
             ${diann_im_window} \\
             ${diann_dda_flag} \\
