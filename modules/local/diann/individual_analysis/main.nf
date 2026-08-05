@@ -21,6 +21,7 @@ process INDIVIDUAL_ANALYSIS {
     path "*.quant", emit: diann_quant
     path "*_final_diann.log", emit: log
     path "versions.yml", emit: versions
+    path "_xic/*.parquet", emit: xic
 
     when:
     task.ext.when == null || task.ext.when
