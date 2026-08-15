@@ -449,6 +449,6 @@ nextflow clean -f
 
 ---
 
-**Last Updated**: 2026-06-16
-**Pipeline Version**: 2.2.0
+**Last Updated**: 2026-08-14
+**Pipeline Version**: 2.3.0
 **Minimum Nextflow**: 25.10.4

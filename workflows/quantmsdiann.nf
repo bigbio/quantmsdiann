@@ -18,7 +18,7 @@ include { FILE_PREPARATION } from '../subworkflows/local/file_preparation/main'
 include { CREATE_INPUT_CHANNEL } from '../subworkflows/local/create_input_channel/main'
 
 // Modules import from the pipeline
-include { PMULTIQC as SUMMARY_PIPELINE } from '../modules/local/pmultiqc/main'
+include { PMULTIQC as SUMMARY_PIPELINE } from '../modules/bigbio/pmultiqc/main'
 include { PRIDEPY_DOWNLOAD } from '../modules/bigbio/pridepy/main'
 
 /*

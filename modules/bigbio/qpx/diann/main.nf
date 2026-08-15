@@ -1,12 +1,14 @@
-process QPX_EXPORT {
-    tag "qpx_export"
+process QPX_DIANN {
+    tag "qpx_diann"
     label 'process_medium'
     label 'error_retry'
 
     conda "${moduleDir}/environment.yml"
-    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/qpx:1.0.2--pyhdfd78af_1'
-        : 'biocontainers/qpx:1.0.2--pyhdfd78af_1'}"
+    // qpx is published to GHCR on every release (immediately available on tag);
+    // a single image serves Docker (native) and Singularity (via docker://).
+    // BioContainers/Galaxy-depot lag the release, so GHCR is used for containers;
+    // -profile conda still resolves the bioconda package in environment.yml.
+    container "ghcr.io/bigbio/qpx:1.1.2"
 
     input:
     path(diann_report)
@@ -42,8 +44,8 @@ process QPX_EXPORT {
         --output-prefix ${prefix} \\
         --qvalue-threshold ${qvalue} \\
         --standardized-intensities \\
-        --duckdb-threads ${task.cpus} \\
-        --duckdb-max-memory ${task.memory ? task.memory.toGiga() : 4}GB \\
+        --max-cpus ${task.cpus} \\
+        --max-memory ${task.memory ? task.memory.toGiga() : 4}GB \\
         --compression zstd \\
         ${args}
 

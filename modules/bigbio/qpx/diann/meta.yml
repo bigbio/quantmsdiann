@@ -1,4 +1,4 @@
-name: qpx_export
+name: qpx_diann
 description: Convert DIA-NN quantification outputs to QPX Parquet dataset and MuData (.h5mu)
 keywords:
   - proteomics

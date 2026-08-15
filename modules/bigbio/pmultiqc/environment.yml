@@ -1,7 +1,7 @@
+name: pmultiqc
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - pip:
-      - qpx==1.0.2
+  - bioconda::pmultiqc=0.0.47

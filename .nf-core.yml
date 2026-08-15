@@ -2,6 +2,7 @@ lint:
   files_exist:
     - .github/workflows/ci.yml
     - .github/workflows/nf-test.yml
+    - .github/workflows/pr-comment.yml
     - .gitignore
     - conf/modules.config
     - conf/test.config
@@ -18,7 +19,7 @@ lint:
   modules_config: false
   multiqc_config: false
   nextflow_config: false
-nf_core_version: 4.0.2
+nf_core_version: 4.1.0
 repository_type: pipeline
 template:
   author: Yasset Perez-Riverol
@@ -28,4 +29,4 @@ template:
   name: quantmsdiann
   org: bigbio
   outdir: .
-  version: 2.2.0
+  version: 2.3.0
