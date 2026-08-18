@@ -150,7 +150,7 @@
   <text x="417" y="392" class="tool-badge" text-anchor="middle">INSILICO_LIBRARY_GENERATION</text>
   <text x="518" y="392" class="station-label">Spectral Library</text>
   <text x="518" y="407" class="station-sublabel">in-silico prediction from FASTA</text>
-  <text x="518" y="421" class="skip-label">skip if --diann_speclib</text>
+  <text x="518" y="421" class="skip-label">skip if --speclib</text>
 
   <!-- Preliminary Analysis — PER-FILE -->
   <circle cx="310" cy="467" r="9" fill="#43A047" stroke="#ffffff" stroke-width="2"/>
