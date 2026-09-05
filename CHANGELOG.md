@@ -3,13 +3,28 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.0dev] bigbio/quantmsdiann
+## [2.3.0] bigbio/quantmsdiann — Guangzhou - 2026-08-14
 
 ### `Added`
 
+- nf-test coverage for the `bigbio/pmultiqc` module (`main.nf.test`, `multiqc_config.yml`, plus `nextflow.config` variants for the `diann` and `quantms` plugins).
+
 ### `Changed`
 
+- Migrated the DIA-NN → QPX export to the shared `bigbio/qpx/diann` nf-module (qpx **1.1.2**, container `ghcr.io/bigbio/qpx:1.1.2`). The local `modules/bigbio/qpx/` module and its tests were removed; qpx 1.1.x flattens the protein-group Parquet schema and ships updated converters.
+- Replaced the local `modules/local/pmultiqc/` module with the shared `bigbio/pmultiqc` nf-module (pmultiqc **0.0.47**). The MultiQC flags previously hard-coded in the local module (`--quantms-plugin`, `--disable-table`, `--ignored-idxml`, `--contaminant-affix`, `--config`) moved into `ext.args` in `conf/modules` — behaviour-preserving.
+- Recorded the nf-core template version as **4.1.0** in `.nf-core.yml` (matching quantms), so the `template-version-comment` workflow no longer flags the template as outdated.
+
 ### `Fixed`
+
+- **XIC export (`--export_xic`):** the `--xic` flag and `_xic/*.parquet` staging moved from `FINAL_QUANTIFICATION` to `INDIVIDUAL_ANALYSIS`, where DIA-NN actually emits the XIC traces; `--out ./` is now passed so the per-run `_xic/*.parquet` files land in the work directory and are published (`optional: true`). See [vdemichev/DiaNN#1260](https://github.com/vdemichev/DiaNN/issues/1260).
+
+### `Dependencies`
+
+| Dependency | Old version | New version |
+| ---------- | ----------- | ----------- |
+| `qpx`      | 1.0.2       | 1.1.2       |
+| `pmultiqc` | 0.0.44      | 0.0.47      |
 
 ## [2.2.0] bigbio/quantmsdiann — Chongqing - 2026-06-16
 
