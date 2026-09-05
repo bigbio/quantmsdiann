@@ -1,0 +1,88 @@
+nextflow_process {
+
+    name "Test Process QPX_DIANN"
+    script "../main.nf"
+    process "QPX_DIANN"
+    tag "modules"
+    tag "modules_bigbio"
+    tag "modules_qpx"
+    tag "qpx"
+
+    config "./nextflow.config"
+
+    test("Should convert DIA-NN output to QPX Parquet + MuData") {
+
+        when {
+            def zipUrl = (params.test_data?.proteomics?.qpx?.diann_results) ?: "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/pmultiqc/example-projects/PXD063291.zip"
+            def zipFile = file("test_qpx.zip")
+            zipFile.withOutputStream { out ->
+                out << new URL(zipUrl).openStream()
+            }
+            def resultsDir = file("test_qpx_data")
+            resultsDir.mkdirs()
+            new java.util.zip.ZipFile(zipFile).withCloseable { zip ->
+                zip.entries().each { entry ->
+                    if (!entry.isDirectory()) {
+                        def extractFile = new File(resultsDir, entry.name)
+                        extractFile.parentFile.mkdirs()
+                        extractFile.withOutputStream { out ->
+                            out << zip.getInputStream(entry)
+                        }
+                    }
+                }
+            }
+            zipFile.delete()
+
+            process {
+                """
+                input[0] = file('${resultsDir.getAbsolutePath()}/PXD063291/DiaNN/report.tsv')
+                input[1] = file('${resultsDir.getAbsolutePath()}/PXD063291/DiaNN/report.pg_matrix.tsv')
+                input[2] = file('${resultsDir.getAbsolutePath()}/PXD063291/PXD063291.sdrf.tsv')
+                input[3] = file('${resultsDir.getAbsolutePath()}/PXD063291/DiaNN/report.log.txt')
+                input[4] = "PXD063291"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.qpx_dataset.size() == 1 },
+                { assert process.out.mudata.size() == 1 },
+                { assert process.out.mudata[0].toString().endsWith('.h5mu') },
+                { assert snapshot(process.out.versions).match("versions") }
+            )
+        }
+
+        cleanup {
+            file("test_qpx_data").deleteDir()
+        }
+    }
+
+    test("Should run stub mode") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = file("stub_report.tsv", checkIfExists: false)
+                input[1] = file("stub_pg_matrix.tsv", checkIfExists: false)
+                input[2] = file("stub_sample.sdrf.tsv", checkIfExists: false)
+                input[3] = file("stub_diann.log", checkIfExists: false)
+                input[4] = "PXD026600"
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.qpx_dataset.size() == 1
+            assert process.out.mudata.size() == 1
+            assert snapshot(
+                process.out.mudata,
+                process.out.versions
+            ).match("stub")
+        }
+    }
+}
