@@ -14,7 +14,7 @@
                     },
                     "qpx/diann": {
                         "branch": "main",
-                        "git_sha": "21b7fa083b9400c6a276629fbf3ae8500493d518",
+                        "git_sha": "8bb3d461d93e2b008ce4992d4a2af2774a9943c9",
                         "installed_by": [
                             "modules"
                         ]
@@ -22,13 +22,6 @@
                     "thermorawfileparser": {
                         "branch": "main",
                         "git_sha": "daddf26d8c36e28dffe673949dc340ed6387de9a",
-                        "installed_by": [
-                            "modules"
-                        ]
-                    },
-                    "pmultiqc": {
-                        "branch": "main",
-                        "git_sha": "108392261b83e7e45681c3462a92549ffa1f5db3",
                         "installed_by": [
                             "modules"
                         ]

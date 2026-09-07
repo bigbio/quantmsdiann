@@ -8,7 +8,7 @@ process QPX_DIANN {
     // a single image serves Docker (native) and Singularity (via docker://).
     // BioContainers/Galaxy-depot lag the release, so GHCR is used for containers;
     // -profile conda still resolves the bioconda package in environment.yml.
-    container "ghcr.io/bigbio/qpx:1.1.2"
+    container "ghcr.io/bigbio/qpx:1.1.3"
 
     input:
     path(diann_report)
@@ -31,7 +31,12 @@ process QPX_DIANN {
     def pg_arg  = pg_matrix ? "--pg-matrix-path ${pg_matrix}" : ''
     def log_arg = diann_log ? "--diann-log ${diann_log}" : ''
     def acc_arg = project_accession ? "--project-accession ${project_accession}" : ''
-    def qvalue  = params.matrix_qvalue ?: 0.05
+    // Precursor-level cutoff for the features qpx writes. This must follow the
+    // pipeline's precursor q-value (--qvalue), NOT matrix_qvalue: the latter
+    // governs DIA-NN's output matrices, and using it here silently re-filtered
+    // the report to 1% while the run itself was analysed at the DIA-NN >= 2.5
+    // default of 5%. Unset precursor_qvalue keeps that 5% default.
+    def qvalue  = params.precursor_qvalue ?: 0.05
     """
     set -o pipefail
     qpxc convert diann \\
