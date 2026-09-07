@@ -14,7 +14,14 @@
                     },
                     "qpx/diann": {
                         "branch": "main",
-                        "git_sha": "8bb3d461d93e2b008ce4992d4a2af2774a9943c9",
+                        "git_sha": "7cd54b39383fed0257b916e1060608b7ef322023",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
+                    "pmultiqc": {
+                        "branch": "main",
+                        "git_sha": "7cd54b39383fed0257b916e1060608b7ef322023",
                         "installed_by": [
                             "modules"
                         ]
