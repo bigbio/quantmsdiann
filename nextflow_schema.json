@@ -790,12 +790,6 @@
                     "description": "Skip protein/peptide table plots with pmultiqc for large dataset.",
                     "fa_icon": "fas fa-toggle-on"
                 },
-                "pmultiqc_table_max_runs": {
-                    "type": "integer",
-                    "default": 500,
-                    "description": "Disable the pmultiqc peptide/protein tables automatically when the experiment has more runs than this. The tables re-read the MSstats input, which is the summary step's largest memory cost on big experiments (bigbio/pmultiqc#717).",
-                    "fa_icon": "fas fa-table"
-                },
                 "multiqc_logo": {
                     "type": "string",
                     "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
