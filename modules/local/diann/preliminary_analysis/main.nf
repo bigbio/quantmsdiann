@@ -4,9 +4,12 @@ process PRELIMINARY_ANALYSIS {
     label 'diann'
     label 'error_retry'
 
-    // DIA-NN's native Thermo .raw reader fails on symlinked files (Thermo SDK limitation).
-    // Use 'copy' when .raw files are passed directly to DIA-NN (DIA-NN >= 2.1.0 without TRFP conversion).
-    stageInMode { VersionUtils.isNativeRawMode(params) ? 'copy' : 'symlink' }
+    // Everything is staged as a symlink. DIA-NN's native Thermo reader cannot follow a
+    // symlinked .raw (Thermo SDK limitation), so ONLY the MS file is materialised, in the
+    // script below. Staging the whole process as 'copy' also copied every other input into
+    // every task: on a 145-file phospho run that meant 418 copies of a 48.5 GB predicted
+    // library (18.7 TB), which exhausted the filesystem.
+    stageInMode 'symlink'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
@@ -77,7 +80,14 @@ process PRELIMINARY_ANALYSIS {
     diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
     diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
+    // Materialise the MS file only (see stageInMode above). The symlink is replaced in
+    // place, so the file name is unchanged and DIA-NN's outputs and every downstream name
+    // match behave exactly as they did under 'copy'.
+    stage_ms_files = VersionUtils.isNativeRawMode(params) ?
+        "if [ -L '${ms_file}' ]; then cp -rL '${ms_file}' '${ms_file}.__staged' && rm -f '${ms_file}' && mv '${ms_file}.__staged' '${ms_file}'; fi" : ':'
+
     """
+    ${stage_ms_files}
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
     # Fragment Tolerance value was: ${meta['fragmentmasstolerance']}
     # Precursor Tolerance unit was: ${meta['precursormasstoleranceunit']}
