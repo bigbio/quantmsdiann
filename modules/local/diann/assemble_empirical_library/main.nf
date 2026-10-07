@@ -4,11 +4,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     label 'diann'
     label 'error_retry'
 
-    // Everything is staged as a symlink. DIA-NN's native Thermo reader cannot follow a
-    // symlinked .raw (Thermo SDK limitation), so ONLY the MS file is materialised, in the
-    // script below. Staging the whole process as 'copy' also copied every other input into
-    // every task: on a 145-file phospho run that meant 418 copies of a 48.5 GB predicted
-    // library (18.7 TB), which exhausted the filesystem.
+    // DIA-NN cannot read a symlinked Thermo .raw; only the MS files are copied, in the script.
     stageInMode 'symlink'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -60,9 +56,6 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
     diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
-    // Materialise the MS files only (see stageInMode above). Each symlink is replaced in
-    // place, so file names are unchanged and DIA-NN's outputs and every downstream name
-    // match behave exactly as they did under 'copy'.
     stage_ms_files = VersionUtils.isNativeRawMode(params) ?
         (ms_files as List).collect { f ->
             "if [ -L '${f}' ]; then cp -rL '${f}' '${f}.__staged' && rm -f '${f}' && mv '${f}.__staged' '${f}'; fi"
