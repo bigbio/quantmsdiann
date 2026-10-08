@@ -5,8 +5,8 @@ process INSILICO_LIBRARY_GENERATION {
     label 'error_retry'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://containers.biocontainers.pro/s3/SingImgsRepo/diann/v1.8.1_cv1/diann_v1.8.1_cv1.img' :
-        'docker.io/biocontainers/diann:v1.8.1_cv1' }"
+        'oras://ghcr.io/bigbio/diann-public-sif:1.8.1' :
+        'ghcr.io/bigbio/diann-public:1.8.1' }"
 
     input:
     path(fasta)
