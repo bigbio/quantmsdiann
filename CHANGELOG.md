@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0dev] bigbio/quantmsdiann
+
+### `Added`
+
+### `Changed`
+
+- Removed the stale `--diann_speclib` references from the documentation. The parameter is named `--speclib` (`nextflow.config`, `nextflow_schema.json`, and the `params.speclib` branch in `workflows/dia.nf` that skips `INSILICO_LIBRARY_GENERATION`); `--diann_speclib` was never read by the pipeline, so anyone following the GUI-flag mapping table in `docs/usage.md` would have their spectral library silently ignored and an in-silico library predicted from the FASTA instead. Passing `--diann_speclib` is flagged by nf-schema parameter validation as unrecognised. The workflow diagram (`docs/images/quantmsdiann_workflow.svg`) now also reads `skip if --speclib`.
+
+### `Fixed`
+
 ## [2.3.0] bigbio/quantmsdiann — Guangzhou - 2026-08-14
 
 ### `Added`
