@@ -36,22 +36,22 @@ The pipeline takes [SDRF](https://github.com/bigbio/proteomics-metadata-standard
 
 ## Supported DIA-NN Versions
 
-| Version          | Profile                   | Container                                  | Key features                                                      |
-| ---------------- | ------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
-| 1.8.1 (default)  | `diann_v1_8_1`            | `docker.io/biocontainers/diann:v1.8.1_cv1` | Core DIA analysis, TSV output                                     |
-| 2.1.0            | `diann_v2_1_0`            | `ghcr.io/bigbio/diann:2.1.0`               | Native .raw support, Parquet output                               |
-| 2.2.0            | `diann_v2_2_0`            | `ghcr.io/bigbio/diann:2.2.0`               | Speed optimizations (up to 1.6x on HPC)                           |
-| 2.3.2            | `diann_v2_3_2`            | `ghcr.io/bigbio/diann:2.3.2`               | DDA support (beta), InfinDIA, up to 9 var mods                    |
-| 2.5.0            | `diann_v2_5_0`            | `ghcr.io/bigbio/diann:2.5.0`               | +70% protein IDs, DL model selection flags                        |
-| 2.5.1            | `diann_v2_5_1`            | `ghcr.io/bigbio/diann:2.5.1`               | Academic build of DIA-NN 2.5.1                                    |
-| 2.5.1 Enterprise | `diann_v2_5_1_enterprise` | `ghcr.io/bigbio/diann-enterprise:2.5.1`    | Knowledge Base (`--enable_kb`), extra QC metrics. Needs a license |
+| Version          | Profile                   | Container                               | Key features                                                      |
+| ---------------- | ------------------------- | --------------------------------------- | ----------------------------------------------------------------- |
+| 1.8.1 (default)  | `diann_v1_8_1`            | `ghcr.io/bigbio/diann-public:1.8.1`     | Core DIA analysis, TSV output                                     |
+| 2.1.0            | `diann_v2_1_0`            | `ghcr.io/bigbio/diann:2.1.0`            | Native .raw support, Parquet output                               |
+| 2.2.0            | `diann_v2_2_0`            | `ghcr.io/bigbio/diann:2.2.0`            | Speed optimizations (up to 1.6x on HPC)                           |
+| 2.3.2            | `diann_v2_3_2`            | `ghcr.io/bigbio/diann:2.3.2`            | DDA support (beta), InfinDIA, up to 9 var mods                    |
+| 2.5.0            | `diann_v2_5_0`            | `ghcr.io/bigbio/diann:2.5.0`            | +70% protein IDs, DL model selection flags                        |
+| 2.5.1            | `diann_v2_5_1`            | `ghcr.io/bigbio/diann:2.5.1`            | Academic build of DIA-NN 2.5.1                                    |
+| 2.5.1 Enterprise | `diann_v2_5_1_enterprise` | `ghcr.io/bigbio/diann-enterprise:2.5.1` | Knowledge Base (`--enable_kb`), extra QC metrics. Needs a license |
 
 Switch versions with e.g. `-profile diann_v2_2_0,docker`. See the [DIA-NN Version Selection](docs/usage.md#dia-nn-version-selection) guide and [full parameter reference](docs/parameters.md) for details.
 
 > [!IMPORTANT]
 > **DIA-NN licensing.** Only **DIA-NN 1.8.1** is redistributable and is pulled
 > automatically from the public BioContainers image
-> (`docker.io/biocontainers/diann:v1.8.1_cv1`), so the default profile works out
+> (`ghcr.io/bigbio/diann-public:1.8.1`), so the default profile works out
 > of the box. The DIA-NN license does **not** permit redistribution of releases
 > from 1.9 onward, so the `ghcr.io/bigbio/diann:*` images above are **not
 > public** — with a valid DIA-NN download you build them locally from the
