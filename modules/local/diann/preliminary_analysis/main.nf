@@ -4,9 +4,8 @@ process PRELIMINARY_ANALYSIS {
     label 'diann'
     label 'error_retry'
 
-    // DIA-NN's native Thermo .raw reader fails on symlinked files (Thermo SDK limitation).
-    // Use 'copy' when .raw files are passed directly to DIA-NN (DIA-NN >= 2.1.0 without TRFP conversion).
-    stageInMode { VersionUtils.isNativeRawMode(params) ? 'copy' : 'symlink' }
+    // DIA-NN cannot read a symlinked Thermo .raw; only the MS files are copied, in the script.
+    stageInMode 'symlink'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'oras://ghcr.io/bigbio/diann-public-sif:1.8.1' :
@@ -77,7 +76,11 @@ process PRELIMINARY_ANALYSIS {
     diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
     diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
+    stage_ms_files = VersionUtils.isNativeRawMode(params) ?
+        "if [ -L '${ms_file}' ]; then cp -rL '${ms_file}' '${ms_file}.__staged' && rm -f '${ms_file}' && mv '${ms_file}.__staged' '${ms_file}'; fi" : ':'
+
     """
+    ${stage_ms_files}
     # Precursor Tolerance value was: ${meta['precursormasstolerance']}
     # Fragment Tolerance value was: ${meta['fragmentmasstolerance']}
     # Precursor Tolerance unit was: ${meta['precursormasstoleranceunit']}

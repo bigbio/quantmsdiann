@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- **Native `.raw`/`.d` staging:** `PRELIMINARY_ANALYSIS`, `INDIVIDUAL_ANALYSIS` and `ASSEMBLE_EMPIRICAL_LIBRARY` no longer use `stageInMode 'copy'`, which copied every input (including the predicted spectral library) into every task; only the MS file is now materialised in place. On a 145-file run this removed ~18.7 TB of duplicated library copies.
+
 ### `Dependencies`
 
 | Dependency | Old version | New version |
