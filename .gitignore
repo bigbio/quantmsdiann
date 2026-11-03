@@ -23,3 +23,5 @@ null/
 .github/instructions/codacy.instructions.md
 docs/superpowers/
 docs/plans/
+.nf-test/
+.nf-test.log
