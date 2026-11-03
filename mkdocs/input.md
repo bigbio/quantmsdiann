@@ -44,7 +44,7 @@ nextflow run bigbio/quantmsdiann \
     -profile docker \
     --input experiment.sdrf.tsv \
     --database uniprot.fasta \
-    --spectral_library library.tsv \
+    --speclib library.tsv \
     --outdir results/
 ```
 

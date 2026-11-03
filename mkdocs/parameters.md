@@ -2,17 +2,20 @@
 
 This document lists every pipeline parameter organised by category. Default values come from `nextflow.config`; types and constraints come from `nextflow_schema.json`.
 
+> [!IMPORTANT]
+> **Some parameters are taken from the SDRF per sample at runtime and override the defaults below.** Modifications (variable via `--variable_mods`; fixed modifications and **enzyme** have no parameter at all) and precursor/fragment **mass tolerances** are read from the SDRF for each file when present, falling back to the value here only if the SDRF does not specify them. As a result, the value shown here (and in `pipeline_info/params_<timestamp>.json`) is the **launch-time default/fallback**, not necessarily what a given run used. The authoritative resolved values are written to `results/sdrf/diann_config.cfg` (modifications, enzyme) and applied per file on the DIA-NN command line (mass tolerances, m/z windows). See [Output: Nextflow pipeline info](output.md#nextflow-pipeline-info).
+
 ## 1. Input/Output Options
 
-| Parameter            | Type                    | Default     | Description                                                                                                                                                                                                                |
-| -------------------- | ----------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--input`            | string (file-path)      | _required_  | URI/path to an SDRF file with `.sdrf.tsv` extension. Parameters such as enzyme, fixed modifications, and acquisition method are read from the SDRF.                                                                         |
-| `--database`         | string (file-path)      | _required_  | Path to a FASTA protein database. Must not contain decoys for DIA data.                                                                                                                                                    |
-| `--outdir`           | string (directory-path) | `./results` | The output directory where results will be saved.                                                                                                                                                                          |
-| `--publish_dir_mode` | string                  | `copy`      | Method used to save pipeline results. One of: `symlink`, `rellink`, `link`, `copy`, `copyNoFollow`, `move`.                                                                                                                |
-| `--root_folder`      | string                  | `null`      | Root folder in which spectrum files specified in the SDRF are searched. Used when you have a local copy of the experiment.                                                                                                 |
-| `--local_input_type` | string                  | `mzML`      | Overwrite the file type/extension of filenames in the SDRF when using `--root_folder`. One of: `mzML`, `raw`, `d`, `dia`. Compressed variants (`.gz`, `.tar`, `.tar.gz`, `.zip`) are supported for `mzML`, `raw`, and `d`. |
-| `--email`            | string                  | `null`      | Email address for completion summary.                                                                                                                                                                                      |
+| Parameter            | Type                    | Default     | Description                                                                                                                                                                                                                                                                        |
+| -------------------- | ----------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--input`            | string (file-path)      | _required_  | URI/path to an SDRF file (must use the `.sdrf.tsv` extension). Parameters such as enzyme, fixed modifications, and acquisition method are read from the SDRF.                                                                                                                      |
+| `--database`         | string (file-path)      | _required_  | Path to a FASTA protein database. Must not contain decoys for DIA data.                                                                                                                                                                                                            |
+| `--outdir`           | string (directory-path) | `./results` | The output directory where results will be saved.                                                                                                                                                                                                                                  |
+| `--publish_dir_mode` | string                  | `copy`      | Method used to save pipeline results. One of: `symlink`, `rellink`, `link`, `copy`, `copyNoFollow`, `move`.                                                                                                                                                                        |
+| `--root_folder`      | string                  | `null`      | Root folder in which spectrum files specified in the SDRF are searched. Used when you have a local copy of the experiment.                                                                                                                                                         |
+| `--local_input_type` | string                  | `raw`       | Overwrite the file type/extension of filenames in the SDRF when using `--root_folder`. One of: `mzML`, `raw`, `d`, `dia`, `d.tar`, `d.tar.gz`, `d.zip`, `wiff`. Bruker `.d` archives are decompressed automatically; SCIEX `.wiff` is paired with its `.wiff.scan` companion file. |
+| `--email`            | string                  | `null`      | Email address for completion summary.                                                                                                                                                                                                                                              |
 
 ## 2. SDRF Validation
 
@@ -22,11 +25,12 @@ This document lists every pipeline parameter organised by category. Default valu
 
 ## 3. File Preparation (Spectrum Preprocessing)
 
-| Parameter           | Type    | Default | Description                                                                                                                   |
-| ------------------- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `--reindex_mzml`    | boolean | `true`  | Force re-indexing of input mzML files at the start of the pipeline for safety.                                                |
-| `--mzml_statistics` | boolean | `false` | Compute MS1/MS2 statistics from mzML files. Generates `*_ms_info.parquet` files for QC. Bruker `.d` files are always skipped. |
-| `--mzml_features`   | boolean | `false` | Compute MS1-level features during the mzML statistics step. Only available for mzML files.                                    |
+| Parameter           | Type    | Default | Description                                                                                                                                                                                                                                                                                  |
+| ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--reindex_mzml`    | boolean | `false` | Force re-indexing of input mzML files at the start of the pipeline. Defaults to `false`: ThermoRawFileParser and the wiff converter both emit indexed mzML, and DIA-NN handles unindexed mzML on its own. Enable only when supplying pre-built mzML files that may be unindexed.             |
+| `--mzml_statistics` | boolean | `false` | Compute MS1/MS2 statistics from mzML files. Generates `*_ms_info.parquet` files for QC. Bruker `.d` files are always skipped.                                                                                                                                                                |
+| `--mzml_features`   | boolean | `false` | Compute MS1-level features during the mzML statistics step. Only available for mzML files.                                                                                                                                                                                                   |
+| `--mzml_convert`    | boolean | _auto_  | Convert Thermo `.raw` to `.mzML` via ThermoRawFileParser before DIA-NN. Unset = auto: convert when DIA-NN < 2.1.0, pass `.raw` through when DIA-NN >= 2.1.0. Set `false` to force native `.raw` (requires DIA-NN >= 2.1.0); set `true` to force conversion (e.g. to enable mzML statistics). |
 
 ## 4. Search Parameters
 
@@ -51,31 +55,59 @@ This document lists every pipeline parameter organised by category. Default valu
 
 ## 5. DIA-NN General
 
-| Parameter            | Type    | Default | Description                                                                                                                                                                                                  |
-| -------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--diann_version`    | string  | `1.8.1` | DIA-NN version used by the workflow. Controls version-dependent flags (e.g. `--monitor-mod` for 1.8.x). See [DIA-NN Version Selection](usage.md#dia-nn-version-selection).                                   |
-| `--diann_debug`      | integer | `3`     | DIA-NN debug/verbosity level (0-4). Higher values produce more verbose logs.                                                                                                                                 |
-| `--diann_speclib`    | string  | `null`  | Path to an external spectral library. If provided, the in-silico library generation step is skipped.                                                                                                         |
-| `--diann_extra_args` | string  | `null`  | Extra arguments appended to all DIA-NN steps. Flags incompatible with a step are automatically stripped with a warning. See [Passing Extra Arguments to DIA-NN](usage.md#passing-extra-arguments-to-dia-nn). |
+| Parameter            | Type    | Default | Description                                                                                                                                                                                                     |
+| -------------------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--diann_version`    | string  | `1.8.1` | DIA-NN version used by the workflow. Controls version-dependent flags (e.g. `--monitor-mod` for 1.8.x). See [DIA-NN Version Selection](usage.md#dia-nn-version-selection).                                      |
+| `--diann_enterprise` | boolean | `false` | Set automatically by `-profile diann_v2_5_1_enterprise`; marks the Enterprise build and unlocks `--enable_kb`. Not set manually in normal use.                                                                  |
+| `--enable_kb`        | boolean | `false` | Add the Enterprise Knowledge Base (`--kb`) to the first-pass search. Boosts IDs, mainly on human data. Requires the Enterprise build. See [DIA-NN Enterprise](usage.md#dia-nn-enterprise).                      |
+| `--diann_license`    | string  | `null`  | Path to the DIA-NN Enterprise license key, passed as `--license`. Unset = rely on a key next to the binary. The key is a per-user secret — never commit it.                                                     |
+| `--debug_level`      | integer | `3`     | DIA-NN debug/verbosity level (0-4). Higher values produce more verbose logs.                                                                                                                                    |
+| `--speclib`          | string  | `null`  | Path to an external spectral library. If provided, the in-silico library generation step is skipped.                                                                                                            |
+| `--extra_args`       | string  | `null`  | Extra arguments appended to all DIA-NN steps. Flags incompatible with a step are automatically stripped with a warning. See [Passing Extra Arguments to DIA-NN](usage.md#passing-extra-arguments-to-dia-nn).    |
+| `--dda`              | boolean | `false` | Explicitly enable DDA mode. Normally auto-detected from the SDRF `comment[proteomics data acquisition method]` column. Use this flag only when the SDRF lacks the acquisition method. Requires DIA-NN >= 2.3.2. |
+| `--light_models`     | boolean | `false` | Enable `--light-models` for 10x faster in-silico library generation. Requires DIA-NN >= 2.0.                                                                                                                    |
+| `--export_quant`     | boolean | `false` | Enable `--export-quant` for fragment-level parquet data export. Requires DIA-NN >= 2.0.                                                                                                                         |
+| `--site_ms1_quant`   | boolean | `false` | Enable `--site-ms1-quant` to use MS1 apex intensities for PTM site quantification. Requires DIA-NN >= 2.0.                                                                                                      |
+| `--aa_eq`            | boolean | `false` | Treat I&L, Q&E, N&D as equivalent amino acids during reannotation. Essential for entrapment FDR benchmarks. Maps to `--aa-eq`.                                                                                  |
+
+### DIA-NN 2.5.0 flags (via `--extra_args`)
+
+The following DIA-NN 2.5.0 flags are not exposed as pipeline parameters but can be passed via `--extra_args`. See [Fine-Tuning Deep Learning Models](usage.md#fine-tuning-deep-learning-models-dia-nn-20) for the complete workflow.
+
+| DIA-NN flag              | Description                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `--tokens <file>`        | Tokenizer dictionary mapping modified residues to neural network token IDs (0-255).              |
+| `--rt-model <file>`      | Fine-tuned retention time prediction model (`.pt` PyTorch file).                                 |
+| `--fr-model <file>`      | Fine-tuned fragment ion prediction model (`.pt` file). Quality-sensitive — verify vs base model. |
+| `--im-model <file>`      | Fine-tuned ion mobility prediction model (`.pt` file).                                           |
+| `--tune-lib <file>`      | Spectral library for fine-tuning (`.parquet`). Requires `--tune-rt` and/or `--tune-im`.          |
+| `--tune-rt`              | Fine-tune the RT deep learning predictor. Requires `--tune-lib`.                                 |
+| `--tune-im`              | Fine-tune the IM deep learning predictor. Requires `--tune-lib`.                                 |
+| `--tune-fr`              | Fine-tune the fragmentation predictor. Requires `--tune-lib`. Use with caution.                  |
+| `--tune-lr <X>`          | Fine-tuning learning rate (default: 0.0005).                                                     |
+| `--tune-restrict-layers` | Keep RNN layer weights fixed during fine-tuning (except cysteine embeddings).                    |
+| `--tune-level <N>`       | Limit fine-tuning to a specific model distillation level (0, 1, or 2).                           |
+
+> **Note:** `--parent` and `--aa-eq` are blocked from `--extra_args` — they are managed as pipeline parameters (`--aa_eq`). `--parent` is container-managed and overriding it would break model discovery.
 
 ## 6. Mass Accuracy & Calibration
 
-| Parameter                 | Type    | Default | Description                                                                                                                   |
-| ------------------------- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `--mass_acc_automatic`    | boolean | `true`  | Automatically determine MS2 mass accuracy. When `true`, `--mass_acc_ms2` is ignored during preliminary analysis.              |
-| `--mass_acc_ms1`          | number  | `15`    | MS1 mass accuracy in ppm. Overrides automatic calibration when `--mass_acc_automatic false`. Maps to DIA-NN `--mass-acc-ms1`. |
-| `--mass_acc_ms2`          | number  | `15`    | MS2 mass accuracy in ppm. Overrides automatic calibration when `--mass_acc_automatic false`. Maps to DIA-NN `--mass-acc`.     |
-| `--scan_window`           | integer | `8`     | Scan window radius. Should approximate the average number of data points per peak.                                            |
-| `--scan_window_automatic` | boolean | `true`  | Automatically determine the scan window. When `true`, `--scan_window` is ignored.                                             |
-| `--quick_mass_acc`        | boolean | `true`  | Use a fast heuristic algorithm for mass accuracy calibration instead of ID-number optimisation.                               |
-| `--performance_mode`      | boolean | `true`  | Enable low-RAM, high-speed mode. Adds `--min-corr 2 --corr-diff 1 --time-corr-only` to DIA-NN.                                |
+| Parameter                 | Type    | Default | Description                                                                                                                               |
+| ------------------------- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mass_acc_automatic`    | boolean | `true`  | Automatically determine MS2 mass accuracy. When `true`, `--mass_acc_ms2` is ignored during preliminary analysis.                          |
+| `--mass_acc_ms1`          | number  | `15`    | MS1 mass accuracy in ppm. Overrides automatic calibration when `--mass_acc_automatic false`. Maps to DIA-NN `--mass-acc-ms1`.             |
+| `--mass_acc_ms2`          | number  | `15`    | MS2 mass accuracy in ppm. Overrides automatic calibration when `--mass_acc_automatic false`. Maps to DIA-NN `--mass-acc`.                 |
+| `--scan_window`           | integer | `8`     | Scan window radius. Should approximate the average number of data points per peak.                                                        |
+| `--scan_window_automatic` | boolean | `true`  | Automatically determine the scan window. When `true`, `--scan_window` is ignored.                                                         |
+| `--quick_mass_acc`        | boolean | `true`  | Use a fast heuristic algorithm for mass accuracy calibration instead of ID-number optimisation.                                           |
+| `--performance_mode`      | boolean | `false` | Opt-in speed flags `--min-corr 2 --corr-diff 1 --time-corr-only` in the calibration step. Off by default: can drop IDs (DIA-NN guidance). |
 
 ## 7. Bruker/timsTOF
 
-| Parameter           | Type    | Default | Description                                                                                          |
-| ------------------- | ------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| `--diann_tims_sum`  | boolean | `false` | Enable `--quant-tims-sum` for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF). |
-| `--diann_im_window` | number  | `null`  | Set `--im-window` to ensure the IM extraction window is not smaller than the specified value.        |
+| Parameter     | Type    | Default | Description                                                                                          |
+| ------------- | ------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `--tims_sum`  | boolean | `false` | Enable `--quant-tims-sum` for slice/scanning timsTOF methods (highly recommended for Synchro-PASEF). |
+| `--im_window` | number  | `null`  | Set `--im-window` to ensure the IM extraction window is not smaller than the specified value.        |
 
 ## 8. PTM Localization
 
@@ -92,39 +124,69 @@ This document lists every pipeline parameter organised by category. Default valu
 
 ## 10. Preliminary Analysis
 
-| Parameter                     | Type    | Default | Description                                                                                                         |
-| ----------------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `--skip_preliminary_analysis` | boolean | `false` | Skip preliminary analysis. Use the provided spectral library as-is instead of generating a local consensus library. |
-| `--random_preanalysis`        | boolean | `false` | Enable random selection of spectrum files for empirical library generation.                                         |
-| `--random_preanalysis_seed`   | integer | `42`    | Random seed for file selection when `--random_preanalysis` is enabled.                                              |
-| `--empirical_assembly_ms_n`   | integer | `200`   | Number of randomly selected spectrum files when `--random_preanalysis` is enabled.                                  |
+| Parameter                     | Type    | Default | Description                                                                                                                    |
+| ----------------------------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `--skip_preliminary_analysis` | boolean | `false` | Skip preliminary analysis. Use the provided spectral library as-is instead of generating a local consensus library.            |
+| `--empirical_assembly_log`    | string  | `null`  | Path to a pre-existing empirical assembly log file. Only used when `--skip_preliminary_analysis true` and `--speclib` are set. |
+| `--random_preanalysis`        | boolean | `false` | Enable random selection of spectrum files for empirical library generation.                                                    |
+| `--random_preanalysis_seed`   | integer | `42`    | Random seed for file selection when `--random_preanalysis` is enabled.                                                         |
+| `--empirical_assembly_ms_n`   | integer | `200`   | Number of randomly selected spectrum files when `--random_preanalysis` is enabled.                                             |
 
 ## 11. Quantification & Output
 
-| Parameter                 | Type    | Default | Description                                                                                                                                                                                                                            |
-| ------------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--pg_level`              | integer | `2`     | Protein inference mode. `0` = isoforms, `1` = protein names (from FASTA), `2` = genes (default).                                                                                                                                       |
-| `--species_genes`         | boolean | `false` | Add the organism identifier to gene names in DIA-NN output.                                                                                                                                                                            |
-| `--diann_normalize`       | boolean | `true`  | Enable cross-run normalisation in DIA-NN. Set to `false` to add `--no-norm`.                                                                                                                                                           |
-| `--diann_report_decoys`   | boolean | `false` | Include decoy PSMs in the main `.parquet` report (DIA-NN 2.0+ only).                                                                                                                                                                   |
-| `--diann_export_xic`      | boolean | `false` | Extract MS1/fragment chromatograms for identified precursors (equivalent to the XICs option in the DIA-NN GUI).                                                                                                                        |
-| `--diann_no_peptidoforms` | boolean | `false` | Disable automatic peptidoform scoring when variable modifications are declared (not recommended by DIA-NN).                                                                                                                            |
-| `--diann_use_quant`       | boolean | `true`  | Reuse existing `.quant` files if available (`--use-quant`).                                                                                                                                                                            |
-| `--quantums`              | boolean | `false` | Enable QuantUMS quantification (requires DIA-NN >= 1.9.2). When `false`, the pipeline passes `--direct-quant` to use legacy quantification (only for DIA-NN >= 1.9.2; silently skipped for 1.8.x where direct quant is the only mode). |
-| `--quantums_train_runs`   | string  | `null`  | Run index range for QuantUMS training (e.g. `0:5`). Maps to `--quant-train-runs`. Requires DIA-NN >= 1.9.2.                                                                                                                            |
-| `--quantums_sel_runs`     | integer | `null`  | Number of automatically selected runs for QuantUMS training. Must be >= 6. Maps to `--quant-sel-runs`. Requires DIA-NN >= 1.9.2.                                                                                                       |
-| `--quantums_params`       | string  | `null`  | Pre-calculated QuantUMS parameters. Maps to `--quant-params`. Requires DIA-NN >= 1.9.2.                                                                                                                                                |
+| Parameter               | Type    | Default   | Description                                                                                                                                                                                                                            |
+| ----------------------- | ------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--pg_level`            | integer | `2`       | Protein inference mode. `0` = isoforms, `1` = protein names (from FASTA), `2` = genes (default).                                                                                                                                       |
+| `--species_genes`       | boolean | `false`   | Add the organism identifier to gene names in DIA-NN output.                                                                                                                                                                            |
+| `--normalize`           | boolean | `true`    | Enable cross-run normalisation in DIA-NN. Set to `false` to add `--no-norm`.                                                                                                                                                           |
+| `--report_decoys`       | boolean | `false`   | Include decoy PSMs in the main `.parquet` report (DIA-NN 2.0+ only).                                                                                                                                                                   |
+| `--export_xic`          | boolean | `false`   | Extract MS1/fragment chromatograms for identified precursors (equivalent to the XICs option in the DIA-NN GUI).                                                                                                                        |
+| `--scoring_mode`        | string  | `generic` | DIA-NN scoring mode: `generic` (default, maximizes IDs), `proteoforms` (recommended for proteogenomics/variant detection, requires >= 2.0), `peptidoforms` (extra q-values for PTM analysis).                                          |
+| `--use_quant`           | boolean | `true`    | Reuse existing `.quant` files if available (`--use-quant`).                                                                                                                                                                            |
+| `--quantums`            | boolean | `false`   | Enable QuantUMS quantification (requires DIA-NN >= 1.9.2). When `false`, the pipeline passes `--direct-quant` to use legacy quantification (only for DIA-NN >= 1.9.2; silently skipped for 1.8.x where direct quant is the only mode). |
+| `--quantums_train_runs` | string  | `null`    | Run index range for QuantUMS training (e.g. `0:5`). Maps to `--quant-train-runs`. Requires DIA-NN >= 1.9.2.                                                                                                                            |
+| `--quantums_sel_runs`   | integer | `null`    | Number of automatically selected runs for QuantUMS training. Must be >= 6. Maps to `--quant-sel-runs`. Requires DIA-NN >= 1.9.2.                                                                                                       |
+| `--quantums_params`     | string  | `null`    | Pre-calculated QuantUMS parameters. Maps to `--quant-params`. Requires DIA-NN >= 1.9.2.                                                                                                                                                |
 
-## 12. Quality Control
+## 12. DDA Mode
 
-| Parameter                    | Type    | Default | Description                                                                          |
-| ---------------------------- | ------- | ------- | ------------------------------------------------------------------------------------ |
-| `--enable_pmultiqc`          | boolean | `true`  | Generate the pmultiqc QC report.                                                     |
-| `--pmultiqc_idxml_skip`      | boolean | `true`  | Skip idXML files (do not generate search engine score plots) in the pmultiqc report. |
-| `--contaminant_string`       | string  | `CONT`  | Contaminant affix string for pmultiqc. Maps to `--contaminant_affix` in pmultiqc.    |
-| `--protein_level_fdr_cutoff` | number  | `0.01`  | Experiment-wide protein (group)-level FDR cutoff.                                    |
+| Parameter | Type    | Default | Description                                                                                                                                                                                                                                |
+| --------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--dda`   | boolean | `false` | Explicitly enable DDA mode when SDRF lacks the acquisition method column. Normally DDA is auto-detected from the SDRF `comment[proteomics data acquisition method]`. Requires DIA-NN >= 2.3.2 (use `-profile diann_v2_3_2`). Beta feature. |
 
-## 13. MultiQC & Reporting
+> **Note:** DDA mode is auto-detected from the SDRF when the `comment[proteomics data acquisition method]`
+> column contains `data-dependent acquisition`. The `--dda` flag is only needed as a
+> fallback when the SDRF does not include this column. DDA requires DIA-NN >= 2.3.2
+> (`-profile diann_v2_3_2`).
+
+## 13. InfinDIA (Experimental)
+
+| Parameter            | Type    | Default | Description                                                                            |
+| -------------------- | ------- | ------- | -------------------------------------------------------------------------------------- |
+| `--enable_infin_dia` | boolean | `false` | Enable InfinDIA for ultra-large search spaces. Requires DIA-NN >= 2.3.0. Experimental. |
+| `--pre_select`       | integer | `null`  | Precursor limit (`--pre-select N`) for InfinDIA pre-search.                            |
+
+> **Note:** InfinDIA requires DIA-NN >= 2.3.0 and is considered experimental.
+
+## 14. QPX Export (Experimental)
+
+| Parameter             | Type    | Default | Description                                                                                                                                           |
+| --------------------- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--enable_qpx_export` | boolean | `false` | Export DIA-NN output to QPX Parquet dataset and MuData `.h5mu` in a single step. Requires `--project_accession`. Experimental (added in 2.1.0).       |
+| `--project_accession` | string  | `null`  | PRIDE project accession (e.g. `PXD001819`). Used as QPX output prefix and embedded as provenance. Also required when `--pridepy_download` is enabled. |
+
+## 15. Quality Control
+
+| Parameter               | Type    | Default | Description                                                                                                                                                                            |
+| ----------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--enable_pmultiqc`     | boolean | `true`  | Generate the pmultiqc QC report.                                                                                                                                                       |
+| `--pmultiqc_idxml_skip` | boolean | `true`  | Skip idXML files (do not generate search engine score plots) in the pmultiqc report.                                                                                                   |
+| `--contaminant_string`  | string  | `CONT`  | Contaminant affix string for pmultiqc. Maps to `--contaminant_affix` in pmultiqc.                                                                                                      |
+| `--precursor_qvalue`    | number  | _auto_  | Precursor-level q-value for the DIA-NN main report (`--qvalue`) and MSstats input. Unset = auto by `--diann_version`: `0.01` for < 2.5, `0.05` for >= 2.5. Set explicitly to override. |
+| `--matrix_qvalue`       | number  | `0.01`  | Q-value threshold for DIA-NN output matrices (pr_matrix, pg_matrix). Maps to `--matrix-qvalue`.                                                                                        |
+| `--matrix_spec_q`       | number  | `0.05`  | Run-specific protein q-value for protein/gene matrices. Maps to `--matrix-spec-q`.                                                                                                     |
+
+## 16. MultiQC & Reporting
 
 | Parameter                       | Type               | Default | Description                                                                       |
 | ------------------------------- | ------------------ | ------- | --------------------------------------------------------------------------------- |

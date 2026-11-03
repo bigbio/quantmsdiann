@@ -12,8 +12,8 @@ quantmsdiann processes DIA (Data-Independent Acquisition) mass spectrometry data
 ## Installation
 
 ### Prerequisites
-- Nextflow >= 21.10.3
-- Container runtime: Docker (recommended), Singularity, or Conda
+- Nextflow >= 25.10.4
+- Container runtime: Docker (recommended), Singularity or Apptainer (Conda is not supported)
 
 ### Run with Docker
 nextflow run bigbio/quantmsdiann -r main -profile docker \
@@ -45,31 +45,32 @@ Standard UniProt FASTA. Used for in-silico library generation in library-free mo
 ## Key Parameters
 
 ### DIA-NN Settings
-- --diann_normalize true (default: normalize across runs)
-- --diann_library_generation true (library-free mode)
-- --diann_speclib /path/to/library.tsv (library-based mode)
+- --normalize true (default: cross-run normalisation)
+- --speclib /path/to/library.tsv (library-based mode; leave unset for library-free mode)
+- --mass_acc_automatic true (default; set false to use the fixed values below)
 - --mass_acc_ms1 10 (MS1 mass accuracy ppm)
 - --mass_acc_ms2 20 (MS2 mass accuracy ppm)
+- --extra_args '--semi' (extra DIA-NN flags appended to every DIA-NN step)
 
 ### FDR
-- --fdr_cutoff 0.01 (1% FDR at precursor and protein level)
+- --precursor_qvalue (precursor q-value, DIA-NN --qvalue; unset = 0.01 for DIA-NN < 2.5, 0.05 for 2.5+)
+- --matrix_qvalue 0.01 (global q-value for the output matrices)
+- --matrix_spec_q 0.05 (run-specific protein q-value for the protein and gene matrices)
 
 ### Performance
-- --diann_threads 8 (threads per DIA-NN process)
-- --max_memory 32.GB
+- CPUs and memory per DIA-NN step are set by the process labels in conf/base.config; override them with a custom config (-c) using withName selectors.
 
 ## Output Files
 
 results/
-├── diann_report/
-│   ├── report.tsv              # Main DIA-NN report
-│   ├── report.pr_matrix.tsv    # Precursor-level matrix
-│   ├── report.pg_matrix.tsv    # Protein group matrix
-│   └── report.gg_matrix.tsv    # Gene group matrix
-├── msstats/
-│   └── msstats_input.csv       # MSstats-compatible CSV
-├── pmultiqc/
-│   └── multiqc_report.html     # Interactive QC report
+├── quant_tables/
+│   ├── diann_report.{tsv,parquet}  # Main DIA-NN report
+│   ├── diann_report.pr_matrix.tsv  # Precursor-level matrix
+│   ├── diann_report.pg_matrix.tsv  # Protein group matrix
+│   ├── diann_report.gg_matrix.tsv  # Gene group matrix
+│   └── out_msstats_in.csv          # MSstats-compatible CSV
+├── pmultiqc/                       # Interactive QC report
+├── sdrf/                           # SDRF and DIA-NN config
 └── pipeline_info/
 
 ## Common Workflows
@@ -78,13 +79,13 @@ results/
 nextflow run bigbio/quantmsdiann -r main -profile docker \
   --input experiment.sdrf.tsv \
   --database uniprot_human.fasta \
-  --diann_library_generation true \
   --outdir results/
 
 ### Library-based DIA analysis
 nextflow run bigbio/quantmsdiann -r main -profile docker \
   --input experiment.sdrf.tsv \
-  --diann_speclib spectral_library.tsv \
+  --database uniprot_human.fasta \
+  --speclib spectral_library.tsv \
   --outdir results/
 
 ## Integration with Ecosystem
@@ -96,9 +97,9 @@ nextflow run bigbio/quantmsdiann -r main -profile docker \
 
 ## Troubleshooting
 
-- Out of memory during library generation: increase --max_memory
+- Out of memory during library generation: raise the memory of INSILICO_LIBRARY_GENERATION in a custom config (-c)
 - Low protein identifications: check SDRF organism matches FASTA species
-- Slow on large cohorts: increase --diann_threads and --max_cpus
+- Slow on large cohorts: raise the CPUs of the DIA-NN steps in a custom config (-c)
 
 ## Related Tools
 
