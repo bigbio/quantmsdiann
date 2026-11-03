@@ -9,6 +9,8 @@ permissions: {}
 
 jobs:
   check_template_version:
+    # The docs branch (gh-pages-source) has no .nf-core.yml, so there is nothing to check
+    if: github.event.pull_request.base.ref != 'gh-pages-source'
     runs-on: ubuntu-latest
     steps:
       - name: Check out pipeline code
