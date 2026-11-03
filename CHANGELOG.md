@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Changed`
 
+- Synced the nf-core template from **4.1.0** to **4.2.1** (infrastructure files only; no pipeline logic changed): updated `.github/` workflows and composite actions (new `pr-comment.yml` and `fix-linting.yml`, which replace `linting_comment.yml` and `fix_linting.yml`), prettier 3.9.10 in `.pre-commit-config.yaml`, nf-schema 2.7.3 plugin, nft-utils 1.2.1 in `nf-test.config`, `.vscode/extensions.json`, `.nf-test` entries in `.gitignore`, the `multiqc_reports.isBound()` guard in `PIPELINE_COMPLETION`, and the template version in `.nf-core.yml` and the README badge.
 - Removed the stale `--diann_speclib` references from the documentation. The parameter is named `--speclib` (`nextflow.config`, `nextflow_schema.json`, and the `params.speclib` branch in `workflows/dia.nf` that skips `INSILICO_LIBRARY_GENERATION`); `--diann_speclib` was never read by the pipeline, so anyone following the GUI-flag mapping table in `docs/usage.md` would have their spectral library silently ignored and an in-silico library predicted from the FASTA instead. Passing `--diann_speclib` is flagged by nf-schema parameter validation as unrecognised. The workflow diagram (`docs/images/quantmsdiann_workflow.svg`) now also reads `skip if --speclib`.
 
 ### `Fixed`
