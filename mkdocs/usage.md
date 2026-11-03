@@ -479,6 +479,14 @@ nextflow run bigbio/quantmsdiann \
     ...
 ```
 
+For example, a semi-specific search (only one peptide terminus must match the enzyme rule) is enabled with DIA-NN's `--semi`, which takes effect when the in-silico library digests the FASTA. On the command line use `--extra_args '--semi'`; in a `-params-file`:
+
+```yaml
+extra_args: "--semi"
+```
+
+A semi-specific library is much larger than a fully specific one, so expect longer library generation and search times.
+
 Flags that conflict with a specific step are **automatically stripped** with a warning. Each module maintains its own block list of managed flags. The table below summarises the key blocked flags per step:
 
 | Step                        | Key blocked flags (managed by pipeline)                                                                                                                                                                                                                                          |
