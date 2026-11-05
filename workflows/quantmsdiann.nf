@@ -94,7 +94,6 @@ workflow QUANTMSDIANN {
     //
     ch_pipeline_results = channel.empty()
     ch_ids_pmultiqc = channel.empty()
-    ch_msstats_in = channel.empty()
     ch_consensus_pmultiqc = channel.empty()
 
     DIA(
@@ -103,7 +102,6 @@ workflow QUANTMSDIANN {
         CREATE_INPUT_CHANNEL.out.ch_diann_cfg,
     )
     ch_pipeline_results = ch_pipeline_results.mix(DIA.out.diann_report)
-    ch_msstats_in = ch_msstats_in.mix(DIA.out.msstats_in)
     ch_versions = ch_versions.mix(DIA.out.versions)
 
     // Other subworkflow will return null when performing another subworkflow due to unknown reason.
@@ -140,7 +138,22 @@ workflow QUANTMSDIANN {
         .mix(ch_multiqc_files.collect())
         .mix(ch_ids_pmultiqc.collect().ifEmpty([]))
         .mix(ch_consensus_pmultiqc.collect().ifEmpty([]))
-        .mix(ch_msstats_in.ifEmpty([]))
+        // msstats_in.csv is deliberately NOT staged here. When pmultiqc sees it,
+        // parse_msstats_input builds the peptide/protein quantification tables
+        // from it -- on PXD030304 that is a 20.6 GiB, 231 M-row CSV that
+        // pd.read_csv turns into ~93 GB, and it is the summary step's single
+        // largest memory cost (bigbio/pmultiqc#717).
+        //
+        // Withholding it loses nothing: pmultiqc draws the same two tables from
+        // the DIA-NN report instead, which is already in memory --
+        // `if not msstats_input_valid: draw_diann_quant_table(...)` in
+        // _draw_diann_plots. On DIA the report-derived table is the better of
+        // the two anyway, since without an mzTab the MSstats path sets
+        // BestSearchScore to NaN.
+        //
+        // The file itself is unaffected: DIANN_MSSTATS publishes it to
+        // ${params.outdir}/quant_tables via its own publishDir.
+        // See bigbio/pmultiqc#732.
         .collect()
 
     SUMMARY_PIPELINE(multiqc_inputs)

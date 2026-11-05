@@ -208,7 +208,7 @@ These apply on top of test profiles to override the DIA-NN container version:
 
 | Profile        | Container                        | Auth |
 | -------------- | -------------------------------- | ---- |
-| `diann_v1_8_1` | `biocontainers/diann:v1.8.1_cv1` | none |
+| `diann_v1_8_1` | `ghcr.io/bigbio/diann-public:1.8.1` | none |
 | `diann_v2_1_0` | `ghcr.io/bigbio/diann:2.1.0`     | GHCR |
 | `diann_v2_2_0` | `ghcr.io/bigbio/diann:2.2.0`     | GHCR |
 | `diann_v2_3_2` | `ghcr.io/bigbio/diann:2.3.2`     | GHCR |

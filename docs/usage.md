@@ -381,7 +381,7 @@ If you have an existing DIA-NN GUI (workstation) run and want to reproduce its r
 
 | GUI flag (from `report.log.txt`)                                                                                        | quantmsdiann equivalent                                                                                                                                                                                                                                                                                                                     |
 | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--fasta <db>`, `--fasta-search`, `--predictor`                                                                         | Set automatically by INSILICO_LIBRARY_GENERATION when `--diann_speclib` is unset.                                                                                                                                                                                                                                                           |
+| `--fasta <db>`, `--fasta-search`, `--predictor`                                                                         | Set automatically by INSILICO_LIBRARY_GENERATION when `--speclib` is unset.                                                                                                                                                                                                                                                                 |
 | `--missed-cleavages N`                                                                                                  | `allowed_missed_cleavages: N`                                                                                                                                                                                                                                                                                                               |
 | `--min-pep-len`, `--max-pep-len`                                                                                        | `min_peptide_length`, `max_peptide_length`                                                                                                                                                                                                                                                                                                  |
 | `--min-pr-charge`, `--max-pr-charge`                                                                                    | `min_precursor_charge`, `max_precursor_charge`                                                                                                                                                                                                                                                                                              |
@@ -396,7 +396,7 @@ If you have an existing DIA-NN GUI (workstation) run and want to reproduce its r
 | `--smart-profiling`                                                                                                     | Pass via `--extra_args '--smart-profiling'`.                                                                                                                                                                                                                                                                                                |
 | `--peak-center`                                                                                                         | Pass via `--extra_args '--peak-center'`.                                                                                                                                                                                                                                                                                                    |
 | `--no-ifs-removal`                                                                                                      | Set automatically for DIA-NN < 2.3 (removed upstream in 2.3+).                                                                                                                                                                                                                                                                              |
-| `--qvalue 0.01`                                                                                                         | DIA-NN default; `protein_level_fdr_cutoff: 0.01` controls pmultiqc filtering.                                                                                                                                                                                                                                                               |
+| `--qvalue 0.01`                                                                                                         | `precursor_qvalue: 0.01` (default is 0.01 for DIA-NN < 2.5 and 0.05 for 2.5+); `matrix_qvalue` / `matrix_spec_q` filter the matrices.                                                                                                                                                                                                       |
 | `--matrices`, `--out`, `--out-lib`, `--gen-spec-lib`, `--lib`, `--threads`, `--verbose`, `--temp`, `--f`, `--use-quant` | Managed by the pipeline. Do not pass them.                                                                                                                                                                                                                                                                                                  |
 | `--strip-unknown-mods` (predict modifications the DL predictor does not recognise)                                      | Set `strip_unknown_mods: true`. Forces DIA-NN to predict spectra/RTs/IMs for declared modifications its predictor does not recognise. Without it, in-silico library generation silently _skips_ those precursors (log: `skipping N precursors, unrecognised modifications`), so they never enter the library and are never identified.      |
 
@@ -478,6 +478,14 @@ nextflow run bigbio/quantmsdiann \
     --extra_args '--smart-profiling --peak-center' \
     ...
 ```
+
+For example, a semi-specific search (only one peptide terminus must match the enzyme rule) is enabled with DIA-NN's `--semi`, which takes effect when the in-silico library digests the FASTA. On the command line use `--extra_args '--semi'`; in a `-params-file`:
+
+```yaml
+extra_args: "--semi"
+```
+
+A semi-specific library is much larger than a fully specific one, so expect longer library generation and search times.
 
 Flags that conflict with a specific step are **automatically stripped** with a warning. Each module maintains its own block list of managed flags. The table below summarises the key blocked flags per step:
 
@@ -758,6 +766,23 @@ For full verbose output of all intermediate files (useful for debugging), use th
 ```bash
 nextflow run bigbio/quantmsdiann -profile verbose_modules,docker ...
 ```
+
+### Exporting decoys
+
+By default the DIA-NN main report (`quant_tables/diann_report.parquet`) contains target precursors only. To keep the decoys as well, for example to estimate an FDR across several datasets, set `--report_decoys true` (DIA-NN 2.0 or later). The final DIA-NN step then runs with `--report-decoys`, and decoy rows are marked `Decoy = 1` in the report.
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    --input 'experiment.sdrf.tsv' \
+    --database 'proteins.fasta' \
+    --report_decoys true \
+    --outdir './results' \
+    -profile docker
+```
+
+- The report becomes larger, since it also holds the decoy rows.
+- The MSstats input and the pmultiqc report drop decoy rows, so they are the same with or without this option. The protein and precursor matrices are targets only.
+- When reading the report yourself, filter on `Decoy == 0` to get the targets.
 
 ## QPX Export (Experimental, 2.1.0)
 

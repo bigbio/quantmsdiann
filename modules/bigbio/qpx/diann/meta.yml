@@ -39,6 +39,14 @@ input:
   - project_accession:
       type: string
       description: PRIDE project accession (e.g. PXD026600) used as output prefix
+  - fasta:
+      type: file
+      description: |
+        Optional protein FASTA used for the search, or [] when unavailable. Fills
+        null pg.sequence_coverage, pg.molecular_weight and feature.pg_positions for
+        target rows; producer values are never overwritten and proteins absent from
+        the FASTA (e.g. DIA-NN internal decoys) stay null.
+      pattern: "*.{fasta,fa,fasta.gz,fa.gz}"
 output:
   qpx_dataset:
     - "qpx_output/*":

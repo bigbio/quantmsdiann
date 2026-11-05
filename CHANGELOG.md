@@ -3,6 +3,27 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0dev] bigbio/quantmsdiann
+
+### `Added`
+
+### `Changed`
+
+- Synced the nf-core template from **4.1.0** to **4.2.1** (infrastructure files only; no pipeline logic changed): updated `.github/` workflows and composite actions (new `pr-comment.yml` and `fix-linting.yml`, which replace `linting_comment.yml` and `fix_linting.yml`), prettier 3.9.10 in `.pre-commit-config.yaml`, nf-schema 2.7.3 plugin, nft-utils 1.2.1 in `nf-test.config`, `.vscode/extensions.json`, `.nf-test` entries in `.gitignore`, the `multiqc_reports.isBound()` guard in `PIPELINE_COMPLETION`, and the template version in `.nf-core.yml` and the README badge.
+- Removed the stale `--diann_speclib` references from the documentation. The parameter is named `--speclib` (`nextflow.config`, `nextflow_schema.json`, and the `params.speclib` branch in `workflows/dia.nf` that skips `INSILICO_LIBRARY_GENERATION`); `--diann_speclib` was never read by the pipeline, so anyone following the GUI-flag mapping table in `docs/usage.md` would have their spectral library silently ignored and an in-silico library predicted from the FASTA instead. Passing `--diann_speclib` is flagged by nf-schema parameter validation as unrecognised. The workflow diagram (`docs/images/quantmsdiann_workflow.svg`) now also reads `skip if --speclib`.
+
+### `Fixed`
+
+- **PR comment poster and webhook URL:** `pr-comment.yml` posts with a write token but took the PR number and the sticky-comment header from the producer's artifact, which a fork PR controls. A fork PR could therefore comment on any PR of the repository, either by naming its number or by putting a newline and a second `pr_number=` line in `header.txt`. The header must now be a plain identifier, and the comment is posted only when the named PR's head commit is the commit of the triggering run, which also skips results a newer push has made stale. The start-up parameter summary added in this release would also print `hook_url` (a Slack or Teams webhook URL that lets anyone post to the channel) when it is set; it is now excluded with `validation.summary.hideParams`.
+- Parameters are now validated against `nextflow_schema.json` at start-up (`UTILS_NFSCHEMA_PLUGIN` was vendored but never called), and the run stops when a parameter name from an older release is set (e.g. `--diann_extra_args`, `--diann_normalize`, `--protein_level_fdr_cutoff`), naming its replacement. Before, such keys were dropped silently and the defaults were used ([#132](https://github.com/bigbio/quantmsdiann/issues/132)).
+- **Native `.raw`/`.d` staging:** `PRELIMINARY_ANALYSIS`, `INDIVIDUAL_ANALYSIS` and `ASSEMBLE_EMPIRICAL_LIBRARY` no longer use `stageInMode 'copy'`, which copied every input (including the predicted spectral library) into every task; only the MS file is now materialised in place. On a 145-file run this removed ~18.7 TB of duplicated library copies.
+
+### `Dependencies`
+
+| Dependency | Old version | New version |
+| ---------- | ----------- | ----------- |
+| `qpx`      | 1.1.4       | 1.1.5       |
+
 ## [2.3.0] bigbio/quantmsdiann — Guangzhou - 2026-08-14
 
 ### `Added`

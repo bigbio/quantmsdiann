@@ -5,6 +5,13 @@
         "https://github.com/bigbio/nf-modules.git": {
             "modules": {
                 "bigbio": {
+                    "pmultiqc": {
+                        "branch": "main",
+                        "git_sha": "7cd54b39383fed0257b916e1060608b7ef322023",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "pridepy": {
                         "branch": "main",
                         "git_sha": "2694907ec41be68998dab141be326f421e71eba6",
@@ -14,7 +21,7 @@
                     },
                     "qpx/diann": {
                         "branch": "main",
-                        "git_sha": "21b7fa083b9400c6a276629fbf3ae8500493d518",
+                        "git_sha": "c2c00e74fa8495c219a517631f6c3c9d3554712a",
                         "installed_by": [
                             "modules"
                         ]
@@ -22,13 +29,6 @@
                     "thermorawfileparser": {
                         "branch": "main",
                         "git_sha": "daddf26d8c36e28dffe673949dc340ed6387de9a",
-                        "installed_by": [
-                            "modules"
-                        ]
-                    },
-                    "pmultiqc": {
-                        "branch": "main",
-                        "git_sha": "108392261b83e7e45681c3462a92549ffa1f5db3",
                         "installed_by": [
                             "modules"
                         ]

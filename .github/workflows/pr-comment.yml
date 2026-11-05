@@ -1,0 +1,111 @@
+name: Post PR comment
+# Shared, privileged comment poster.
+#
+# This is the single workflow that runs with a write token. It is triggered
+# after any of the listed "producer" workflows complete on a pull request.
+# Each producer runs untrusted PR code (if any) with a read-only token and
+# uploads a `pr-comment` artifact describing the comment to post; this workflow
+# only ever reads that plain-text artifact, so no PR code is executed here.
+#
+# Artifact contract (uploaded by producers under the name `pr-comment`):
+#   pr_number.txt  - the pull request number
+#   header.txt     - sticky-comment identifier (keeps comment types separate)
+#   comment.md     - the Markdown body (omit the file to post nothing)
+
+on:
+  workflow_run:
+    workflows:
+      - "nf-core linting"
+      - "nf-core template version comment"
+      - "nf-core branch protection"
+      - "Run nf-test"
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
+jobs:
+  post-comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Download PR comment artifact
+        uses: dawidd6/action-download-artifact@eab87c9830c39eff17e5a6eadb20bfb4bc880477 # v27
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name: pr-comment
+          path: pr-comment
+          if_no_artifact_found: ignore
+
+      - name: Read comment metadata
+        id: meta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          echo "::group::Downloaded pr-comment contents"
+          ls -la pr-comment 2>/dev/null || echo "No pr-comment/ directory was downloaded."
+          echo "::endgroup::"
+
+          if [ ! -d pr-comment ]; then
+            echo "No pr-comment artifact found; nothing to post."
+            exit 0
+          fi
+
+          if [ ! -f pr-comment/comment.md ]; then
+            echo "Artifact present but no comment.md; nothing to post."
+            exit 0
+          fi
+
+          pr_number=$(cat pr-comment/pr_number.txt)
+          header=$(cat pr-comment/header.txt)
+
+          # The artifact comes from the producer run, which can be a fork PR's
+          # code, so both values are untrusted. Check them before they are
+          # printed or written to GITHUB_OUTPUT.
+          case "$pr_number" in
+            ''|*[!0-9]*)
+              echo "Invalid PR number in pr_number.txt; nothing posted."
+              exit 1
+              ;;
+          esac
+
+          # Sticky-comment identifiers are plain words ("lint", "branch",
+          # "template-version"). Anything else, such as a newline that would add
+          # a second pr_number record to GITHUB_OUTPUT, is rejected.
+          case "$header" in
+            ''|*[!A-Za-z0-9_-]*)
+              echo "Invalid header in header.txt; nothing posted."
+              exit 1
+              ;;
+          esac
+          echo "Found comment.md (header='$header', pr_number='$pr_number')."
+
+          # Post only to the PR the producer run was built from: that PR's head
+          # commit must be the commit of the triggering run. This stops an
+          # artifact from naming another PR, and skips results that a newer push
+          # has already made stale.
+          if ! pr_head_sha=$(gh api "repos/${REPO}/pulls/${pr_number}" --jq '.head.sha'); then
+            echo "::warning::Could not look up PR #${pr_number}; nothing posted."
+            exit 0
+          fi
+          if [ "$pr_head_sha" != "$RUN_HEAD_SHA" ]; then
+            echo "::warning::PR #${pr_number} is at ${pr_head_sha}, but the triggering run was for ${RUN_HEAD_SHA}; nothing posted."
+            exit 0
+          fi
+
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "header=$header" >> "$GITHUB_OUTPUT"
+          echo "post=true" >> "$GITHUB_OUTPUT"
+          echo "Will post comment to PR #${pr_number}."
+
+      - name: Post PR comment
+        if: steps.meta.outputs.post == 'true'
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ steps.meta.outputs.pr_number }}
+          header: ${{ steps.meta.outputs.header }}
+          path: pr-comment/comment.md

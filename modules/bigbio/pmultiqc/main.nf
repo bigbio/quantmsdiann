@@ -5,8 +5,8 @@ process PMULTIQC {
     // pmultiqc is published to bioconda/biocontainers on release; a single image
     // serves Docker (native) and Singularity (via the galaxy depot mirror).
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pmultiqc:0.0.47--pyhdfd78af_0' :
-        'biocontainers/pmultiqc:0.0.47--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/pmultiqc:0.0.48--pyhdfd78af_0' :
+        'biocontainers/pmultiqc:0.0.48--pyhdfd78af_0' }"
 
     input:
     // Everything the report needs, staged flat under `results/`. Consumers collect
@@ -45,7 +45,7 @@ process PMULTIQC {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        pmultiqc: \$(multiqc --pmultiqc_version | sed -e "s/pmultiqc, version //g" 2>/dev/null || echo "0.0.47")
+        pmultiqc: \$(multiqc --pmultiqc_version | sed -e "s/pmultiqc, version //g" 2>/dev/null || echo "0.0.48")
     END_VERSIONS
     """
 }

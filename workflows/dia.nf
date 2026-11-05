@@ -418,7 +418,13 @@ workflow DIA {
             FINAL_QUANTIFICATION.out.pg_matrix,
             ch_sdrf_original,
             FINAL_QUANTIFICATION.out.log,
-            params.project_accession ?: ''
+            params.project_accession ?: '',
+            // The database the search used. DIA-NN reports no protein sequences, so
+            // qpx fills null pg.sequence_coverage, pg.molecular_weight and
+            // feature.pg_positions from it for target rows; proteins absent from it
+            // (DIA-NN's internal decoys) stay null. .first() keeps this a value
+            // channel, since ch_searchdb already feeds the library and search steps.
+            ch_searchdb.first()
         )
         ch_software_versions = ch_software_versions.mix(QPX_DIANN.out.versions)
         qpx_dataset_ch = QPX_DIANN.out.qpx_dataset

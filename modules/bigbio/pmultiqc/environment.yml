@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::pmultiqc=0.0.47
+  - bioconda::pmultiqc=0.0.48

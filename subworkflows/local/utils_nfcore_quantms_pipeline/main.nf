@@ -53,7 +53,7 @@ workflow PIPELINE_COMPLETION {
                 plaintext_email,
                 outdir,
                 monochrome_logs,
-                multiqc_reports.getVal(),
+                multiqc_reports.isBound() ? multiqc_reports.getVal() : [],
             )
         }
 
@@ -78,6 +78,51 @@ workflow PIPELINE_COMPLETION {
 //
 def validateInputParameters() {
     genomeExistsError()
+}
+
+//
+// Stop when a parameter from an older release is set. nf-schema only warns about unknown
+// parameters, so an old params file would otherwise run with the defaults.
+//
+def checkRenamedParams() {
+    def renamed = [
+        diann_debug             : 'debug_level',
+        diann_speclib           : 'speclib',
+        spectral_library        : 'speclib',
+        diann_extra_args        : 'extra_args',
+        diann_dda               : 'dda',
+        diann_tims_sum          : 'tims_sum',
+        diann_im_window         : 'im_window',
+        diann_normalize         : 'normalize',
+        diann_report_decoys     : 'report_decoys',
+        diann_export_xic        : 'export_xic',
+        diann_use_quant         : 'use_quant',
+        diann_light_models      : 'light_models',
+        diann_export_quant      : 'export_quant',
+        diann_site_ms1_quant    : 'site_ms1_quant',
+        diann_pre_select        : 'pre_select',
+        diann_channel_run_norm  : 'channel_run_norm',
+        diann_channel_spec_norm : 'channel_spec_norm',
+    ]
+    def removed = [
+        diann_no_peptidoforms    : 'use --scoring_mode',
+        protein_level_fdr_cutoff : 'use --precursor_qvalue, --matrix_qvalue and/or --matrix_spec_q',
+    ]
+    def messages = []
+    renamed.each { old_name, new_name ->
+        if (params.containsKey(old_name)) {
+            messages << "  --${old_name} was renamed to --${new_name}"
+        }
+    }
+    removed.each { old_name, hint ->
+        if (params.containsKey(old_name)) {
+            messages << "  --${old_name} was removed: ${hint}"
+        }
+    }
+    if (messages) {
+        error("Parameters from an older quantmsdiann release were set and would be ignored:\n" + messages.join("\n") +
+            "\nSee https://quantmsdiann.quantms.org/parameters/ for the current names.")
+    }
 }
 
 //

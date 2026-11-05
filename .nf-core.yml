@@ -12,14 +12,14 @@ lint:
     - .github/CONTRIBUTING.md
     - .github/workflows/branch.yml
     - .github/workflows/linting.yml
-    - .github/workflows/linting_comment.yml
+    - .github/workflows/pr-comment.yml
     - .github/.dockstore.yml
     - docs/README.md
     - .gitignore
   modules_config: false
   multiqc_config: false
   nextflow_config: false
-nf_core_version: 4.1.0
+nf_core_version: 4.2.1
 repository_type: pipeline
 template:
   author: Yasset Perez-Riverol

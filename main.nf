@@ -17,7 +17,9 @@
 
 include { QUANTMSDIANN  } from './workflows/quantmsdiann'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_quantms_pipeline'
+include { checkRenamedParams      } from './subworkflows/local/utils_nfcore_quantms_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from './subworkflows/nf-core/utils_nextflow_pipeline'
+include { UTILS_NFSCHEMA_PLUGIN     } from './subworkflows/nf-core/utils_nfschema_plugin'
 
 
 //
@@ -54,6 +56,23 @@ workflow {
         true,
         params.outdir,
         false
+    )
+
+    //
+    // Fail on parameter names from older releases, then validate against nextflow_schema.json
+    //
+    checkRenamedParams()
+
+    UTILS_NFSCHEMA_PLUGIN (
+        workflow,
+        params.validate_params,
+        null,
+        params.help,
+        params.help_full,
+        params.show_hidden,
+        "",
+        "",
+        "nextflow run bigbio/quantmsdiann -profile docker --input <sdrf.tsv> --database <fasta> --outdir <outdir>"
     )
 
     // could take UTILS_NEXTFLOW_PIPELINE.out.samplesheet channel as parsed input
