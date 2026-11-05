@@ -767,6 +767,23 @@ For full verbose output of all intermediate files (useful for debugging), use th
 nextflow run bigbio/quantmsdiann -profile verbose_modules,docker ...
 ```
 
+### Exporting decoys
+
+By default the DIA-NN main report (`quant_tables/diann_report.parquet`) contains target precursors only. To keep the decoys as well, for example to estimate an FDR across several datasets, set `--report_decoys true` (DIA-NN 2.0 or later). The final DIA-NN step then runs with `--report-decoys`, and decoy rows are marked `Decoy = 1` in the report.
+
+```bash
+nextflow run bigbio/quantmsdiann \
+    --input 'experiment.sdrf.tsv' \
+    --database 'proteins.fasta' \
+    --report_decoys true \
+    --outdir './results' \
+    -profile docker
+```
+
+- The report becomes larger, since it also holds the decoy rows.
+- The MSstats input and the pmultiqc report drop decoy rows, so they are the same with or without this option. The protein and precursor matrices are targets only.
+- When reading the report yourself, filter on `Decoy == 0` to get the targets.
+
 ## QPX Export (Experimental, 2.1.0)
 
 When `--enable_qpx_export` is set, the pipeline converts DIA-NN output to a [QPX Parquet](https://github.com/bigbio/qpx) dataset and a [MuData](https://mudata.readthedocs.io/) `.h5mu` file in a single step. Disabled by default; enable with `--enable_qpx_export` and supply `--project_accession` (required when QPX export is on).

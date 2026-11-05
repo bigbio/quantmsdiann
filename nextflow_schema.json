@@ -426,7 +426,7 @@
                 },
                 "report_decoys": {
                     "type": "boolean",
-                    "description": "Save decoy PSMs to the main .parquet report for DIA-NN 2.0.*",
+                    "description": "Write decoy precursors to the main DIA-NN report, marked Decoy = 1 (DIA-NN 2.0+).",
                     "fa_icon": "far fa-check-square",
                     "hidden": false
                 },
