@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- Parameters are now validated against `nextflow_schema.json` at start-up (`UTILS_NFSCHEMA_PLUGIN` was vendored but never called), and the run stops when a parameter name from an older release is set (e.g. `--diann_extra_args`, `--diann_normalize`, `--protein_level_fdr_cutoff`), naming its replacement. Before, such keys were dropped silently and the defaults were used ([#132](https://github.com/bigbio/quantmsdiann/issues/132)).
 - **Native `.raw`/`.d` staging:** `PRELIMINARY_ANALYSIS`, `INDIVIDUAL_ANALYSIS` and `ASSEMBLE_EMPIRICAL_LIBRARY` no longer use `stageInMode 'copy'`, which copied every input (including the predicted spectral library) into every task; only the MS file is now materialised in place. On a 145-file run this removed ~18.7 TB of duplicated library copies.
 
 ### `Dependencies`
