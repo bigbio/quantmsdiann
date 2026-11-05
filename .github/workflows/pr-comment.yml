@@ -40,6 +40,10 @@ jobs:
 
       - name: Read comment metadata
         id: meta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           echo "::group::Downloaded pr-comment contents"
           ls -la pr-comment 2>/dev/null || echo "No pr-comment/ directory was downloaded."
@@ -57,15 +61,40 @@ jobs:
 
           pr_number=$(cat pr-comment/pr_number.txt)
           header=$(cat pr-comment/header.txt)
-          echo "Found comment.md (header='$header', pr_number='$pr_number')."
 
-          # Guard against anything unexpected ending up in the PR number.
+          # The artifact comes from the producer run, which can be a fork PR's
+          # code, so both values are untrusted. Check them before they are
+          # printed or written to GITHUB_OUTPUT.
           case "$pr_number" in
             ''|*[!0-9]*)
-              echo "Invalid PR number: '$pr_number'"
+              echo "Invalid PR number in pr_number.txt; nothing posted."
               exit 1
               ;;
           esac
+
+          # Sticky-comment identifiers are plain words ("lint", "branch",
+          # "template-version"). Anything else, such as a newline that would add
+          # a second pr_number record to GITHUB_OUTPUT, is rejected.
+          case "$header" in
+            ''|*[!A-Za-z0-9_-]*)
+              echo "Invalid header in header.txt; nothing posted."
+              exit 1
+              ;;
+          esac
+          echo "Found comment.md (header='$header', pr_number='$pr_number')."
+
+          # Post only to the PR the producer run was built from: that PR's head
+          # commit must be the commit of the triggering run. This stops an
+          # artifact from naming another PR, and skips results that a newer push
+          # has already made stale.
+          if ! pr_head_sha=$(gh api "repos/${REPO}/pulls/${pr_number}" --jq '.head.sha'); then
+            echo "::warning::Could not look up PR #${pr_number}; nothing posted."
+            exit 0
+          fi
+          if [ "$pr_head_sha" != "$RUN_HEAD_SHA" ]; then
+            echo "::warning::PR #${pr_number} is at ${pr_head_sha}, but the triggering run was for ${RUN_HEAD_SHA}; nothing posted."
+            exit 0
+          fi
 
           echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
           echo "header=$header" >> "$GITHUB_OUTPUT"

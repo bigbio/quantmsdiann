@@ -12,6 +12,7 @@ lint:
     - .github/CONTRIBUTING.md
     - .github/workflows/branch.yml
     - .github/workflows/linting.yml
+    - .github/workflows/pr-comment.yml
     - .github/.dockstore.yml
     - docs/README.md
     - .gitignore
