@@ -248,25 +248,25 @@
                 },
                 "min_pr_mz": {
                     "type": "number",
-                    "description": "The minimum precursor m/z for the in silico library generation or library-free search",
+                    "description": "The minimum precursor m/z for the in silico library generation or library-free search. Used only when the SDRF gives no MS1 range; an SDRF range takes precedence",
                     "fa_icon": "fas fa-filter",
                     "default": 400
                 },
                 "max_pr_mz": {
                     "type": "number",
-                    "description": "The maximum precursor m/z for the in silico library generation or library-free search",
+                    "description": "The maximum precursor m/z for the in silico library generation or library-free search. Used only when the SDRF gives no MS1 range; an SDRF range takes precedence",
                     "fa_icon": "fas fa-filter",
                     "default": 2400
                 },
                 "min_fr_mz": {
                     "type": "number",
-                    "description": "The minimum fragment m/z for the in silico library generation or library-free search",
+                    "description": "The minimum fragment m/z for the in silico library generation or library-free search. Used only when the SDRF gives no MS2 range; an SDRF range takes precedence",
                     "fa_icon": "fas fa-filter",
                     "default": 100
                 },
                 "max_fr_mz": {
                     "type": "number",
-                    "description": "The maximum fragment m/z for the in silico library generation or library-free search",
+                    "description": "The maximum fragment m/z for the in silico library generation or library-free search. Used only when the SDRF gives no MS2 range; an SDRF range takes precedence",
                     "fa_icon": "fas fa-filter",
                     "default": 1800
                 }

@@ -48,10 +48,10 @@ This document lists every pipeline parameter organised by category. Default valu
 | `--min_peptide_length`            | integer | `6`             | Minimum peptide length to consider.                                                                                                        |
 | `--max_peptide_length`            | integer | `40`            | Maximum peptide length to consider.                                                                                                        |
 | `--max_mods`                      | integer | `3`             | Maximum number of variable modifications per peptide.                                                                                      |
-| `--min_pr_mz`                     | number  | `400`           | Minimum precursor m/z for in-silico library generation or library-free search.                                                             |
-| `--max_pr_mz`                     | number  | `2400`          | Maximum precursor m/z for in-silico library generation or library-free search.                                                             |
-| `--min_fr_mz`                     | number  | `100`           | Minimum fragment m/z for in-silico library generation or library-free search.                                                              |
-| `--max_fr_mz`                     | number  | `1800`          | Maximum fragment m/z for in-silico library generation or library-free search.                                                              |
+| `--min_pr_mz`                     | number  | `400`           | Minimum precursor m/z for in-silico library generation or library-free search. An SDRF MS1 range takes precedence.                         |
+| `--max_pr_mz`                     | number  | `2400`          | Maximum precursor m/z for in-silico library generation or library-free search. An SDRF MS1 range takes precedence.                         |
+| `--min_fr_mz`                     | number  | `100`           | Minimum fragment m/z for in-silico library generation or library-free search. An SDRF MS2 range takes precedence.                          |
+| `--max_fr_mz`                     | number  | `1800`          | Maximum fragment m/z for in-silico library generation or library-free search. An SDRF MS2 range takes precedence.                          |
 
 ## 5. DIA-NN General
 
