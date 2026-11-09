@@ -32,10 +32,14 @@ process INSILICO_LIBRARY_GENERATION {
     // Blocked flags are defined centrally in lib/BlockedFlags.groovy — edit there, not here.
     args = BlockedFlags.strip('INSILICO_LIBRARY_GENERATION', args, log)
 
-    min_pr_mz = params.min_pr_mz ? "--min-pr-mz $params.min_pr_mz":""
-    max_pr_mz = params.max_pr_mz ? "--max-pr-mz $params.max_pr_mz":""
-    min_fr_mz = params.min_fr_mz ? "--min-fr-mz $params.min_fr_mz":""
-    max_fr_mz = params.max_fr_mz ? "--max-fr-mz $params.max_fr_mz":""
+    // m/z limits: the SDRF scan ranges that sdrf-pipelines writes to diann_config.cfg take precedence, as in
+    // PRELIMINARY_ANALYSIS and INDIVIDUAL_ANALYSIS. params.min/max_pr_mz and min/max_fr_mz only fill in a limit
+    // the SDRF does not give. DIA-NN keeps the last value of a repeated flag, so appending both would silently
+    // replace the SDRF range by the params defaults (#142).
+    mz_params = [
+        '--min-pr-mz': params.min_pr_mz, '--max-pr-mz': params.max_pr_mz,
+        '--min-fr-mz': params.min_fr_mz, '--max-fr-mz': params.max_fr_mz,
+    ].findAll { _flag, value -> value }.collect { flag, value -> "${flag} ${value}" }.join(' ')
     met_excision = params.met_excision ? "--met-excision" : ""
     scoring_mode = params.scoring_mode == 'proteoforms' ? '--proteoforms' :
                          params.scoring_mode == 'peptidoforms' ? '--peptidoforms' : ''
@@ -53,14 +57,22 @@ process INSILICO_LIBRARY_GENERATION {
     pre_select_flag = (params.enable_infin_dia && params.pre_select) ? "--pre-select $params.pre_select" : ""
 
     """
+    cfg_args=\$(cat ${diann_config})
+    mz_args=""
+    set -- ${mz_params}
+    while [ \$# -ge 2 ]; do
+        case " \$cfg_args " in
+            *" \$1 "*) echo "INSILICO_LIBRARY_GENERATION: \$1 from the SDRF (diann_config.cfg) is used; params value \$2 is not" >&2 ;;
+            *) mz_args="\$mz_args \$1 \$2" ;;
+        esac
+        shift 2
+    done
+
     diann `cat ${diann_config}` \\
             --fasta ${fasta} \\
             --fasta-search \\
             --out silicolibrarygeneration.tsv \\
-            ${min_pr_mz} \\
-            ${max_pr_mz} \\
-            ${min_fr_mz} \\
-            ${max_fr_mz} \\
+            \$mz_args \\
             --missed-cleavages $params.allowed_missed_cleavages \\
             --min-pep-len $params.min_peptide_length \\
             --max-pep-len $params.max_peptide_length \\
