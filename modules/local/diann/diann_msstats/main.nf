@@ -18,7 +18,7 @@ process DIANN_MSSTATS {
     script:
     def args = task.ext.args ?: ''
     // Precursor q-value: explicit param wins, else auto by diann_version (<2.5 -> 0.01, >=2.5 -> 0.05)
-    def precursor_qvalue = VersionUtils.resolvePrecursorQvalue(params)
+    def precursor_qvalue = VersionUtils.resolvePrecursorQvalue(params.precursor_qvalue, params.diann_version)
     """
     set -o pipefail
     quantmsutilsc diann2msstats \\
