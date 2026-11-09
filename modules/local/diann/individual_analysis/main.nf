@@ -96,7 +96,7 @@ process INDIVIDUAL_ANALYSIS {
     diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
     diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
-    stage_ms_files = VersionUtils.isNativeRawMode(params) ?
+    stage_ms_files = VersionUtils.isNativeRawMode(params.mzml_convert, params.diann_version) ?
         "if [ -L '${ms_file}' ]; then cp -rL '${ms_file}' '${ms_file}.__staged' && rm -f '${ms_file}' && mv '${ms_file}.__staged' '${ms_file}'; fi" : ':'
 
     """

@@ -56,7 +56,7 @@ process ASSEMBLE_EMPIRICAL_LIBRARY {
     diann_channel_run_norm = params.channel_run_norm ? "--channel-run-norm" : ""
     diann_channel_spec_norm = params.channel_spec_norm ? "--channel-spec-norm" : ""
 
-    stage_ms_files = VersionUtils.isNativeRawMode(params) ?
+    stage_ms_files = VersionUtils.isNativeRawMode(params.mzml_convert, params.diann_version) ?
         (ms_files as List).collect { f ->
             "if [ -L '${f}' ]; then cp -rL '${f}' '${f}.__staged' && rm -f '${f}' && mv '${f}.__staged' '${f}'; fi"
         }.join('\n    ') : ':'
