@@ -205,7 +205,9 @@ jobs:
     name: "Singularity [${{ matrix.test_profile }}] DIA-NN=1.8.1 NXF=${{ matrix.NXF_VER }}"
     needs: test-default
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'bigbio/quantmsdiann') }}
-    runs-on: ubuntu-latest
+    # singularity-ce 4.0.0 (installed below from source) does not compile with C23,
+    # the default of the compiler on ubuntu-26.04, which ubuntu-latest now points to.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
