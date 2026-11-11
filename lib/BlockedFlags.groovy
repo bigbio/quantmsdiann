@@ -64,6 +64,16 @@ class BlockedFlags {
             // Pipeline-managed when fine-tuning: tuned model files passed as process inputs
             '--tokens', '--rt-model', '--im-model', '--fr-model',
         ],
+        INFIN_DIA_PRESEARCH: [
+            // Pipeline-managed: set from params (pre-search and library generation settings)
+            '--pre-search', '--pre-select', '--gen-spec-lib', '--out-lib', '--mass-acc', '--mass-acc-ms1',
+            '--missed-cleavages', '--min-pep-len', '--max-pep-len',
+            '--min-pr-charge', '--max-pr-charge', '--var-mods',
+            '--min-pr-mz', '--max-pr-mz', '--min-fr-mz', '--max-fr-mz',
+            '--met-excision', '--light-models',
+            // These would predict a library from the whole FASTA before the pre-search
+            '--fasta-search', '--predictor', '--use-quant',
+        ],
         PRELIMINARY_ANALYSIS: [
             // Pipeline-managed: set from params and SDRF calibration metadata
             '--use-quant', '--gen-spec-lib', '--out-lib', '--matrices', '--out',

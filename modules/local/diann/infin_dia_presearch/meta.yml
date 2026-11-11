@@ -1,0 +1,40 @@
+name: infin_dia_presearch
+description: InfinDIA pre-search of the DIA runs against the FASTA, producing a reduced empirical spectral library (DIA-NN >= 2.3.0).
+keywords:
+  - DIA-NN
+  - InfinDIA
+  - DIA
+tools:
+  - DIA-NN:
+      description: |
+        DIA-NN - a universal software for data-independent acquisition (DIA) proteomics data processing by Demichev.
+      homepage: https://github.com/vdemichev/DiaNN
+      documentation: https://github.com/vdemichev/DiaNN#infindia
+input:
+  - ms_files:
+      type: file
+      description: All MS files of the experiment, searched together
+  - fasta:
+      type: file
+      description: FASTA sequence database
+      pattern: "*.{fasta,fa}"
+  - cfg:
+      type: file
+      description: specifies a configuration file to load options/commands from.
+      pattern: "*.cfg"
+  - is_dda:
+      type: boolean
+      description: Whether DDA mode is enabled (auto-detected from SDRF or set via --dda)
+output:
+  - library:
+      type: file
+      description: Empirical spectral library from the InfinDIA pre-search, used by the conventional search
+      pattern: "infindia_library.parquet"
+  - log:
+      type: file
+      description: DIA-NN log file
+      pattern: "infindia_presearch.log"
+  - versions:
+      type: file
+      description: File containing software version
+      pattern: "versions.yml"

@@ -13,6 +13,7 @@ include { PRELIMINARY_ANALYSIS        as TUNE_PRELIMINARY_ANALYSIS   } from '../
 include { ASSEMBLE_EMPIRICAL_LIBRARY  } from '../modules/local/diann/assemble_empirical_library/main'
 include { ASSEMBLE_EMPIRICAL_LIBRARY  as TUNE_ASSEMBLE_LIBRARY      } from '../modules/local/diann/assemble_empirical_library/main'
 include { INSILICO_LIBRARY_GENERATION } from '../modules/local/diann/insilico_library_generation/main'
+include { INFIN_DIA_PRESEARCH         } from '../modules/local/diann/infin_dia_presearch/main'
 include { INSILICO_LIBRARY_GENERATION as TUNED_LIBRARY_GENERATION   } from '../modules/local/diann/insilico_library_generation/main'
 include { FINE_TUNE_MODELS            } from '../modules/local/diann/fine_tune_models/main'
 include { INDIVIDUAL_ANALYSIS         } from '../modules/local/diann/individual_analysis/main'
@@ -48,6 +49,10 @@ workflow DIA {
     // Version guard for InfinDIA
     if (params.enable_infin_dia && VersionUtils.versionLessThan(params.diann_version, '2.3.0')) {
         error("InfinDIA requires DIA-NN >= 2.3.0. Current version: ${params.diann_version}. Use -profile diann_v2_3_2")
+    }
+    // InfinDIA builds the library itself, so it replaces both of these library sources
+    if (params.enable_infin_dia && (params.speclib || params.enable_fine_tuning)) {
+        error("--enable_infin_dia cannot be combined with --speclib or --enable_fine_tuning.")
     }
 
     // Version guard for scoring mode
@@ -208,6 +213,16 @@ workflow DIA {
     if (!params.enable_fine_tuning) {
         if (params.speclib != null && params.speclib.toString() != "") {
             speclib = channel.from(file(params.speclib, checkIfExists: true))
+        } else if (params.enable_infin_dia) {
+            // InfinDIA searches the MS files directly instead of predicting a library for the whole FASTA
+            INFIN_DIA_PRESEARCH(
+                ch_file_preparation_results
+                    .map { result -> result[1] }
+                    .collect( sort: { a, b -> file(a).getName() <=> file(b).getName() } ),
+                ch_searchdb, ch_diann_cfg_val, ch_is_dda, ch_diann_license
+            )
+            ch_software_versions = ch_software_versions.mix(INFIN_DIA_PRESEARCH.out.versions)
+            speclib = INFIN_DIA_PRESEARCH.out.library
         } else {
             INSILICO_LIBRARY_GENERATION(ch_searchdb, ch_diann_cfg_val, ch_is_dda, [], [], [], ch_diann_license)
             speclib = INSILICO_LIBRARY_GENERATION.out.predict_speclib
