@@ -52,13 +52,17 @@ process INFIN_DIA_PRESEARCH {
             "if [ -L '${f}' ]; then cp -rL '${f}' '${f}.__staged' && rm -f '${f}' && mv '${f}.__staged' '${f}'; fi"
         }.join('\n    ') : ':'
 
-    // --pre-search needs fixed mass accuracies. The defaults come first so that SDRF ppm
-    // tolerances in diann_config.cfg, when present, take precedence (DIA-NN keeps the last value).
+    // Params defaults come before diann_config.cfg so that SDRF values there (ppm tolerances, m/z
+    // ranges) take precedence: DIA-NN keeps the last value. --pre-search needs fixed mass accuracies.
     // No --fasta-search/--predictor: these would predict the whole FASTA before the pre-search.
     """
     ${stage_ms_files}
     diann   --mass-acc $params.mass_acc_ms2 \\
             --mass-acc-ms1 $params.mass_acc_ms1 \\
+            ${min_pr_mz} \\
+            ${max_pr_mz} \\
+            ${min_fr_mz} \\
+            ${max_fr_mz} \\
             `cat ${diann_config}` \\
             --f ${(ms_files as List).join(' --f ')} \\
             --fasta ${fasta} \\
@@ -72,10 +76,6 @@ process INFIN_DIA_PRESEARCH {
             --min-pr-charge $params.min_precursor_charge \\
             --max-pr-charge $params.max_precursor_charge \\
             --var-mods $params.max_mods \\
-            ${min_pr_mz} \\
-            ${max_pr_mz} \\
-            ${min_fr_mz} \\
-            ${max_fr_mz} \\
             --threads ${task.cpus} \\
             --verbose $params.debug_level \\
             ${scoring_mode} \\

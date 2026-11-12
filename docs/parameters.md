@@ -166,7 +166,7 @@ The following DIA-NN 2.5.0 flags are not exposed as pipeline parameters but can 
 | `--enable_infin_dia` | boolean | `false` | Enable InfinDIA for ultra-large search spaces: an InfinDIA pre-search (`--pre-search`) of the MS files replaces in-silico library prediction. Requires DIA-NN >= 2.3.0. Experimental. |
 | `--pre_select`       | integer | `null`  | Target precursor count (`--pre-select N`) for the InfinDIA pre-search.                                                                                                                |
 
-> **Note:** InfinDIA requires DIA-NN >= 2.3.0 and is considered experimental. The pre-search uses fixed mass accuracies: the SDRF ppm tolerances, otherwise `--mass_acc_ms1`/`--mass_acc_ms2`. It cannot be combined with `--speclib` or `--enable_fine_tuning`. Other InfinDIA options, such as `--pre-select-force` or `--mass-acc-cal N`, can be passed with `--extra_args` (which applies to every DIA-NN step).
+> **Note:** InfinDIA requires DIA-NN >= 2.3.0 and is considered experimental. The pre-search uses fixed mass accuracies: the SDRF ppm tolerances, otherwise `--mass_acc_ms1`/`--mass_acc_ms2`. It cannot be combined with `--speclib` or `--enable_fine_tuning`.
 
 ## 14. QPX Export (Experimental)
 
