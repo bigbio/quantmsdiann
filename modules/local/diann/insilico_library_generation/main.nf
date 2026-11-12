@@ -47,10 +47,8 @@ process INSILICO_LIBRARY_GENERATION {
     tuned_tokens_flag = tuned_tokens ? "--tokens ${tuned_tokens}" : ''
     tuned_rt_flag = tuned_rt_model ? "--rt-model ${tuned_rt_model}" : ''
     tuned_im_flag = tuned_im_model ? "--im-model ${tuned_im_model}" : ''
-    infin_dia_flag = params.enable_infin_dia ? "--infin-dia" : ""
     // DIA-NN Enterprise license; falls back to a key next to the binary when no path is provided
     license_arg = diann_license ? "--license ${diann_license}" : ""
-    pre_select_flag = (params.enable_infin_dia && params.pre_select) ? "--pre-select $params.pre_select" : ""
 
     """
     diann `cat ${diann_config}` \\
@@ -79,8 +77,6 @@ process INSILICO_LIBRARY_GENERATION {
             ${tuned_tokens_flag} \\
             ${tuned_rt_flag} \\
             ${tuned_im_flag} \\
-            ${infin_dia_flag} \\
-            ${pre_select_flag} \\
             ${met_excision} \\
             ${diann_dda_flag} \\
             ${args} \\

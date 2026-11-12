@@ -528,7 +528,7 @@ The pipeline supports multiple DIA-NN versions via built-in Nextflow profiles. E
 
 - **QuantUMS** (`--quantums`): Requires >= 1.9.2. The `--direct-quant` flag is automatically skipped for DIA-NN 1.8.x where direct quantification is the only mode.
 - **DDA mode** (`--dda`): Requires >= 2.3.2. The pipeline will error if enabled with an older version.
-- **InfinDIA** (`--enable_infin_dia`): Requires >= 2.3.0.
+- **InfinDIA** (`--enable_infin_dia`): Requires >= 2.3.0. DIA-NN pre-searches all MS files against the FASTA (`--pre-search`), and the resulting empirical library replaces the in-silico predicted library. DIA-NN holds the whole FASTA in memory during the pre-search, so very large databases need more memory than the 72 GB first requested for `INFIN_DIA_PRESEARCH`; a 12.4-million-protein gut metagenome catalogue needed about 125 GB.
 
 Usage:
 
